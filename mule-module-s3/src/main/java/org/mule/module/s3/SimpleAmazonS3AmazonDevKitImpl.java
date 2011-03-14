@@ -17,16 +17,21 @@ import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.BucketPolicy;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.CopyObjectRequest;
+import com.amazonaws.services.s3.model.CopyObjectResult;
 import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.StorageClass;
 
+import java.io.InputStream;
 import java.util.List;
 
-public class SimpleAmazonS3Impl implements SimpleAmazonS3
+public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 {
-    private AmazonS3 s3;
+    AmazonS3 s3;
 
-    public SimpleAmazonS3Impl(AmazonS3 s3)
+    public SimpleAmazonS3AmazonDevKitImpl(AmazonS3 s3)
     {
         this.s3 = s3;
     }
@@ -108,7 +113,42 @@ public class SimpleAmazonS3Impl implements SimpleAmazonS3
     public void setBucketWebsiteConfiguration(String bucketName, BucketWebsiteConfiguration configuration)
         throws AmazonClientException, AmazonServiceException
     {
+
         s3.setBucketWebsiteConfiguration(bucketName, configuration);
     }
+
+    // 4.1
+    public String putObject(String bucketName, String key, InputStream input, ObjectMetadata metadata)
+        throws AmazonClientException, AmazonServiceException
+    {
+        return s3.putObject(bucketName, key, input, metadata).getVersionId();
+    }
+
+    public void deleteObject(String bucketName, String key)
+        throws AmazonClientException, AmazonServiceException
+    {
+        s3.deleteObject(bucketName, key);
+    }
+
+    public void deleteVersion(String bucketName, String key, String versionId)
+        throws AmazonClientException, AmazonServiceException
+    {
+        s3.deleteVersion(bucketName, key, versionId);
+    }
+
+    public void changeObjectStorageClass(String bucketName, String key, StorageClass newStorageClass)
+        throws AmazonClientException, AmazonServiceException
+    {
+        s3.changeObjectStorageClass(bucketName, key, newStorageClass);
+    }
+
+    public CopyObjectResult copyObject(CopyObjectRequest copyOptions)
+        throws AmazonClientException, AmazonServiceException
+    {
+        return s3.copyObject(copyOptions);
+    }
+
+    // 3. Get (full or just metadata, latest or specific version, conditional get)
+    // 5. Generate Presigned URL to access an Object
 
 }
