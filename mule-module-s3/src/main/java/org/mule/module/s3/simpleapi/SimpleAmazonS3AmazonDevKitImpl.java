@@ -8,7 +8,7 @@
  * LICENSE.txt file.
  */
 
-package org.mule.module.s3;
+package org.mule.module.s3.simpleapi;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -18,11 +18,9 @@ import com.amazonaws.services.s3.model.BucketPolicy;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
-import com.amazonaws.services.s3.model.CopyObjectResult;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.StorageClass;
 
@@ -139,34 +137,41 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 4.1
-    public String putObject(String bucketName, String key, InputStream input, ObjectMetadata metadata)
+    public String createObject(@NotNull ObjectId objectId, InputStream input, ObjectMetadata metadata)
         throws AmazonClientException, AmazonServiceException
     {
-        return s3.putObject(bucketName, key, input, metadata).getVersionId();
+        return s3.putObject(objectId.getBucketName(), objectId.getKey(), input, metadata).getVersionId();
     }
 
-    public void deleteObject(String bucketName, String key)
-        throws AmazonClientException, AmazonServiceException
+    public void deleteObject(@NotNull ObjectId objectId) throws AmazonClientException, AmazonServiceException
     {
-        s3.deleteObject(bucketName, key);
+        s3.deleteObject(objectId.getBucketName(), objectId.getKey());
     }
 
-    public void deleteVersion(String bucketName, String key, String versionId)
+    public void deleteVersion(@NotNull ObjectId objectId, String versionId)
         throws AmazonClientException, AmazonServiceException
     {
-        s3.deleteVersion(bucketName, key, versionId);
+        s3.deleteVersion(objectId.getBucketName(), objectId.getKey(), versionId);
     }
 
-    public void changeObjectStorageClass(String bucketName, String key, StorageClass newStorageClass)
+    public void changeObjectStorageClass(@NotNull ObjectId objectId, StorageClass newStorageClass)
         throws AmazonClientException, AmazonServiceException
     {
-        s3.changeObjectStorageClass(bucketName, key, newStorageClass);
+        s3.changeObjectStorageClass(objectId.getBucketName(), objectId.getKey(), newStorageClass);
     }
 
-    public CopyObjectResult copyObject(CopyObjectRequest copyOptions)
+    public String copyObject(@NotNull ObjectId source,
+                             @NotNull ObjectId destination,
+                             CannedAccessControlList acl)
         throws AmazonClientException, AmazonServiceException
     {
-        return s3.copyObject(copyOptions);
+        CopyObjectRequest request = new CopyObjectRequest(source.getBucketName(), source.getKey(),
+            destination.getBucketName(), destination.getKey());
+        if (acl != null)
+        {
+            request.setCannedAccessControlList(acl);
+        }
+        return s3.copyObject(request).getVersionId();
     }
 
     // 3. Get (full or just metadata, latest or specific version, conditional get)

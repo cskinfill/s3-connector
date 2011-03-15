@@ -3,6 +3,9 @@ package org.mule.module.s3;
 
 import org.mule.api.lifecycle.Initialisable;
 import org.mule.api.lifecycle.InitialisationException;
+import org.mule.module.s3.simpleapi.ObjectId;
+import org.mule.module.s3.simpleapi.SimpleAmazonS3;
+import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
 import org.mule.tools.cloudconnect.annotations.Connector;
 import org.mule.tools.cloudconnect.annotations.Operation;
 import org.mule.tools.cloudconnect.annotations.Parameter;
@@ -24,6 +27,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
 
+import org.apache.commons.lang.Validate;
+
 @Connector(namespacePrefix = "s3", namespaceUri = "http://www.mulesoft.org/schema/mule/s3")
 public class S3CloudConnector implements Initialisable
 {
@@ -35,18 +40,28 @@ public class S3CloudConnector implements Initialisable
 
     private SimpleAmazonS3 client;
 
+    /**
+     * Example: {@code <s3:create-bucket bucketName="myBucket" acl="Private" }
+     * 
+     * @param bucketName
+     * @param region
+     * @param acl
+     * @return the new Bucket
+     * @throws AmazonClientException
+     * @throws AmazonServiceException
+     */
     @Operation
     public Bucket createBucket(@Parameter(optional = false) String bucketName,
                                @Parameter(optional = true) String region,
                                @Parameter(optional = true) String acl)
         throws AmazonClientException, AmazonServiceException
     {
-        return client.createBucket(bucketName, region, acl != null ? toAcl(acl) : null);
+        return client.createBucket(bucketName, region, toAcl(acl));
     }
 
     private CannedAccessControlList toAcl(String acl)
     {
-        return CannedAccessControlList.valueOf(acl);
+        return acl != null ? CannedAccessControlList.valueOf(acl) : null;
     }
 
     @Operation
@@ -127,10 +142,10 @@ public class S3CloudConnector implements Initialisable
     // 1. Upload (set content, content-type, canned acl, storage class, user metadata
     // map)
     @Operation
-    public String putObject(String bucketName, String key, Object input)
+    public String createObject(String bucketName, String key, Object input)
         throws AmazonClientException, AmazonServiceException
     {
-        return client.putObject(bucketName, key, createContent(input), new ObjectMetadata());
+        return client.createObject(new ObjectId(bucketName, key), createContent(input), new ObjectMetadata());
     }
 
     @Operation
@@ -141,11 +156,11 @@ public class S3CloudConnector implements Initialisable
     {
         if (versionId == null)
         {
-            client.deleteObject(bucketName, key);
+            client.deleteObject(new ObjectId(bucketName, key));
         }
         else
         {
-            client.deleteVersion(bucketName, key, versionId);
+            client.deleteVersion(new ObjectId(bucketName, key), versionId);
         }
     }
 
@@ -155,7 +170,8 @@ public class S3CloudConnector implements Initialisable
                                          @Parameter(optional = false) String newStorageClass)
         throws AmazonClientException, AmazonServiceException
     {
-        client.changeObjectStorageClass(bucketName, key, StorageClass.fromValue(newStorageClass));
+        Validate.notNull(newStorageClass);
+        client.changeObjectStorageClass(new ObjectId(bucketName, key), StorageClass.valueOf(newStorageClass));
     }
 
     // public CopyObjectResult copyObject(CopyObjectRequest copyOptions)
@@ -196,7 +212,7 @@ public class S3CloudConnector implements Initialisable
     public void setClient(SimpleAmazonS3 client)
     {
         this.client = client;
-    }   
+    }
 
     private static InputStream createContent(Object content)
     {
