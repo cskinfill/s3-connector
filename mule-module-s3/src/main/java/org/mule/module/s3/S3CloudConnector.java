@@ -141,11 +141,21 @@ public class S3CloudConnector implements Initialisable
 
     // 1. Upload (set content, content-type, canned acl, storage class, user metadata
     // map)
+    // TODO add support for usermetadata
     @Operation
-    public String createObject(String bucketName, String key, Object input)
+    public String createObject(@Parameter(optional = false) String bucketName,
+                               @Parameter(optional = false) String key,
+                               @Parameter(optional = false) Object input,
+                               @Parameter(optional = true) String contentType,
+                               @Parameter(optional = true) String acl,
+                               @Parameter(optional = true) String storageClass)
         throws AmazonClientException, AmazonServiceException
     {
-        return client.createObject(new ObjectId(bucketName, key), createContent(input), new ObjectMetadata());
+
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType(contentType);
+        return client.createObject(new ObjectId(bucketName, key), createContent(input), metadata, toAcl(acl),
+            toStorageClass(storageClass));
     }
 
     @Operation
@@ -171,14 +181,26 @@ public class S3CloudConnector implements Initialisable
         throws AmazonClientException, AmazonServiceException
     {
         Validate.notNull(newStorageClass);
-        client.changeObjectStorageClass(new ObjectId(bucketName, key), StorageClass.valueOf(newStorageClass));
+        client.changeObjectStorageClass(new ObjectId(bucketName, key), toStorageClass(newStorageClass));
     }
 
-    // public CopyObjectResult copyObject(CopyObjectRequest copyOptions)
-    // throws AmazonClientException, AmazonServiceException
-    // {
-    // return client.copyObject(copyOptions);
-    // }
+    private StorageClass toStorageClass(String storageClass)
+    {
+        return storageClass != null ? StorageClass.valueOf(storageClass) : null;
+    }
+
+    public String copyObject(@Parameter(optional = false) String bucketSourceName,
+                             @Parameter(optional = false) String sourceKey,
+                             @Parameter(optional = false) String bucketDestinationName,
+                             @Parameter(optional = false) String destinationKey,
+                             @Parameter(optional = true) String acl,
+                             @Parameter(optional = true) String storageClass)
+        throws AmazonClientException, AmazonServiceException
+    {
+        return client.copyObject(new ObjectId(bucketSourceName, sourceKey), new ObjectId(coalesce(
+            bucketSourceName, bucketDestinationName), destinationKey), toAcl(acl),
+            toStorageClass(storageClass));
+    }
 
     public void initialise() throws InitialisationException
     {
@@ -231,4 +253,8 @@ public class S3CloudConnector implements Initialisable
         throw new IllegalArgumentException("Wrong input");
     }
 
+    private <T> T coalesce(T o0, T o1)
+    {
+        return o1 != null ? o1 : o0;
+    }
 }

@@ -137,7 +137,11 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 4.1
-    public String createObject(@NotNull ObjectId objectId, InputStream input, ObjectMetadata metadata)
+    public String createObject(@NotNull ObjectId objectId,
+                               InputStream input,
+                               ObjectMetadata metadata,
+                               CannedAccessControlList acl,
+                               StorageClass storageClass)
         throws AmazonClientException, AmazonServiceException
     {
         return s3.putObject(objectId.getBucketName(), objectId.getKey(), input, metadata).getVersionId();
@@ -162,14 +166,15 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 
     public String copyObject(@NotNull ObjectId source,
                              @NotNull ObjectId destination,
-                             CannedAccessControlList acl)
-        throws AmazonClientException, AmazonServiceException
+                             CannedAccessControlList acl,
+                             StorageClass storageClass) throws AmazonClientException, AmazonServiceException
     {
         CopyObjectRequest request = new CopyObjectRequest(source.getBucketName(), source.getKey(),
             destination.getBucketName(), destination.getKey());
-        if (acl != null)
+        request.setCannedAccessControlList(acl);
+        if (storageClass != null)
         {
-            request.setCannedAccessControlList(acl);
+            request.setStorageClass(storageClass);
         }
         return s3.copyObject(request).getVersionId();
     }

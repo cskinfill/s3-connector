@@ -1,17 +1,19 @@
 
 package org.mule.module.s3;
 
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verify;
-
+import static org.junit.Assert.*;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.CopyObjectRequest;
+import com.amazonaws.services.s3.model.CopyObjectResult;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
 import com.amazonaws.services.s3.model.StorageClass;
 
@@ -54,6 +56,27 @@ public class S3TestCase
         CreateBucketRequest request = new CreateBucketRequest("myBucket", "US");
         request.setCannedAcl(CannedAccessControlList.Private);
         verify(client).createBucket(refEq(request));
+    }
+
+    @Test
+    public void copyObjectNoDestinationBucket()
+    {
+        CopyObjectResult result = new CopyObjectResult();
+        result.setVersionId("12");
+        when(client.copyObject(refEq(new CopyObjectRequest("myBucket", "myObject", "myBucket", "myObject2")))).thenReturn(
+            result);
+
+        assertEquals("12", connector.copyObject("myBucket", "myObject", null, "myObject2", null, null));;
+    }
+
+    @Test
+    public void copyObjectBucketWithACL()
+    {
+        CopyObjectRequest request = new CopyObjectRequest("myBucket", "myObject", "myBucket2", "myObject2");
+        request.setCannedAccessControlList(CannedAccessControlList.Private);
+        when(client.copyObject(refEq(request))).thenReturn(new CopyObjectResult());
+
+        assertNull(connector.copyObject("myBucket", "myObject", "myBucket2", "myObject2", "Private", null));
     }
 
 }

@@ -90,17 +90,19 @@ public interface SimpleAmazonS3
         throws AmazonClientException, AmazonServiceException;
 
     /**
-     * @param bucketName
-     * @param key
      * @param input
      * @param metadata
+     * @param acl TODO
+     * @param storageClass TODO
+     * @param bucketName
+     * @param key
      * @return the version id, if the versioning was enabled
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
     public String createObject(@NotNull ObjectId objectId,
                                @NotNull InputStream input,
-                               @NotNull ObjectMetadata metadata)
+                               @NotNull ObjectMetadata metadata, CannedAccessControlList acl, StorageClass storageClass)
         throws AmazonClientException, AmazonServiceException;
 
     public void deleteObject(@NotNull ObjectId objectId) throws AmazonClientException, AmazonServiceException;
@@ -124,7 +126,8 @@ public interface SimpleAmazonS3
      */
     public String copyObject(@NotNull ObjectId source,
                              @NotNull ObjectId destination,
-                             CannedAccessControlList acl)
+                             CannedAccessControlList acl, 
+                             StorageClass storageClass)
         throws AmazonClientException, AmazonServiceException;
 
 }
