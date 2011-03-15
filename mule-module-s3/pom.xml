@@ -15,7 +15,7 @@
 		<!-- Tools properties -->
 		<eclipsePluginVersion>2.8</eclipsePluginVersion>
 		<vmtype>org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType</vmtype>
-		<cloudconnect.version>2.0.8-SNAPSHOT</cloudconnect.version>
+		<cloudconnect.version>2.0.10</cloudconnect.version>
 		<jdk.name>J2SE-1.5</jdk.name>
 		<jdk.version>1.5</jdk.version>
 	</properties>
