@@ -1,24 +1,44 @@
+
 package org.mule.module.s3;
 
-import org.junit.Test;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
-import org.mule.module.s3.S3CloudConnector;
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CreateBucketRequest;
+import com.amazonaws.services.s3.model.StorageClass;
+
+import org.junit.Before;
+import org.junit.Test;
 
 public class S3TestCase
 {
-    @Test
-    public void invokeSomeMethodOnTheCloudConnector()
-    {
-        /*
-            Add code that tests the cloud connector at the API level. This means that you'll
-            instantiate your cloud connector directly, invoke one of its methods and assert
-            you get the correct result.
+    private S3CloudConnector connector;
+    private AmazonS3 client;
 
-            Example:
-            
-            S3CloudConnector connector = new S3CloudConnector();
-            Object result = connector.someMethod("sample input");
-            assertEquals("expected output", result);
-         */
+    @Before
+    public void setup()
+    {
+        client = mock(AmazonS3.class);
+        connector = new S3CloudConnector();
+        connector.setClient(new SimpleAmazonS3AmazonDevKitImpl(client));
     }
+
+    @Test
+    public void testchangeObjectStorageClass() throws AmazonClientException, AmazonServiceException
+    {
+        connector.changeObjectStorageClass("myBucket", "myObject", "STANDARD");
+        verify(client).changeObjectStorageClass("myBucket", "myObject", StorageClass.Standard);
+    }
+
+    @Test
+    public void createBucket()
+    {
+        connector.createBucket("myBucket", "US", null);
+        verify(client).createBucket((CreateBucketRequest) anyObject());
+    }
+
 }

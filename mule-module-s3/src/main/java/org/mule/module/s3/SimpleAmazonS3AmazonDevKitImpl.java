@@ -19,20 +19,27 @@ import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.CopyObjectResult;
+import com.amazonaws.services.s3.model.CreateBucketRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.StorageClass;
 
 import java.io.InputStream;
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
+import org.apache.commons.lang.Validate;
+
 public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 {
     AmazonS3 s3;
 
-    public SimpleAmazonS3AmazonDevKitImpl(AmazonS3 s3)
+    public SimpleAmazonS3AmazonDevKitImpl(@NotNull AmazonS3 s3)
     {
+        Validate.notNull(s3);
         this.s3 = s3;
     }
 
@@ -43,23 +50,26 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 2.1
-    public Bucket createBucket(String bucketName, String region, CannedAccessControlList acl)
+    public Bucket createBucket(@NotNull String bucketName, String region, CannedAccessControlList acl)
         throws AmazonClientException, AmazonServiceException
     {
-        Bucket bucket = s3.createBucket(bucketName, region);
-        s3.setBucketAcl(bucketName, acl);
-        return bucket;
+        Validate.notNull(bucketName);
+        CreateBucketRequest request = new CreateBucketRequest(bucketName, region);
+        request.setCannedAcl(acl);
+        return s3.createBucket(request);
     }
 
     // 2.2
-    public void deleteBucket(String bucketName) throws AmazonClientException, AmazonServiceException
+    public void deleteBucket(@NotNull String bucketName) throws AmazonClientException, AmazonServiceException
     {
+        Validate.notNull(bucketName);
         s3.deleteBucket(bucketName);
     }
 
-    public void deleteBucketAndObjects(String bucketName)
+    public void deleteBucketAndObjects(@NotNull String bucketName)
         throws AmazonClientException, AmazonServiceException
     {
+        Validate.notNull(bucketName);
         ObjectListing objects = s3.listObjects(bucketName);
         for (S3ObjectSummary summary : objects.getObjectSummaries())
         {
@@ -69,51 +79,62 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 2.3
-    public ObjectListing listObjects(String bucketName, String prefix)
+    public ObjectListing listObjects(@NotNull String bucketName, @NotNull String prefix)
         throws AmazonClientException, AmazonServiceException
     {
+        Validate.notNull(bucketName);
+        Validate.notNull(prefix);
         return s3.listObjects(bucketName, prefix);
     }
 
     // 3.1.1
-    public void deleteBucketPolicy(String bucketName) throws AmazonClientException, AmazonServiceException
+    public void deleteBucketPolicy(@NotNull String bucketName)
+        throws AmazonClientException, AmazonServiceException
     {
+        Validate.notNull(bucketName);
         s3.deleteBucketPolicy(bucketName);
     }
 
     // 3.1.2
-    public BucketPolicy getBucketPolicy(String bucketName)
+    public BucketPolicy getBucketPolicy(@NotNull String bucketName)
         throws AmazonClientException, AmazonServiceException
     {
+        Validate.notNull(bucketName);
         return s3.getBucketPolicy(bucketName);
     }
 
     // 3.1.3
-    public void setBucketPolicy(String bucketName, String policyText)
+    public void setBucketPolicy(@NotNull String bucketName, @NotNull String policyText)
         throws AmazonClientException, AmazonServiceException
     {
+        Validate.notNull(bucketName);
+        Validate.notNull(policyText);
         s3.setBucketPolicy(bucketName, policyText);
     }
 
     // 3.2.1
-    public void deleteBucketWebsiteConfiguration(String bucketName)
+    public void deleteBucketWebsiteConfiguration(@NotNull String bucketName)
         throws AmazonClientException, AmazonServiceException
     {
+        Validate.notNull(bucketName);
         s3.deleteBucketWebsiteConfiguration(bucketName);
     }
 
     // 3.2.2
-    public BucketWebsiteConfiguration getBucketWebsiteConfiguration(String bucketName)
+    public BucketWebsiteConfiguration getBucketWebsiteConfiguration(@NotNull String bucketName)
         throws AmazonClientException, AmazonServiceException
     {
+        Validate.notNull(bucketName);
         return s3.getBucketWebsiteConfiguration(bucketName);
     }
 
     // 3.2.3
-    public void setBucketWebsiteConfiguration(String bucketName, BucketWebsiteConfiguration configuration)
+    public void setBucketWebsiteConfiguration(@NotNull String bucketName,
+                                              @NotNull BucketWebsiteConfiguration configuration)
         throws AmazonClientException, AmazonServiceException
     {
-
+        Validate.notNull(bucketName);
+        Validate.notNull(configuration);
         s3.setBucketWebsiteConfiguration(bucketName, configuration);
     }
 

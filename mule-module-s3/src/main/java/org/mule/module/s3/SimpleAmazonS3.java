@@ -25,36 +25,40 @@ import com.amazonaws.services.s3.model.StorageClass;
 import java.io.InputStream;
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 public interface SimpleAmazonS3
 {
     public List<Bucket> listBuckets() throws AmazonClientException, AmazonServiceException;
 
-    public Bucket createBucket(String bucketName, String region, CannedAccessControlList acl)
+    public Bucket createBucket(@NotNull String bucketName, String region, CannedAccessControlList acl)
         throws AmazonClientException, AmazonServiceException;
 
-    public void deleteBucket(String bucketName) throws AmazonClientException, AmazonServiceException;
+    public void deleteBucket(@NotNull String bucketName) throws AmazonClientException, AmazonServiceException;
 
-    public void deleteBucketAndObjects(String bucketName)
+    public void deleteBucketAndObjects(@NotNull String bucketName)
         throws AmazonClientException, AmazonServiceException;
 
-    public ObjectListing listObjects(String bucketName, String prefix)
+    public ObjectListing listObjects(@NotNull String bucketName, @NotNull String prefix)
         throws AmazonClientException, AmazonServiceException;
 
-    public void deleteBucketPolicy(String bucketName) throws AmazonClientException, AmazonServiceException;
-
-    public BucketPolicy getBucketPolicy(String bucketName)
+    public void deleteBucketPolicy(@NotNull String bucketName)
         throws AmazonClientException, AmazonServiceException;
 
-    public void setBucketPolicy(String bucketName, String policyText)
+    public BucketPolicy getBucketPolicy(@NotNull String bucketName)
         throws AmazonClientException, AmazonServiceException;
 
-    public void deleteBucketWebsiteConfiguration(String bucketName)
+    public void setBucketPolicy(@NotNull String bucketName, @NotNull String policyText)
         throws AmazonClientException, AmazonServiceException;
 
-    public BucketWebsiteConfiguration getBucketWebsiteConfiguration(String bucketName)
+    public void deleteBucketWebsiteConfiguration(@NotNull String bucketName)
         throws AmazonClientException, AmazonServiceException;
 
-    public void setBucketWebsiteConfiguration(String bucketName, BucketWebsiteConfiguration configuration)
+    public BucketWebsiteConfiguration getBucketWebsiteConfiguration(@NotNull String bucketName)
+        throws AmazonClientException, AmazonServiceException;
+
+    public void setBucketWebsiteConfiguration(@NotNull String bucketName,
+                                              @NotNull BucketWebsiteConfiguration configuration)
         throws AmazonClientException, AmazonServiceException;
 
     /**
@@ -66,18 +70,23 @@ public interface SimpleAmazonS3
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
-    public String putObject(String bucketName, String key, InputStream input, ObjectMetadata metadata)
+    public String putObject(@NotNull String bucketName,
+                            @NotNull String key,
+                            @NotNull InputStream input,
+                            @NotNull ObjectMetadata metadata)
         throws AmazonClientException, AmazonServiceException;
 
-    public void deleteObject(String bucketName, String key)
+    public void deleteObject(@NotNull String bucketName, @NotNull String key)
         throws AmazonClientException, AmazonServiceException;
 
-    public void deleteVersion(String bucketName, String key, String versionId)
+    public void deleteVersion(@NotNull String bucketName, @NotNull String key, @NotNull String versionId)
         throws AmazonClientException, AmazonServiceException;
 
-    public void changeObjectStorageClass(String bucketName, String key, StorageClass newStorageClass)
+    public void changeObjectStorageClass(@NotNull String bucketName,
+                                         @NotNull String key,
+                                         @NotNull StorageClass newStorageClass)
         throws AmazonClientException, AmazonServiceException;
 
-    public CopyObjectResult copyObject(CopyObjectRequest copyOptions) throws AmazonClientException, AmazonServiceException;
-
+    public CopyObjectResult copyObject(@NotNull CopyObjectRequest copyOptions)
+        throws AmazonClientException, AmazonServiceException;
 }
