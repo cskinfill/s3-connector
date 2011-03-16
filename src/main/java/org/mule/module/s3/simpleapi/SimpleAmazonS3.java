@@ -12,6 +12,7 @@ package org.mule.module.s3.simpleapi;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.BucketPolicy;
@@ -21,9 +22,13 @@ import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.StorageClass;
 
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -102,7 +107,9 @@ public interface SimpleAmazonS3
      */
     public String createObject(@NotNull ObjectId objectId,
                                @NotNull InputStream input,
-                               @NotNull ObjectMetadata metadata, CannedAccessControlList acl, StorageClass storageClass)
+                               @NotNull ObjectMetadata metadata,
+                               CannedAccessControlList acl,
+                               StorageClass storageClass)
         throws AmazonClientException, AmazonServiceException;
 
     public void deleteObject(@NotNull ObjectId objectId) throws AmazonClientException, AmazonServiceException;
@@ -110,7 +117,7 @@ public interface SimpleAmazonS3
     public void deleteVersion(@NotNull ObjectId objectId, @NotNull String versionId)
         throws AmazonClientException, AmazonServiceException;
 
-    public void changeObjectStorageClass(@NotNull ObjectId objectId, @NotNull StorageClass newStorageClass)
+    public void setObjectStorageClass(@NotNull ObjectId objectId, @NotNull StorageClass newStorageClass)
         throws AmazonClientException, AmazonServiceException;
 
     /**
@@ -126,8 +133,32 @@ public interface SimpleAmazonS3
      */
     public String copyObject(@NotNull ObjectId source,
                              @NotNull ObjectId destination,
-                             CannedAccessControlList acl, 
-                             StorageClass storageClass)
+                             CannedAccessControlList acl,
+                             StorageClass storageClass) throws AmazonClientException, AmazonServiceException;
+
+    /**
+     * Creates a presigned URL for accessing the object of the given id, with an
+     * optional http method and date expiration.
+     * 
+     * @param objectId
+     * @param expiration if no expiration is supplied, a default expiration provided
+     *            by AmazonS3 will be used
+     * @param method if no method is supplied, PUT method is assumed
+     * @return the
+     * @throws AmazonClientException
+     * @throws URISyntaxException TODO
+     * @see AmazonS3#generatePresignedUrl(com.amazonaws.services.s3.model.
+     *      GeneratePresignedUrlRequest)
+     */
+    public URI createPresignedUri(@NotNull ObjectId objectId, Date expiration, HttpMethod method)
+        throws AmazonClientException, URISyntaxException;
+
+    public InputStream getObjectContent(@NotNull ObjectId objectId)
         throws AmazonClientException, AmazonServiceException;
 
+    public ObjectMetadata getObjectMetadata(@NotNull ObjectId objectId)
+        throws AmazonClientException, AmazonServiceException;
+
+    /*TODO Warning: use this method with caution*/
+    public S3Object getObject(@NotNull ObjectId objectId);
 }

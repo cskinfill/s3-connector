@@ -22,16 +22,23 @@ import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.BucketPolicy;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.CopyObjectResult;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
+import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.StorageClass;
+
+import java.net.URI;
+import java.net.URL;
 
 import org.apache.commons.io.input.NullInputStream;
 import org.junit.Before;
@@ -39,6 +46,7 @@ import org.junit.Test;
 
 public class S3TestCase
 {
+    private static final String MY_OBJECT = "myObject";
     private static final String MY_BUCKET = "myBucket";
     private S3CloudConnector connector;
     private AmazonS3 client;
@@ -54,8 +62,8 @@ public class S3TestCase
     @Test
     public void changeObjectStorageClass() throws AmazonClientException, AmazonServiceException
     {
-        connector.changeObjectStorageClass(MY_BUCKET, "myObject", "Standard");
-        verify(client).changeObjectStorageClass(MY_BUCKET, "myObject", StorageClass.Standard);
+        connector.setObjectStorageClass(MY_BUCKET, MY_OBJECT, "Standard");
+        verify(client).changeObjectStorageClass(MY_BUCKET, MY_OBJECT, StorageClass.Standard);
     }
 
     @Test
@@ -79,30 +87,30 @@ public class S3TestCase
     {
         CopyObjectResult result = new CopyObjectResult();
         result.setVersionId("12");
-        when(client.copyObject(refEq(new CopyObjectRequest(MY_BUCKET, "myObject", MY_BUCKET, "myObject2")))).thenReturn(
+        when(client.copyObject(refEq(new CopyObjectRequest(MY_BUCKET, MY_OBJECT, MY_BUCKET, "myObject2")))).thenReturn(
             result);
 
-        assertEquals("12", connector.copyObject(MY_BUCKET, "myObject", null, "myObject2", null, null));;
+        assertEquals("12", connector.copyObject(MY_BUCKET, MY_OBJECT, null, "myObject2", null, null));;
     }
 
     @Test
     public void copyObjectBucketWithACL()
     {
-        CopyObjectRequest request = new CopyObjectRequest(MY_BUCKET, "myObject", "myBucket2", "myObject2");
+        CopyObjectRequest request = new CopyObjectRequest(MY_BUCKET, MY_OBJECT, "myBucket2", "myObject2");
         request.setCannedAccessControlList(CannedAccessControlList.Private);
         when(client.copyObject(refEq(request))).thenReturn(new CopyObjectResult());
 
-        assertNull(connector.copyObject(MY_BUCKET, "myObject", "myBucket2", "myObject2", "Private", null));
+        assertNull(connector.copyObject(MY_BUCKET, MY_OBJECT, "myBucket2", "myObject2", "Private", null));
     }
 
     @Test
     public void createObject()
     {
         when(
-            client.putObject(refEq(new PutObjectRequest(MY_BUCKET, "myObject", new NullInputStream(0),
+            client.putObject(refEq(new PutObjectRequest(MY_BUCKET, MY_OBJECT, new NullInputStream(0),
                 new ObjectMetadata()), "metadata", "inputStream"))).thenReturn(new PutObjectResult());
 
-        assertNull(connector.createObject(MY_BUCKET, "myObject", "have a nice release", null, null, null));
+        assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, "have a nice release", null, null, null));
     }
 
     @Test
@@ -111,6 +119,44 @@ public class S3TestCase
         BucketPolicy policy = new BucketPolicy();
         when(client.getBucketPolicy(MY_BUCKET)).thenReturn(policy);
         assertSame(policy, connector.getBucketPolicy(MY_BUCKET));
+    }
+
+    @Test
+    public void createPresignedUri() throws Exception
+    {
+        when(client.generatePresignedUrl(MY_BUCKET, MY_OBJECT, null, HttpMethod.GET)).thenReturn(
+            new URL("http://www.foo.com"));
+        assertEquals(new URI("http://www.foo.com"), connector.createPresignedUri(MY_BUCKET, MY_OBJECT, null,
+            "GET"));
+    }
+
+    @Test
+    public void getObjectContent() throws Exception
+    {
+        S3Object s3Object = new S3Object();
+        NullInputStream content = new NullInputStream(0);
+        s3Object.setObjectContent(content);
+
+        when(client.getObject(refEq(new GetObjectRequest(MY_BUCKET, MY_OBJECT)))).thenReturn(s3Object);
+        assertSame(content, connector.getObjectContent(MY_BUCKET, MY_OBJECT));
+    }
+
+    @Test
+    public void getObjectMetadata() throws Exception
+    {
+        ObjectMetadata meta = new ObjectMetadata();
+        when(client.getObjectMetadata(refEq(new GetObjectMetadataRequest(MY_BUCKET, MY_OBJECT)))).thenReturn(
+            meta);
+        assertSame(meta, connector.getObjectMetadata(MY_BUCKET, MY_OBJECT));
+    }
+
+    @Test
+    public void getObject() throws Exception
+    {
+        S3Object s3Object = new S3Object();
+        
+        when(client.getObject(refEq(new GetObjectRequest(MY_BUCKET, MY_OBJECT)))).thenReturn(s3Object);
+        assertSame(s3Object, connector.getObject(MY_BUCKET, MY_OBJECT));
     }
 
 }

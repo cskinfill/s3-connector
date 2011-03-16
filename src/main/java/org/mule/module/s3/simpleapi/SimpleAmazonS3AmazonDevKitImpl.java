@@ -7,24 +7,34 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
+
 package org.mule.module.s3.simpleapi;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AccessControlList;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.BucketPolicy;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.StorageClass;
 
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
@@ -156,23 +166,20 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
         return s3.putObject(request).getVersionId();
     }
 
+    // 4.2
     public void deleteObject(@NotNull ObjectId objectId) throws AmazonClientException, AmazonServiceException
     {
         s3.deleteObject(objectId.getBucketName(), objectId.getKey());
     }
 
+    // 4.2
     public void deleteVersion(@NotNull ObjectId objectId, String versionId)
         throws AmazonClientException, AmazonServiceException
     {
         s3.deleteVersion(objectId.getBucketName(), objectId.getKey(), versionId);
     }
 
-    public void changeObjectStorageClass(@NotNull ObjectId objectId, StorageClass newStorageClass)
-        throws AmazonClientException, AmazonServiceException
-    {
-        s3.changeObjectStorageClass(objectId.getBucketName(), objectId.getKey(), newStorageClass);
-    }
-
+    // 4.4
     public String copyObject(@NotNull ObjectId source,
                              @NotNull ObjectId destination,
                              CannedAccessControlList acl,
@@ -188,7 +195,39 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
         return s3.copyObject(request).getVersionId();
     }
 
-    // 3. Get (full or just metadata, latest or specific version, conditional get)
-    // 5. Generate Presigned URL to access an Object
+    // 4.5
+    public URI createPresignedUri(@NotNull ObjectId objectId, Date expiration, HttpMethod method)
+        throws AmazonClientException, URISyntaxException
+    {
+        return s3.generatePresignedUrl(objectId.getBucketName(), objectId.getKey(), expiration, method)
+            .toURI();
+    }
 
+    // 4.6
+    public void setObjectStorageClass(@NotNull ObjectId objectId, StorageClass newStorageClass)
+        throws AmazonClientException, AmazonServiceException
+    {
+        s3.changeObjectStorageClass(objectId.getBucketName(), objectId.getKey(), newStorageClass);
+    }
+
+    // TODO 3. Get latest or specific version, conditional get)
+    // 4.3
+    public InputStream getObjectContent(@NotNull ObjectId objectId)
+        throws AmazonClientException, AmazonServiceException
+    {
+        return s3.getObject(new GetObjectRequest(objectId.getBucketName(), objectId.getKey())).getObjectContent();
+    }
+
+    public ObjectMetadata getObjectMetadata(@NotNull ObjectId objectId)
+        throws AmazonClientException, AmazonServiceException
+    {
+        return s3.getObjectMetadata(new GetObjectMetadataRequest(objectId.getBucketName(), objectId.getKey()));
+    }
+
+    public S3Object getObject(@NotNull ObjectId objectId)
+    {
+        return s3.getObject(new GetObjectRequest(objectId.getBucketName(), objectId.getKey()));
+    }
+
+    // TODO consistent versioning fetching in objectId
 }
