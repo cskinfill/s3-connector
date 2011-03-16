@@ -10,6 +10,7 @@
 
 package org.mule.module.s3;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -20,8 +21,6 @@ import static org.mockito.Mockito.when;
 
 import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.BucketPolicy;
@@ -46,6 +45,7 @@ import org.junit.Test;
 
 public class S3TestCase
 {
+    private static final String POLICY_TEXT = "policy1";
     private static final String MY_OBJECT = "myObject";
     private static final String MY_BUCKET = "myBucket";
     private S3CloudConnector connector;
@@ -60,7 +60,7 @@ public class S3TestCase
     }
 
     @Test
-    public void changeObjectStorageClass() throws AmazonClientException, AmazonServiceException
+    public void changeObjectStorageClass()
     {
         connector.setObjectStorageClass(MY_BUCKET, MY_OBJECT, "Standard");
         verify(client).changeObjectStorageClass(MY_BUCKET, MY_OBJECT, StorageClass.Standard);
@@ -90,7 +90,19 @@ public class S3TestCase
         when(client.copyObject(refEq(new CopyObjectRequest(MY_BUCKET, MY_OBJECT, MY_BUCKET, "myObject2")))).thenReturn(
             result);
 
-        assertEquals("12", connector.copyObject(MY_BUCKET, MY_OBJECT, null, "myObject2", null, null));;
+        assertEquals("12", connector.copyObject(MY_BUCKET, MY_OBJECT, null, null, "myObject2", null, null));
+    }
+
+    @Test
+    public void copyObjectWithVersion()
+    {
+        CopyObjectResult result = new CopyObjectResult();
+        result.setVersionId("12");
+        when(
+            client.copyObject(refEq(new CopyObjectRequest(MY_BUCKET, MY_OBJECT, "12", MY_BUCKET, "myObject2")))).thenReturn(
+            result);
+
+        assertEquals("12", connector.copyObject(MY_BUCKET, MY_OBJECT, "12", null, "myObject2", null, null));
     }
 
     @Test
@@ -100,11 +112,11 @@ public class S3TestCase
         request.setCannedAccessControlList(CannedAccessControlList.Private);
         when(client.copyObject(refEq(request))).thenReturn(new CopyObjectResult());
 
-        assertNull(connector.copyObject(MY_BUCKET, MY_OBJECT, "myBucket2", "myObject2", "Private", null));
+        assertNull(connector.copyObject(MY_BUCKET, MY_OBJECT, null, "myBucket2", "myObject2", "Private", null));
     }
 
     @Test
-    public void createObject()
+    public void createObjectSimple()
     {
         when(
             client.putObject(refEq(new PutObjectRequest(MY_BUCKET, MY_OBJECT, new NullInputStream(0),
@@ -114,9 +126,24 @@ public class S3TestCase
     }
 
     @Test
+    public void createObjectWithFullOptions() throws Exception
+    {
+        PutObjectRequest request = new PutObjectRequest(MY_BUCKET, MY_OBJECT, new NullInputStream(0),
+            new ObjectMetadata());
+        request.setCannedAcl(CannedAccessControlList.PublicRead);
+        request.setStorageClass(StorageClass.Standard);
+        when(client.putObject(refEq(request, "metadata", "inputStream"))).thenReturn(new PutObjectResult());
+        assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, "have a nice release", "text/plain",
+            "PublicRead", "Standard"));
+    }
+
+    @Test
     public void getBucketPolicy()
     {
+        //TODO return the policy text instead of the policy object, as it does not 
+        //expose any interesting behavior
         BucketPolicy policy = new BucketPolicy();
+        policy.setPolicyText(POLICY_TEXT);
         when(client.getBucketPolicy(MY_BUCKET)).thenReturn(policy);
         assertSame(policy, connector.getBucketPolicy(MY_BUCKET));
     }
@@ -127,7 +154,7 @@ public class S3TestCase
         when(client.generatePresignedUrl(MY_BUCKET, MY_OBJECT, null, HttpMethod.GET)).thenReturn(
             new URL("http://www.foo.com"));
         assertEquals(new URI("http://www.foo.com"), connector.createPresignedUri(MY_BUCKET, MY_OBJECT, null,
-            "GET"));
+            null, "GET"));
     }
 
     @Test
@@ -138,7 +165,18 @@ public class S3TestCase
         s3Object.setObjectContent(content);
 
         when(client.getObject(refEq(new GetObjectRequest(MY_BUCKET, MY_OBJECT)))).thenReturn(s3Object);
-        assertSame(content, connector.getObjectContent(MY_BUCKET, MY_OBJECT));
+        assertSame(content, connector.getObjectContent(MY_BUCKET, MY_OBJECT, null));
+    }
+
+    @Test
+    public void getObjectContentWithVersion() throws Exception
+    {
+        S3Object s3Object = new S3Object();
+        NullInputStream content = new NullInputStream(0);
+        s3Object.setObjectContent(content);
+
+        when(client.getObject(refEq(new GetObjectRequest(MY_BUCKET, MY_OBJECT, "9")))).thenReturn(s3Object);
+        assertSame(content, connector.getObjectContent(MY_BUCKET, MY_OBJECT, "9"));
     }
 
     @Test
@@ -147,7 +185,7 @@ public class S3TestCase
         ObjectMetadata meta = new ObjectMetadata();
         when(client.getObjectMetadata(refEq(new GetObjectMetadataRequest(MY_BUCKET, MY_OBJECT)))).thenReturn(
             meta);
-        assertSame(meta, connector.getObjectMetadata(MY_BUCKET, MY_OBJECT));
+        assertSame(meta, connector.getObjectMetadata(MY_BUCKET, MY_OBJECT, null));
     }
 
     @Test
@@ -156,14 +194,29 @@ public class S3TestCase
         S3Object s3Object = new S3Object();
 
         when(client.getObject(refEq(new GetObjectRequest(MY_BUCKET, MY_OBJECT)))).thenReturn(s3Object);
-        assertSame(s3Object, connector.getObject(MY_BUCKET, MY_OBJECT));
+        assertSame(s3Object, connector.getObject(MY_BUCKET, MY_OBJECT, null));
     }
 
-//    @Test
-//    public void deleteObject() throws Exception
-//    {
-//        connector.deleteObject(MY_BUCKET, MY_OBJECT, null);
-//       verify( client.deleteObject(bucketName, key) ); 
-//    }
+    @Test
+    public void deleteObject() throws Exception
+    {
+        connector.deleteObject(MY_BUCKET, MY_OBJECT, null);
+        verify(client).deleteObject(MY_BUCKET, MY_OBJECT);
+    }
+
+    @Test
+    public void deleteObjectWithVersion() throws Exception
+    {
+        connector.deleteObject(MY_BUCKET, MY_OBJECT, "25");
+        verify(client).deleteVersion(MY_BUCKET, MY_OBJECT, "25");
+    }
+
+    @Test
+    public void setBucketPolicy() throws Exception
+    {   
+        connector.setBucketPolicy(MY_BUCKET, POLICY_TEXT);
+        verify(client).setBucketPolicy(MY_BUCKET, POLICY_TEXT);
+    }
+
 
 }

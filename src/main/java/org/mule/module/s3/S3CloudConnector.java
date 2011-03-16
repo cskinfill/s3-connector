@@ -162,8 +162,7 @@ public class S3CloudConnector implements Initialisable
             suffix, errorPage) : new BucketWebsiteConfiguration(suffix));
     }
 
-    // 1. Upload (set content, content-type, canned acl, storage class, user metadata
-    // map)
+    // 1. Upload 
     // TODO add support for usermetadata
     @Operation
     public String createObject(@Parameter(optional = false) String bucketName,
@@ -205,26 +204,29 @@ public class S3CloudConnector implements Initialisable
         return storageClass != null ? StorageClass.valueOf(storageClass) : null;
     }
 
-    public String copyObject(@Parameter(optional = false) String bucketSourceName,
+    public String copyObject(@Parameter(optional = false) String sourceBucketName,
                              @Parameter(optional = false) String sourceKey,
-                             @Parameter(optional = false) String bucketDestinationName,
+                             @Parameter(optional = true) String sourceVersionId,
+                             @Parameter(optional = false) String destinationBucketName,
                              @Parameter(optional = false) String destinationKey,
-                             @Parameter(optional = true) String acl,
-                             @Parameter(optional = true) String storageClass)
+                             @Parameter(optional = true) String destinationAcl,
+                             @Parameter(optional = true) String destinationStorageClass)
         throws AmazonClientException, AmazonServiceException
     {
-        return client.copyObject(new S3ObjectId(bucketSourceName, sourceKey), new S3ObjectId(coalesce(
-            bucketSourceName, bucketDestinationName), destinationKey), toAcl(acl),
-            toStorageClass(storageClass));
+        return client.copyObject(new S3ObjectId(sourceBucketName, sourceKey, sourceVersionId),
+            new S3ObjectId(coalesce(sourceBucketName, destinationBucketName), destinationKey),
+            toAcl(destinationAcl), toStorageClass(destinationStorageClass));
     }
 
     public URI createPresignedUri(@Parameter(optional = false) String bucketName,
                                   @Parameter(optional = false) String key,
+                                  @Parameter(optional = true) String versionId,
                                   @Parameter(optional = true) Date expiration,
                                   @Parameter(optional = true) String method)
         throws AmazonClientException, URISyntaxException
     {
-        return client.createPresignedUri(new S3ObjectId(bucketName, key), expiration, toHttpMethod(method));
+        return client.createPresignedUri(new S3ObjectId(bucketName, key, versionId), expiration,
+            toHttpMethod(method));
     }
 
     private HttpMethod toHttpMethod(String method)
@@ -233,23 +235,26 @@ public class S3CloudConnector implements Initialisable
     }
 
     public InputStream getObjectContent(@Parameter(optional = false) String bucketName,
-                                        @Parameter(optional = false) String key)
+                                        @Parameter(optional = false) String key,
+                                        @Parameter(optional = true) String versionId)
         throws AmazonClientException, AmazonServiceException
     {
-        return client.getObjectContent(new S3ObjectId(bucketName, key));
+        return client.getObjectContent(new S3ObjectId(bucketName, key, versionId));
     }
 
     public ObjectMetadata getObjectMetadata(@Parameter(optional = false) String bucketName,
-                                            @Parameter(optional = false) String key)
+                                            @Parameter(optional = false) String key,
+                                            @Parameter(optional = true) String versionId)
         throws AmazonClientException, AmazonServiceException
     {
-        return client.getObjectMetadata(new S3ObjectId(bucketName, key));
+        return client.getObjectMetadata(new S3ObjectId(bucketName, key, versionId));
     }
 
     public S3Object getObject(@Parameter(optional = false) String bucketName,
-                              @Parameter(optional = false) String key)
+                              @Parameter(optional = false) String key,
+                              @Parameter(optional = true) String versionId)
     {
-        return client.getObject(new S3ObjectId(bucketName, key));
+        return client.getObject(new S3ObjectId(bucketName, key, versionId));
     }
 
     public void initialise() throws InitialisationException

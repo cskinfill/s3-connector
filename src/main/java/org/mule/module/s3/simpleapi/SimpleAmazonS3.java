@@ -46,7 +46,7 @@ import javax.validation.constraints.NotNull;
  */
 public interface SimpleAmazonS3
 {
-    public List<Bucket> listBuckets() throws AmazonClientException, AmazonServiceException;
+    List<Bucket> listBuckets() throws AmazonClientException, AmazonServiceException;
 
     /**
      * Creates a {@link Bucket}.
@@ -59,7 +59,7 @@ public interface SimpleAmazonS3
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
-    public Bucket createBucket(@NotNull String bucketName, String region, CannedAccessControlList acl)
+    Bucket createBucket(@NotNull String bucketName, String region, CannedAccessControlList acl)
         throws AmazonClientException, AmazonServiceException;
 
     /**
@@ -70,7 +70,7 @@ public interface SimpleAmazonS3
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
-    public void deleteBucket(@NotNull String bucketName) throws AmazonClientException, AmazonServiceException;
+    void deleteBucket(@NotNull String bucketName) throws AmazonClientException, AmazonServiceException;
 
     /**
      * Deletes a Bucket, deleting also all its contents if necessary
@@ -80,67 +80,72 @@ public interface SimpleAmazonS3
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
-    public void deleteBucketAndObjects(@NotNull String bucketName)
+    void deleteBucketAndObjects(@NotNull String bucketName)
         throws AmazonClientException, AmazonServiceException;
 
-    public ObjectListing listObjects(@NotNull String bucketName, @NotNull String prefix)
+    ObjectListing listObjects(@NotNull String bucketName, @NotNull String prefix)
         throws AmazonClientException, AmazonServiceException;
 
-    public void deleteBucketPolicy(@NotNull String bucketName)
+    void deleteBucketPolicy(@NotNull String bucketName)
         throws AmazonClientException, AmazonServiceException;
 
-    public BucketPolicy getBucketPolicy(@NotNull String bucketName)
+    BucketPolicy getBucketPolicy(@NotNull String bucketName)
         throws AmazonClientException, AmazonServiceException;
 
-    public void setBucketPolicy(@NotNull String bucketName, @NotNull String policyText)
+    void setBucketPolicy(@NotNull String bucketName, @NotNull String policyText)
         throws AmazonClientException, AmazonServiceException;
 
-    public void deleteBucketWebsiteConfiguration(@NotNull String bucketName)
+    void deleteBucketWebsiteConfiguration(@NotNull String bucketName)
         throws AmazonClientException, AmazonServiceException;
 
-    public BucketWebsiteConfiguration getBucketWebsiteConfiguration(@NotNull String bucketName)
+    BucketWebsiteConfiguration getBucketWebsiteConfiguration(@NotNull String bucketName)
         throws AmazonClientException, AmazonServiceException;
 
-    public void setBucketWebsiteConfiguration(@NotNull String bucketName,
+    void setBucketWebsiteConfiguration(@NotNull String bucketName,
                                               @NotNull BucketWebsiteConfiguration configuration)
         throws AmazonClientException, AmazonServiceException;
 
     /**
+     * Creates an object, uploading its contents, and optionally setting its
+     * {@link CannedAccessControlList} and {@link StorageClass}
+     * 
+     * @param objectId the id of the object to be created. If its versioned, its
+     *            version is ignored
      * @param input
      * @param metadata
      * @param acl TODO
      * @param storageClass TODO
-     * @param bucketName
-     * @param key
      * @return the version id, if the versioning was enabled
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
-    public String createObject(@NotNull S3ObjectId objectId,
+    String createObject(@NotNull S3ObjectId objectId,
                                @NotNull InputStream input,
                                @NotNull ObjectMetadata metadata,
                                CannedAccessControlList acl,
                                StorageClass storageClass)
         throws AmazonClientException, AmazonServiceException;
 
-    public void deleteObject(@NotNull S3ObjectId objectId)
+    void deleteObject(@NotNull S3ObjectId objectId)
         throws AmazonClientException, AmazonServiceException;
 
-    public void setObjectStorageClass(@NotNull S3ObjectId objectId, @NotNull StorageClass newStorageClass)
+    void setObjectStorageClass(@NotNull S3ObjectId objectId, @NotNull StorageClass newStorageClass)
         throws AmazonClientException, AmazonServiceException;
 
     /**
-     * Copies a source object to a destination, with optional destination object acl
+     * Copies a source object, with optional version, to a destination, with optional
+     * destination object acl.
      * 
      * @param source
-     * @param destination
+     * @param destination the destination object. If this id is versioned, its
+     *            version is ignored
      * @param acl
      * @return the version id of the destination object, if versioning is enabled
      * @see AmazonS3#copyObject(CopyObjectRequest)
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
-    public String copyObject(@NotNull S3ObjectId source,
+    String copyObject(@NotNull S3ObjectId source,
                              @NotNull S3ObjectId destination,
                              CannedAccessControlList acl,
                              StorageClass storageClass) throws AmazonClientException, AmazonServiceException;
@@ -159,7 +164,7 @@ public interface SimpleAmazonS3
      * @see AmazonS3#generatePresignedUrl(com.amazonaws.services.s3.model.
      *      GeneratePresignedUrlRequest)
      */
-    public URI createPresignedUri(@NotNull S3ObjectId objectId, Date expiration, HttpMethod method)
+    URI createPresignedUri(@NotNull S3ObjectId objectId, Date expiration, HttpMethod method)
         throws AmazonClientException, URISyntaxException;
 
     /**
@@ -171,7 +176,7 @@ public interface SimpleAmazonS3
      * @throws AmazonServiceException
      * @see AmazonS3#getObject(com.amazonaws.services.s3.model.GetObjectMetadataRequest)
      */
-    public InputStream getObjectContent(@NotNull S3ObjectId objectId)
+    InputStream getObjectContent(@NotNull S3ObjectId objectId)
         throws AmazonClientException, AmazonServiceException;
 
     /**
@@ -183,7 +188,7 @@ public interface SimpleAmazonS3
      * @throws AmazonServiceException
      * @see AmazonS3#getObjectMetadata(com.amazonaws.services.s3.model.GetObjectMetadataRequest)
      */
-    public ObjectMetadata getObjectMetadata(@NotNull S3ObjectId objectId)
+    ObjectMetadata getObjectMetadata(@NotNull S3ObjectId objectId)
         throws AmazonClientException, AmazonServiceException;
 
     /**
@@ -195,5 +200,5 @@ public interface SimpleAmazonS3
      * @param objectId
      * @return
      */
-    public S3Object getObject(@NotNull S3ObjectId objectId);
+    S3Object getObject(@NotNull S3ObjectId objectId);
 }
