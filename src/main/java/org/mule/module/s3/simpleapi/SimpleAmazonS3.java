@@ -89,7 +89,7 @@ public interface SimpleAmazonS3
     void deleteBucketPolicy(@NotNull String bucketName)
         throws AmazonClientException, AmazonServiceException;
 
-    BucketPolicy getBucketPolicy(@NotNull String bucketName)
+    String getBucketPolicy(@NotNull String bucketName)
         throws AmazonClientException, AmazonServiceException;
 
     void setBucketPolicy(@NotNull String bucketName, @NotNull String policyText)

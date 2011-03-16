@@ -10,10 +10,10 @@
 
 package org.mule.module.s3;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -24,6 +24,7 @@ import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.BucketPolicy;
+import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.CopyObjectResult;
@@ -60,7 +61,7 @@ public class S3TestCase
     }
 
     @Test
-    public void changeObjectStorageClass()
+    public void setObjectStorageClass()
     {
         connector.setObjectStorageClass(MY_BUCKET, MY_OBJECT, "Standard");
         verify(client).changeObjectStorageClass(MY_BUCKET, MY_OBJECT, StorageClass.Standard);
@@ -140,12 +141,10 @@ public class S3TestCase
     @Test
     public void getBucketPolicy()
     {
-        //TODO return the policy text instead of the policy object, as it does not 
-        //expose any interesting behavior
         BucketPolicy policy = new BucketPolicy();
         policy.setPolicyText(POLICY_TEXT);
         when(client.getBucketPolicy(MY_BUCKET)).thenReturn(policy);
-        assertSame(policy, connector.getBucketPolicy(MY_BUCKET));
+        assertSame(POLICY_TEXT, connector.getBucketPolicy(MY_BUCKET));
     }
 
     @Test
@@ -213,10 +212,54 @@ public class S3TestCase
 
     @Test
     public void setBucketPolicy() throws Exception
-    {   
+    {
         connector.setBucketPolicy(MY_BUCKET, POLICY_TEXT);
         verify(client).setBucketPolicy(MY_BUCKET, POLICY_TEXT);
     }
 
+    @Test
+    public void listBuckets() throws Exception
+    {
+        connector.listBuckets();
+        verify(client).listBuckets();
+    }
+
+    @Test
+    public void setBucketWebsiteConfiguration() throws Exception
+    {
+        connector.setBucketWebsiteConfiguration(MY_BUCKET, "suffix1", "error.do");
+        verify(client).setBucketWebsiteConfiguration(eq(MY_BUCKET), refEq(new BucketWebsiteConfiguration("suffix1", "error.do")));
+    }
+    
+    @Test
+    public void getBucketWebsiteConfiguration() throws Exception
+    {
+        BucketWebsiteConfiguration config = new BucketWebsiteConfiguration("suffix");
+        when(client.getBucketWebsiteConfiguration(MY_BUCKET)).thenReturn(config);
+        assertSame(config, connector.getBucketWebsiteConfiguration(MY_BUCKET));
+    }
+    
+    @Test
+    public void deleteBucketWebsiteConfiguration() throws Exception
+    {
+        connector.deleteBucketWebsiteConfiguration(MY_BUCKET);
+        verify(client).deleteBucketWebsiteConfiguration(MY_BUCKET);
+    }
+
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setBucketWebsiteConfigurationNoSuffix() throws Exception
+    {
+        connector.setBucketWebsiteConfiguration(MY_BUCKET, null, "error.jsp");
+    }
+
+    @Test
+    public void deleteBucketPolicy() throws Exception
+    {
+        connector.deleteBucketPolicy(MY_BUCKET);
+        verify(client).deleteBucketPolicy(MY_BUCKET);
+    }
+    
+    
 
 }

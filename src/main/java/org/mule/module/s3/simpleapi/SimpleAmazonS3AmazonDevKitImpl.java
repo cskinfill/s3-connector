@@ -41,7 +41,7 @@ import org.apache.commons.lang.Validate;
 
 public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 {
-    AmazonS3 s3;
+    private final AmazonS3 s3;
 
     public SimpleAmazonS3AmazonDevKitImpl(@NotNull AmazonS3 s3)
     {
@@ -102,11 +102,11 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 3.1.2
-    public BucketPolicy getBucketPolicy(@NotNull String bucketName)
+    public String getBucketPolicy(@NotNull String bucketName)
         throws AmazonClientException, AmazonServiceException
     {
         Validate.notNull(bucketName);
-        return s3.getBucketPolicy(bucketName);
+        return s3.getBucketPolicy(bucketName).getPolicyText();
     }
 
     // 3.1.3
@@ -141,6 +141,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     {
         Validate.notNull(bucketName);
         Validate.notNull(configuration);
+        Validate.notNull(configuration.getIndexDocumentSuffix());
         s3.setBucketWebsiteConfiguration(bucketName, configuration);
     }
 

@@ -27,7 +27,6 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.BucketPolicy;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectListing;
@@ -55,12 +54,17 @@ public class S3CloudConnector implements Initialisable
 
     private SimpleAmazonS3 client;
 
+    // TODO map to enums instead of strings
+    // TODO defaults
+    // TODO exception handling
+
     /**
-     * Example: {@code <s3:create-bucket bucketName="myBucket" acl="Private" }
+     * Example: {@code <s3:create-bucket bucketName="myBucket" acl="Private"/> }
      * 
-     * @param bucketName
-     * @param region
-     * @param acl
+     * @param bucketName mandatory. The bucket to create
+     * @param region optional. The region were to create the bucket. Default is
+     *            US_STANDARD
+     * @param acl optional. TODO default ACL is not clear enough in the AmazonS3
      * @return the new Bucket
      * @throws AmazonClientException
      * @throws AmazonServiceException
@@ -80,10 +84,12 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
-     * Example: {@code <s3:delete-bucket bucketName="myBucket" force="true" }
+     * Example: {@code <s3:delete-bucket bucketName="myBucket" force="true"/> }
      * 
-     * @param bucketName mandatory
-     * @param force optional
+     * @param bucketName mandatory the bucket to delete
+     * @param force optional {@code true} if the bucket must be deleted even if it is
+     *            not empty, {@code false} if operation should fail in such scenario.
+     *            Default is {@code false}
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
@@ -102,6 +108,13 @@ public class S3CloudConnector implements Initialisable
         }
     }
 
+    /**
+     * Example: {@code <s3:delete-bucket-policy bucketName="myBucket"/>}
+     * 
+     * @param bucketName mandatory the bucket whose policy to delete
+     * @throws AmazonClientException
+     * @throws AmazonServiceException
+     */
     @Operation
     public void deleteBucketPolicy(@Parameter(optional = false) String bucketName)
         throws AmazonClientException, AmazonServiceException
@@ -109,6 +122,14 @@ public class S3CloudConnector implements Initialisable
         client.deleteBucketPolicy(bucketName);
     }
 
+    /**
+     * Example: {@code <s3:delete-bucket-website-configuration
+     * bucketName="myBucket"/>}
+     * 
+     * @param bucketName mandatory the bucket whose policy to delete
+     * @throws AmazonClientException
+     * @throws AmazonServiceException
+     */
     @Operation
     public void deleteBucketWebsiteConfiguration(@Parameter(optional = false) String bucketName)
         throws AmazonClientException, AmazonServiceException
@@ -116,8 +137,16 @@ public class S3CloudConnector implements Initialisable
         client.deleteBucketWebsiteConfiguration(bucketName);
     }
 
+    /**
+     * Example: {@code <s3:get-bucket-policy bucketName="myBucket"/>}
+     * 
+     * @param bucketName mandatory the bucket whose policy to retrieve
+     * @return the bucket policy TODO could be policy absent?
+     * @throws AmazonClientException
+     * @throws AmazonServiceException
+     */
     @Operation
-    public BucketPolicy getBucketPolicy(@Parameter(optional = false) String bucketName)
+    public String getBucketPolicy(@Parameter(optional = false) String bucketName)
         throws AmazonClientException, AmazonServiceException
     {
         return client.getBucketPolicy(bucketName);
@@ -162,7 +191,6 @@ public class S3CloudConnector implements Initialisable
             suffix, errorPage) : new BucketWebsiteConfiguration(suffix));
     }
 
-    // 1. Upload 
     // TODO add support for usermetadata
     @Operation
     public String createObject(@Parameter(optional = false) String bucketName,
@@ -261,7 +289,6 @@ public class S3CloudConnector implements Initialisable
     {
         if (client == null)
         {
-
             client = new SimpleAmazonS3AmazonDevKitImpl(createAmazonS3());
         }
     }
