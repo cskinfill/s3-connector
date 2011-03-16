@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
+	<!--
 
-    Mule S3 Cloud Connector
-
-    Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
-
-    The software in this package is published under the terms of the CPAL v1.0
-    license, a copy of which has been included with this distribution in the
-    LICENSE.txt file.
-
--->
+		Mule S3 Cloud Connector Copyright (c) MuleSoft, Inc. All rights
+		reserved. http://www.mulesoft.com The software in this package is
+		published under the terms of the CPAL v1.0 license, a copy of which
+		has been included with this distribution in the LICENSE.txt file.
+	-->
 
 <mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:spring="http://www.springframework.org/schema/beans" xmlns:s3="http://www.mulesoft.org/schema/mule/s3"
@@ -18,10 +14,42 @@
         http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.1/mule.xsd
         http://www.mulesoft.org/schema/mule/s3 http://www.mulesoft.org/schema/mule/s3/3.1/mule-s3.xsd">
 
-	<s3:config accessKey="lalalal" secretKey="lalala"/>
+	<s3:config accessKey="lalalal" secretKey="lalala" />
 
 	<flow name="ListBucketsFlow">
 		<s3:list-buckets />
 	</flow>
-	
+
+	<flow name="CreateBucketFlow">
+		<s3:create-bucket bucketName="mule.connector.s3.test"
+			acl="Private" />
+	</flow>
+
+	<flow name="DeleteBucketFlow">
+		<s3:delete-bucket bucketName="mule.connector.s3.test"
+			force="false" />
+	</flow>
+
+	<flow name="CreateAndCopyBucketFlow">
+		<description>Creates an object named "anObject", and the copies it to
+			"anotherObject",
+			within the same bucket. Answers the list of objects
+			in the bucket</description>
+		<s3:create-object bucketName="mule.connector.s3.test"
+			key="anObject" content="hello world!" />
+		<s3:copy-object sourceBucketName="mule.connector.s3.test"
+			sourceKey="anObject" destinationKey="anotherObject"
+			destinationStorageClass="Private" />
+		<s3:list-objects bucketName="mule.connector.s3.test"
+			prefix="" />
+	</flow>
+
+	<flow name="DeleteSetAndGetBucketPolicyFlow">
+		<description>Deletes existing bucket policy, sets a new one an returns
+			it</description>
+		<s3:delete-bucket-policy bucketName="mule.connector.s3.test" />
+		<s3:set-bucket-policy bucketName="mule.connector.s3.test"
+			policyText="TODO: write a policy" />
+		<s3:get-bucket-policy bucketName="mule.connector.s3.test" />
+	</flow>
 </mule>

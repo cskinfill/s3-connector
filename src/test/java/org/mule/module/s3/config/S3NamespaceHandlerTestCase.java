@@ -8,7 +8,6 @@
  * LICENSE.txt file.
  */
 
-
 package org.mule.module.s3.config;
 
 import org.mule.construct.SimpleFlowConstruct;
@@ -24,10 +23,63 @@ public class S3NamespaceHandlerTestCase extends FunctionalTestCase
 
     public void testListBuckets() throws Exception
     {
-          SimpleFlowConstruct flow = lookupFlowConstruct("ListBucketsFlow");
+        SimpleFlowConstruct flow = lookupFlowConstruct("ListBucketsFlow");
 //        MuleEvent event = getTestEvent("foobar");
-//        MuleEvent responseEvent = flow.process(event);
-//        assertEquals("[]", responseEvent.getMessage().getPayloadAsString());
+//        try
+//        {
+//            flow.process(event);
+//            fail();
+//        }
+//        catch (MuleException e)
+//        {
+//            assertTrue(e.getCause() instanceof AmazonServiceException);
+//        }
+        // assertEquals("[]", responseEvent.getMessage().getPayloadAsString());
+    }
+
+    public void testCreateBucket() throws Exception
+    {
+        SimpleFlowConstruct flow = lookupFlowConstruct("CreateBucketFlow");
+//        MuleEvent event = getTestEvent("foobar");
+//        try
+//        {
+//            flow.process(event);
+//            fail();
+//        }
+//        catch (MuleException e)
+//        {
+//            assertTrue(e.getCause() instanceof AmazonServiceException);
+//        }
+    }
+
+    public void testDeleteBucket() throws Exception
+    {
+        SimpleFlowConstruct flow = lookupFlowConstruct("DeleteBucketFlow");
+//        MuleEvent event = getTestEvent("foobar");
+//        try
+//        {
+//            flow.process(event);
+//            fail();
+//        }
+//        catch (MuleException e)
+//        {
+//            assertTrue(e.getCause() instanceof AmazonServiceException);
+//        }
+    }
+
+    public void testCreateAndCopyBucket() throws Exception
+    {
+        SimpleFlowConstruct flow = lookupFlowConstruct("CreateAndCopyBucketFlow");
+//        MuleEvent event = getTestEvent("foobar");
+//        try
+//        {
+//            flow.process(event);
+//            fail();
+//        }
+//        catch (MuleException e)
+//        {
+//            assertTrue(e.getCause() instanceof AmazonServiceException);
+//        }
     }
 
     private SimpleFlowConstruct lookupFlowConstruct(String name)

@@ -53,7 +53,6 @@ public class S3CloudConnector implements Initialisable
 
     private SimpleAmazonS3 client;
 
-    // TODO map to enums instead of strings
     // TODO defaults
 
     /**
@@ -104,19 +103,6 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
-     * Example: {@code <s3:delete-bucket-policy bucketName="myBucket"/>}
-     * 
-     * @param bucketName mandatory the bucket whose policy to delete
-     * @throws AmazonClientException
-     * @throws AmazonServiceException
-     */
-    @Operation
-    public void deleteBucketPolicy(@Parameter(optional = false) String bucketName)
-    {
-        client.deleteBucketPolicy(bucketName);
-    }
-
-    /**
      * Example: {@code <s3:delete-bucket-website-configuration
      * bucketName="myBucket"/>}
      * 
@@ -144,6 +130,42 @@ public class S3CloudConnector implements Initialisable
         return client.getBucketPolicy(bucketName);
     }
 
+    /**
+     * Example: {@code <s3:set-bucket-policy bucketName="myBucket"
+     * policyText="your policy" />}
+     * 
+     * @param bucketName mandatory the bucket name
+     * @param policyText mandatory the policy text
+     */
+    @Operation
+    public void setBucketPolicy(@Parameter(optional = false) String bucketName,
+                                @Parameter(optional = false) String policyText)
+    {
+        client.setBucketPolicy(bucketName, policyText);
+    }
+
+    /**
+     * Example: {@code <s3:delete-bucket-policy bucketName="myBucket"/>}
+     * 
+     * @param bucketName mandatory the bucket whose policy to delete
+     * @throws AmazonClientException
+     * @throws AmazonServiceException
+     */
+    @Operation
+    public void deleteBucketPolicy(@Parameter(optional = false) String bucketName)
+    {
+        client.deleteBucketPolicy(bucketName);
+    }
+
+    @Operation
+    public void setBucketWebsiteConfiguration(@Parameter(optional = false) String bucketName,
+                                              @Parameter(optional = false) String suffix,
+                                              @Parameter(optional = true) String errorPage)
+    {
+        client.setBucketWebsiteConfiguration(bucketName, errorPage != null ? new BucketWebsiteConfiguration(
+            suffix, errorPage) : new BucketWebsiteConfiguration(suffix));
+    }
+
     @Operation
     public BucketWebsiteConfiguration getBucketWebsiteConfiguration(@Parameter(optional = false) String bucketName)
     {
@@ -156,6 +178,9 @@ public class S3CloudConnector implements Initialisable
         return client.listBuckets();
     }
 
+    // TODO return keys instead of an object listing?
+    // TODO empty prefix for listing all objects?
+    // TODO support pagination
     @Operation
     public ObjectListing listObjects(@Parameter(optional = false) String bucketName,
                                      @Parameter(optional = false) String prefix)
@@ -163,27 +188,11 @@ public class S3CloudConnector implements Initialisable
         return client.listObjects(bucketName, prefix);
     }
 
-    @Operation
-    public void setBucketPolicy(@Parameter(optional = false) String bucketName,
-                                @Parameter(optional = false) String policyText)
-    {
-        client.setBucketPolicy(bucketName, policyText);
-    }
-
-    @Operation
-    public void setBucketWebsiteConfiguration(@Parameter(optional = false) String bucketName,
-                                              @Parameter(optional = false) String suffix,
-                                              @Parameter(optional = true) String errorPage)
-    {
-        client.setBucketWebsiteConfiguration(bucketName, errorPage != null ? new BucketWebsiteConfiguration(
-            suffix, errorPage) : new BucketWebsiteConfiguration(suffix));
-    }
-
     // TODO add support for usermetadata
     @Operation
     public String createObject(@Parameter(optional = false) String bucketName,
                                @Parameter(optional = false) String key,
-                               @Parameter(optional = false) Object input,
+                               @Parameter(optional = false) Object content,
                                @Parameter(optional = true) String contentType,
                                @Parameter(optional = true) String acl,
                                @Parameter(optional = true) String storageClass)
@@ -191,7 +200,7 @@ public class S3CloudConnector implements Initialisable
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(contentType);
-        return client.createObject(new S3ObjectId(bucketName, key), createContent(input), metadata,
+        return client.createObject(new S3ObjectId(bucketName, key), createContent(content), metadata,
             toAcl(acl), toStorageClass(storageClass));
     }
 
@@ -217,16 +226,17 @@ public class S3CloudConnector implements Initialisable
         return storageClass != null ? StorageClass.valueOf(storageClass) : null;
     }
 
+    @Operation
     public String copyObject(@Parameter(optional = false) String sourceBucketName,
                              @Parameter(optional = false) String sourceKey,
                              @Parameter(optional = true) String sourceVersionId,
-                             @Parameter(optional = false) String destinationBucketName,
+                             @Parameter(optional = true) String destinationBucketName,
                              @Parameter(optional = false) String destinationKey,
                              @Parameter(optional = true) String destinationAcl,
                              @Parameter(optional = true) String destinationStorageClass)
     {
         return client.copyObject(new S3ObjectId(sourceBucketName, sourceKey, sourceVersionId),
-            new S3ObjectId(coalesce(sourceBucketName, destinationBucketName), destinationKey),
+            new S3ObjectId(coalesce(destinationBucketName, sourceBucketName), destinationKey),
             toAcl(destinationAcl), toStorageClass(destinationStorageClass));
     }
 
@@ -335,7 +345,7 @@ public class S3CloudConnector implements Initialisable
 
     private <T> T coalesce(T o0, T o1)
     {
-        return o1 != null ? o1 : o0;
+        return o0 != null ? o0 : o1;
     }
 
 }
