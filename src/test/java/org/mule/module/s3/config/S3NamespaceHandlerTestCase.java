@@ -24,7 +24,7 @@ public class S3NamespaceHandlerTestCase extends FunctionalTestCase
 
     public void testListBuckets() throws Exception
     {
-//        SimpleFlowConstruct flow = lookupFlowConstruct("ListBucketsFlow");
+          SimpleFlowConstruct flow = lookupFlowConstruct("ListBucketsFlow");
 //        MuleEvent event = getTestEvent("foobar");
 //        MuleEvent responseEvent = flow.process(event);
 //        assertEquals("[]", responseEvent.getMessage().getPayloadAsString());

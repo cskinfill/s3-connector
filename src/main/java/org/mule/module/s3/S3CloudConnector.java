@@ -37,7 +37,6 @@ import com.amazonaws.services.s3.model.StorageClass;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.List;
 
@@ -56,7 +55,6 @@ public class S3CloudConnector implements Initialisable
 
     // TODO map to enums instead of strings
     // TODO defaults
-    // TODO exception handling
 
     /**
      * Example: {@code <s3:create-bucket bucketName="myBucket" acl="Private"/> }
@@ -67,13 +65,11 @@ public class S3CloudConnector implements Initialisable
      * @param acl optional. TODO default ACL is not clear enough in the AmazonS3
      * @return the new Bucket
      * @throws AmazonClientException
-     * @throws AmazonServiceException
      */
     @Operation
     public Bucket createBucket(@Parameter(optional = false) String bucketName,
                                @Parameter(optional = true) String region,
                                @Parameter(optional = true) String acl)
-        throws AmazonClientException, AmazonServiceException
     {
         return client.createBucket(bucketName, region, toAcl(acl));
     }
@@ -96,7 +92,6 @@ public class S3CloudConnector implements Initialisable
     @Operation
     public void deleteBucket(@Parameter(optional = false) String bucketName,
                              @Parameter(optional = true, defaultValue = "false") boolean force)
-        throws AmazonClientException, AmazonServiceException
     {
         if (force)
         {
@@ -117,7 +112,6 @@ public class S3CloudConnector implements Initialisable
      */
     @Operation
     public void deleteBucketPolicy(@Parameter(optional = false) String bucketName)
-        throws AmazonClientException, AmazonServiceException
     {
         client.deleteBucketPolicy(bucketName);
     }
@@ -132,7 +126,6 @@ public class S3CloudConnector implements Initialisable
      */
     @Operation
     public void deleteBucketWebsiteConfiguration(@Parameter(optional = false) String bucketName)
-        throws AmazonClientException, AmazonServiceException
     {
         client.deleteBucketWebsiteConfiguration(bucketName);
     }
@@ -147,20 +140,18 @@ public class S3CloudConnector implements Initialisable
      */
     @Operation
     public String getBucketPolicy(@Parameter(optional = false) String bucketName)
-        throws AmazonClientException, AmazonServiceException
     {
         return client.getBucketPolicy(bucketName);
     }
 
     @Operation
     public BucketWebsiteConfiguration getBucketWebsiteConfiguration(@Parameter(optional = false) String bucketName)
-        throws AmazonClientException, AmazonServiceException
     {
         return client.getBucketWebsiteConfiguration(bucketName);
     }
 
     @Operation
-    public List<Bucket> listBuckets() throws AmazonClientException, AmazonServiceException
+    public List<Bucket> listBuckets()
     {
         return client.listBuckets();
     }
@@ -168,7 +159,6 @@ public class S3CloudConnector implements Initialisable
     @Operation
     public ObjectListing listObjects(@Parameter(optional = false) String bucketName,
                                      @Parameter(optional = false) String prefix)
-        throws AmazonClientException, AmazonServiceException
     {
         return client.listObjects(bucketName, prefix);
     }
@@ -176,7 +166,6 @@ public class S3CloudConnector implements Initialisable
     @Operation
     public void setBucketPolicy(@Parameter(optional = false) String bucketName,
                                 @Parameter(optional = false) String policyText)
-        throws AmazonClientException, AmazonServiceException
     {
         client.setBucketPolicy(bucketName, policyText);
     }
@@ -185,7 +174,6 @@ public class S3CloudConnector implements Initialisable
     public void setBucketWebsiteConfiguration(@Parameter(optional = false) String bucketName,
                                               @Parameter(optional = false) String suffix,
                                               @Parameter(optional = true) String errorPage)
-        throws AmazonClientException, AmazonServiceException
     {
         client.setBucketWebsiteConfiguration(bucketName, errorPage != null ? new BucketWebsiteConfiguration(
             suffix, errorPage) : new BucketWebsiteConfiguration(suffix));
@@ -199,7 +187,6 @@ public class S3CloudConnector implements Initialisable
                                @Parameter(optional = true) String contentType,
                                @Parameter(optional = true) String acl,
                                @Parameter(optional = true) String storageClass)
-        throws AmazonClientException, AmazonServiceException
     {
 
         ObjectMetadata metadata = new ObjectMetadata();
@@ -212,7 +199,6 @@ public class S3CloudConnector implements Initialisable
     public void deleteObject(@Parameter(optional = false) String bucketName,
                              @Parameter(optional = false) String key,
                              @Parameter(optional = true) String versionId)
-        throws AmazonClientException, AmazonServiceException
     {
         client.deleteObject(new S3ObjectId(bucketName, key, versionId));
     }
@@ -221,7 +207,6 @@ public class S3CloudConnector implements Initialisable
     public void setObjectStorageClass(@Parameter(optional = false) String bucketName,
                                       @Parameter(optional = false) String key,
                                       @Parameter(optional = false) String newStorageClass)
-        throws AmazonClientException, AmazonServiceException
     {
         Validate.notNull(newStorageClass);
         client.setObjectStorageClass(new S3ObjectId(bucketName, key), toStorageClass(newStorageClass));
@@ -239,7 +224,6 @@ public class S3CloudConnector implements Initialisable
                              @Parameter(optional = false) String destinationKey,
                              @Parameter(optional = true) String destinationAcl,
                              @Parameter(optional = true) String destinationStorageClass)
-        throws AmazonClientException, AmazonServiceException
     {
         return client.copyObject(new S3ObjectId(sourceBucketName, sourceKey, sourceVersionId),
             new S3ObjectId(coalesce(sourceBucketName, destinationBucketName), destinationKey),
@@ -251,7 +235,6 @@ public class S3CloudConnector implements Initialisable
                                   @Parameter(optional = true) String versionId,
                                   @Parameter(optional = true) Date expiration,
                                   @Parameter(optional = true) String method)
-        throws AmazonClientException, URISyntaxException
     {
         return client.createPresignedUri(new S3ObjectId(bucketName, key, versionId), expiration,
             toHttpMethod(method));
@@ -265,7 +248,7 @@ public class S3CloudConnector implements Initialisable
     public InputStream getObjectContent(@Parameter(optional = false) String bucketName,
                                         @Parameter(optional = false) String key,
                                         @Parameter(optional = true) String versionId)
-        throws AmazonClientException, AmazonServiceException
+
     {
         return client.getObjectContent(new S3ObjectId(bucketName, key, versionId));
     }
@@ -273,7 +256,7 @@ public class S3CloudConnector implements Initialisable
     public ObjectMetadata getObjectMetadata(@Parameter(optional = false) String bucketName,
                                             @Parameter(optional = false) String key,
                                             @Parameter(optional = true) String versionId)
-        throws AmazonClientException, AmazonServiceException
+
     {
         return client.getObjectMetadata(new S3ObjectId(bucketName, key, versionId));
     }

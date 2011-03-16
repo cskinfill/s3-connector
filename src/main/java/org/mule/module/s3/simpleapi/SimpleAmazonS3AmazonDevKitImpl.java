@@ -11,11 +11,9 @@
 package org.mule.module.s3.simpleapi;
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.BucketPolicy;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
@@ -50,14 +48,14 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 1.1
-    public List<Bucket> listBuckets() throws AmazonClientException, AmazonServiceException
+    public List<Bucket> listBuckets()
     {
         return s3.listBuckets();
     }
 
     // 2.1
     public Bucket createBucket(@NotNull String bucketName, String region, CannedAccessControlList acl)
-        throws AmazonClientException, AmazonServiceException
+
     {
         Validate.notNull(bucketName);
         CreateBucketRequest request = new CreateBucketRequest(bucketName, region);
@@ -66,14 +64,14 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 2.2
-    public void deleteBucket(@NotNull String bucketName) throws AmazonClientException, AmazonServiceException
+    public void deleteBucket(@NotNull String bucketName)
     {
         Validate.notNull(bucketName);
         s3.deleteBucket(bucketName);
     }
 
     public void deleteBucketAndObjects(@NotNull String bucketName)
-        throws AmazonClientException, AmazonServiceException
+
     {
         Validate.notNull(bucketName);
         ObjectListing objects = s3.listObjects(bucketName);
@@ -86,7 +84,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 
     // 2.3
     public ObjectListing listObjects(@NotNull String bucketName, @NotNull String prefix)
-        throws AmazonClientException, AmazonServiceException
+
     {
         Validate.notNull(bucketName);
         Validate.notNull(prefix);
@@ -95,7 +93,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 
     // 3.1.1
     public void deleteBucketPolicy(@NotNull String bucketName)
-        throws AmazonClientException, AmazonServiceException
+
     {
         Validate.notNull(bucketName);
         s3.deleteBucketPolicy(bucketName);
@@ -103,7 +101,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 
     // 3.1.2
     public String getBucketPolicy(@NotNull String bucketName)
-        throws AmazonClientException, AmazonServiceException
+
     {
         Validate.notNull(bucketName);
         return s3.getBucketPolicy(bucketName).getPolicyText();
@@ -111,7 +109,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 
     // 3.1.3
     public void setBucketPolicy(@NotNull String bucketName, @NotNull String policyText)
-        throws AmazonClientException, AmazonServiceException
+
     {
         Validate.notNull(bucketName);
         Validate.notNull(policyText);
@@ -120,7 +118,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 
     // 3.2.1
     public void deleteBucketWebsiteConfiguration(@NotNull String bucketName)
-        throws AmazonClientException, AmazonServiceException
+
     {
         Validate.notNull(bucketName);
         s3.deleteBucketWebsiteConfiguration(bucketName);
@@ -128,7 +126,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 
     // 3.2.2
     public BucketWebsiteConfiguration getBucketWebsiteConfiguration(@NotNull String bucketName)
-        throws AmazonClientException, AmazonServiceException
+
     {
         Validate.notNull(bucketName);
         return s3.getBucketWebsiteConfiguration(bucketName);
@@ -137,7 +135,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     // 3.2.3
     public void setBucketWebsiteConfiguration(@NotNull String bucketName,
                                               @NotNull BucketWebsiteConfiguration configuration)
-        throws AmazonClientException, AmazonServiceException
+
     {
         Validate.notNull(bucketName);
         Validate.notNull(configuration);
@@ -152,7 +150,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
                                @NotNull ObjectMetadata metadata,
                                CannedAccessControlList acl,
                                StorageClass storageClass)
-        throws AmazonClientException, AmazonServiceException
+
     {
         Validate.notNull(input);
         Validate.notNull(metadata);
@@ -168,7 +166,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 
     // 4.2
     public void deleteObject(@NotNull S3ObjectId objectId)
-        throws AmazonClientException, AmazonServiceException
+
     {
         if (objectId.isVersioned())
         {
@@ -184,7 +182,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     public String copyObject(@NotNull S3ObjectId source,
                              @NotNull S3ObjectId destination,
                              CannedAccessControlList acl,
-                             StorageClass storageClass) throws AmazonClientException, AmazonServiceException
+                             StorageClass storageClass)
     {
         CopyObjectRequest request = new CopyObjectRequest(source.getBucketName(), source.getKey(),
             source.getVersionId(), destination.getBucketName(), destination.getKey());
@@ -198,16 +196,21 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 
     // 4.5
     public URI createPresignedUri(@NotNull S3ObjectId objectId, Date expiration, HttpMethod method)
-        throws AmazonClientException, URISyntaxException
     {
-        return s3.generatePresignedUrl(objectId.getBucketName(), objectId.getKey(), expiration, method)
-            .toURI();
+        try
+        {
+            return s3.generatePresignedUrl(objectId.getBucketName(), objectId.getKey(), expiration, method)
+                .toURI();
+        }
+        catch (URISyntaxException e)
+        {
+            throw new AmazonClientException("S3 returned a malformed URI", e);
+        }
     }
 
     // 4.6
     // TODO this method should return the new version, but Amazon does not answer it
     public void setObjectStorageClass(@NotNull S3ObjectId objectId, StorageClass newStorageClass)
-        throws AmazonClientException, AmazonServiceException
     {
         s3.changeObjectStorageClass(objectId.getBucketName(), objectId.getKey(), newStorageClass);
     }
@@ -215,7 +218,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     // TODO 3. conditional get
     // 4.3
     public InputStream getObjectContent(@NotNull S3ObjectId objectId)
-        throws AmazonClientException, AmazonServiceException
+
     {
         return s3.getObject(
             new GetObjectRequest(objectId.getBucketName(), objectId.getKey(), objectId.getVersionId()))
@@ -223,7 +226,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     public ObjectMetadata getObjectMetadata(@NotNull S3ObjectId objectId)
-        throws AmazonClientException, AmazonServiceException
+
     {
         return s3.getObjectMetadata(new GetObjectMetadataRequest(objectId.getBucketName(), objectId.getKey(),
             objectId.getVersionId()));
@@ -235,6 +238,4 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
             objectId.getVersionId()));
     }
 
-    
-    
 }

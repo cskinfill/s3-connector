@@ -18,7 +18,7 @@
         http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.1/mule.xsd
         http://www.mulesoft.org/schema/mule/s3 http://www.mulesoft.org/schema/mule/s3/3.1/mule-s3.xsd">
 
-	<s3:config accessKey="AKIAI6WDN6FRQ5YQDOEA" secretKey="lalala"/>
+	<s3:config accessKey="lalalal" secretKey="lalala"/>
 
 	<flow name="ListBucketsFlow">
 		<s3:list-buckets />

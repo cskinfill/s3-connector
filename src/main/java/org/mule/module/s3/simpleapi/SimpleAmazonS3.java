@@ -15,7 +15,6 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.BucketPolicy;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
@@ -43,10 +42,19 @@ import javax.validation.constraints.NotNull;
  * Not all messages of {@link AmazonS3} interface are exposed here. However, those
  * exposed share the same semantics of that interface.
  * </p>
+ * Exception handling:
+ * <ul>
+ * <li>All operations will throw {@link IllegalArgumentException} if a non null or
+ * non empty constraint is violated {@link AmazonClientException}</li>
+ * <li>All operations will throw {@link AmazonServiceException} if a s3 restriction
+ * is violated, like for example, trying to create a bucket without permissions</li>
+ * <li>All operation will throw {@link AmazonClientException} if any communication or
+ * unexpected error occurs</li>
+ * </ul>
  */
 public interface SimpleAmazonS3
 {
-    List<Bucket> listBuckets() throws AmazonClientException, AmazonServiceException;
+    List<Bucket> listBuckets();
 
     /**
      * Creates a {@link Bucket}.
@@ -59,8 +67,7 @@ public interface SimpleAmazonS3
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
-    Bucket createBucket(@NotNull String bucketName, String region, CannedAccessControlList acl)
-        throws AmazonClientException, AmazonServiceException;
+    Bucket createBucket(@NotNull String bucketName, String region, CannedAccessControlList acl);
 
     /**
      * Deletes a Bucket
@@ -70,7 +77,7 @@ public interface SimpleAmazonS3
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
-    void deleteBucket(@NotNull String bucketName) throws AmazonClientException, AmazonServiceException;
+    void deleteBucket(@NotNull String bucketName);
 
     /**
      * Deletes a Bucket, deleting also all its contents if necessary
@@ -80,30 +87,22 @@ public interface SimpleAmazonS3
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
-    void deleteBucketAndObjects(@NotNull String bucketName)
-        throws AmazonClientException, AmazonServiceException;
+    void deleteBucketAndObjects(@NotNull String bucketName);
 
-    ObjectListing listObjects(@NotNull String bucketName, @NotNull String prefix)
-        throws AmazonClientException, AmazonServiceException;
+    ObjectListing listObjects(@NotNull String bucketName, @NotNull String prefix);
 
-    void deleteBucketPolicy(@NotNull String bucketName)
-        throws AmazonClientException, AmazonServiceException;
+    void deleteBucketPolicy(@NotNull String bucketName);
 
-    String getBucketPolicy(@NotNull String bucketName)
-        throws AmazonClientException, AmazonServiceException;
+    String getBucketPolicy(@NotNull String bucketName);
 
-    void setBucketPolicy(@NotNull String bucketName, @NotNull String policyText)
-        throws AmazonClientException, AmazonServiceException;
+    void setBucketPolicy(@NotNull String bucketName, @NotNull String policyText);
 
-    void deleteBucketWebsiteConfiguration(@NotNull String bucketName)
-        throws AmazonClientException, AmazonServiceException;
+    void deleteBucketWebsiteConfiguration(@NotNull String bucketName);
 
-    BucketWebsiteConfiguration getBucketWebsiteConfiguration(@NotNull String bucketName)
-        throws AmazonClientException, AmazonServiceException;
+    BucketWebsiteConfiguration getBucketWebsiteConfiguration(@NotNull String bucketName);
 
     void setBucketWebsiteConfiguration(@NotNull String bucketName,
-                                              @NotNull BucketWebsiteConfiguration configuration)
-        throws AmazonClientException, AmazonServiceException;
+                                       @NotNull BucketWebsiteConfiguration configuration);
 
     /**
      * Creates an object, uploading its contents, and optionally setting its
@@ -120,17 +119,14 @@ public interface SimpleAmazonS3
      * @throws AmazonServiceException
      */
     String createObject(@NotNull S3ObjectId objectId,
-                               @NotNull InputStream input,
-                               @NotNull ObjectMetadata metadata,
-                               CannedAccessControlList acl,
-                               StorageClass storageClass)
-        throws AmazonClientException, AmazonServiceException;
+                        @NotNull InputStream input,
+                        @NotNull ObjectMetadata metadata,
+                        CannedAccessControlList acl,
+                        StorageClass storageClass);
 
-    void deleteObject(@NotNull S3ObjectId objectId)
-        throws AmazonClientException, AmazonServiceException;
+    void deleteObject(@NotNull S3ObjectId objectId);
 
-    void setObjectStorageClass(@NotNull S3ObjectId objectId, @NotNull StorageClass newStorageClass)
-        throws AmazonClientException, AmazonServiceException;
+    void setObjectStorageClass(@NotNull S3ObjectId objectId, @NotNull StorageClass newStorageClass);
 
     /**
      * Copies a source object, with optional version, to a destination, with optional
@@ -146,9 +142,9 @@ public interface SimpleAmazonS3
      * @throws AmazonServiceException
      */
     String copyObject(@NotNull S3ObjectId source,
-                             @NotNull S3ObjectId destination,
-                             CannedAccessControlList acl,
-                             StorageClass storageClass) throws AmazonClientException, AmazonServiceException;
+                      @NotNull S3ObjectId destination,
+                      CannedAccessControlList acl,
+                      StorageClass storageClass);
 
     /**
      * Creates a presigned URL for accessing the object of the given id, with an
@@ -158,14 +154,11 @@ public interface SimpleAmazonS3
      * @param expiration if no expiration is supplied, a default expiration provided
      *            by AmazonS3 will be used
      * @param method if no method is supplied, PUT method is assumed
-     * @return the
      * @throws AmazonClientException
-     * @throws URISyntaxException TODO
      * @see AmazonS3#generatePresignedUrl(com.amazonaws.services.s3.model.
      *      GeneratePresignedUrlRequest)
      */
-    URI createPresignedUri(@NotNull S3ObjectId objectId, Date expiration, HttpMethod method)
-        throws AmazonClientException, URISyntaxException;
+    URI createPresignedUri(@NotNull S3ObjectId objectId, Date expiration, HttpMethod method);
 
     /**
      * Answers the ObjectMetadata content a given {@link S3ObjectId}.
@@ -173,11 +166,9 @@ public interface SimpleAmazonS3
      * @param objectId
      * @return
      * @throws AmazonClientException
-     * @throws AmazonServiceException
      * @see AmazonS3#getObject(com.amazonaws.services.s3.model.GetObjectMetadataRequest)
      */
-    InputStream getObjectContent(@NotNull S3ObjectId objectId)
-        throws AmazonClientException, AmazonServiceException;
+    InputStream getObjectContent(@NotNull S3ObjectId objectId);
 
     /**
      * Answers the ObjectMetadata for a given {@link S3ObjectId}
@@ -185,11 +176,9 @@ public interface SimpleAmazonS3
      * @param objectId
      * @return
      * @throws AmazonClientException
-     * @throws AmazonServiceException
      * @see AmazonS3#getObjectMetadata(com.amazonaws.services.s3.model.GetObjectMetadataRequest)
      */
-    ObjectMetadata getObjectMetadata(@NotNull S3ObjectId objectId)
-        throws AmazonClientException, AmazonServiceException;
+    ObjectMetadata getObjectMetadata(@NotNull S3ObjectId objectId);
 
     /**
      * Retrieves an object from S3 given its id. <strong>Warning: use this method
