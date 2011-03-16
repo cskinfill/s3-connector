@@ -33,6 +33,17 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+/**
+ * A Amazon S3 facade roughly based on {@link AmazonS3} interface, but that
+ * simplifies it by adding consistent versioning support. Otherwise stated, all
+ * messages that take {@link S3ObjectId} are aware of versioning, that is, if
+ * {@link S3ObjectId#isVersioned()}, then operations try to affect the specified
+ * version.
+ * <p>
+ * Not all messages of {@link AmazonS3} interface are exposed here. However, those
+ * exposed share the same semantics of that interface.
+ * </p>
+ */
 public interface SimpleAmazonS3
 {
     public List<Bucket> listBuckets() throws AmazonClientException, AmazonServiceException;
@@ -105,19 +116,17 @@ public interface SimpleAmazonS3
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
-    public String createObject(@NotNull ObjectId objectId,
+    public String createObject(@NotNull S3ObjectId objectId,
                                @NotNull InputStream input,
                                @NotNull ObjectMetadata metadata,
                                CannedAccessControlList acl,
                                StorageClass storageClass)
         throws AmazonClientException, AmazonServiceException;
 
-    public void deleteObject(@NotNull ObjectId objectId) throws AmazonClientException, AmazonServiceException;
-
-    public void deleteVersion(@NotNull ObjectId objectId, @NotNull String versionId)
+    public void deleteObject(@NotNull S3ObjectId objectId)
         throws AmazonClientException, AmazonServiceException;
 
-    public void setObjectStorageClass(@NotNull ObjectId objectId, @NotNull StorageClass newStorageClass)
+    public void setObjectStorageClass(@NotNull S3ObjectId objectId, @NotNull StorageClass newStorageClass)
         throws AmazonClientException, AmazonServiceException;
 
     /**
@@ -131,8 +140,8 @@ public interface SimpleAmazonS3
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
-    public String copyObject(@NotNull ObjectId source,
-                             @NotNull ObjectId destination,
+    public String copyObject(@NotNull S3ObjectId source,
+                             @NotNull S3ObjectId destination,
                              CannedAccessControlList acl,
                              StorageClass storageClass) throws AmazonClientException, AmazonServiceException;
 
@@ -150,15 +159,41 @@ public interface SimpleAmazonS3
      * @see AmazonS3#generatePresignedUrl(com.amazonaws.services.s3.model.
      *      GeneratePresignedUrlRequest)
      */
-    public URI createPresignedUri(@NotNull ObjectId objectId, Date expiration, HttpMethod method)
+    public URI createPresignedUri(@NotNull S3ObjectId objectId, Date expiration, HttpMethod method)
         throws AmazonClientException, URISyntaxException;
 
-    public InputStream getObjectContent(@NotNull ObjectId objectId)
+    /**
+     * Answers the ObjectMetadata content a given {@link S3ObjectId}.
+     * 
+     * @param objectId
+     * @return
+     * @throws AmazonClientException
+     * @throws AmazonServiceException
+     * @see AmazonS3#getObject(com.amazonaws.services.s3.model.GetObjectMetadataRequest)
+     */
+    public InputStream getObjectContent(@NotNull S3ObjectId objectId)
         throws AmazonClientException, AmazonServiceException;
 
-    public ObjectMetadata getObjectMetadata(@NotNull ObjectId objectId)
+    /**
+     * Answers the ObjectMetadata for a given {@link S3ObjectId}
+     * 
+     * @param objectId
+     * @return
+     * @throws AmazonClientException
+     * @throws AmazonServiceException
+     * @see AmazonS3#getObjectMetadata(com.amazonaws.services.s3.model.GetObjectMetadataRequest)
+     */
+    public ObjectMetadata getObjectMetadata(@NotNull S3ObjectId objectId)
         throws AmazonClientException, AmazonServiceException;
 
-    /*TODO Warning: use this method with caution*/
-    public S3Object getObject(@NotNull ObjectId objectId);
+    /**
+     * Retrieves an object from S3 given its id. <strong>Warning: use this method
+     * with caution</strong>, as the retrieved object has an already open inputStream
+     * to the object contents. It should be closed quickly.
+     * 
+     * @see AmazonS3#getObject(com.amazonaws.services.s3.model.GetObjectRequest)
+     * @param objectId
+     * @return
+     */
+    public S3Object getObject(@NotNull S3ObjectId objectId);
 }

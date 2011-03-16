@@ -11,7 +11,6 @@
 
 package org.mule.module.s3.config;
 
-import org.mule.api.MuleEvent;
 import org.mule.construct.SimpleFlowConstruct;
 import org.mule.tck.FunctionalTestCase;
 

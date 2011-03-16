@@ -12,7 +12,7 @@ package org.mule.module.s3;
 
 import org.mule.api.lifecycle.Initialisable;
 import org.mule.api.lifecycle.InitialisationException;
-import org.mule.module.s3.simpleapi.ObjectId;
+import org.mule.module.s3.simpleapi.S3ObjectId;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
 import org.mule.tools.cloudconnect.annotations.Connector;
@@ -177,8 +177,8 @@ public class S3CloudConnector implements Initialisable
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(contentType);
-        return client.createObject(new ObjectId(bucketName, key), createContent(input), metadata, toAcl(acl),
-            toStorageClass(storageClass));
+        return client.createObject(new S3ObjectId(bucketName, key), createContent(input), metadata,
+            toAcl(acl), toStorageClass(storageClass));
     }
 
     @Operation
@@ -187,14 +187,7 @@ public class S3CloudConnector implements Initialisable
                              @Parameter(optional = true) String versionId)
         throws AmazonClientException, AmazonServiceException
     {
-        if (versionId == null)
-        {
-            client.deleteObject(new ObjectId(bucketName, key));
-        }
-        else
-        {
-            client.deleteVersion(new ObjectId(bucketName, key), versionId);
-        }
+        client.deleteObject(new S3ObjectId(bucketName, key, versionId));
     }
 
     @Operation
@@ -204,7 +197,7 @@ public class S3CloudConnector implements Initialisable
         throws AmazonClientException, AmazonServiceException
     {
         Validate.notNull(newStorageClass);
-        client.setObjectStorageClass(new ObjectId(bucketName, key), toStorageClass(newStorageClass));
+        client.setObjectStorageClass(new S3ObjectId(bucketName, key), toStorageClass(newStorageClass));
     }
 
     private StorageClass toStorageClass(String storageClass)
@@ -220,7 +213,7 @@ public class S3CloudConnector implements Initialisable
                              @Parameter(optional = true) String storageClass)
         throws AmazonClientException, AmazonServiceException
     {
-        return client.copyObject(new ObjectId(bucketSourceName, sourceKey), new ObjectId(coalesce(
+        return client.copyObject(new S3ObjectId(bucketSourceName, sourceKey), new S3ObjectId(coalesce(
             bucketSourceName, bucketDestinationName), destinationKey), toAcl(acl),
             toStorageClass(storageClass));
     }
@@ -231,7 +224,7 @@ public class S3CloudConnector implements Initialisable
                                   @Parameter(optional = true) String method)
         throws AmazonClientException, URISyntaxException
     {
-        return client.createPresignedUri(new ObjectId(bucketName, key), expiration, toHttpMethod(method));
+        return client.createPresignedUri(new S3ObjectId(bucketName, key), expiration, toHttpMethod(method));
     }
 
     private HttpMethod toHttpMethod(String method)
@@ -243,20 +236,20 @@ public class S3CloudConnector implements Initialisable
                                         @Parameter(optional = false) String key)
         throws AmazonClientException, AmazonServiceException
     {
-        return client.getObjectContent(new ObjectId(bucketName, key));
+        return client.getObjectContent(new S3ObjectId(bucketName, key));
     }
 
     public ObjectMetadata getObjectMetadata(@Parameter(optional = false) String bucketName,
                                             @Parameter(optional = false) String key)
         throws AmazonClientException, AmazonServiceException
     {
-        return client.getObjectMetadata(new ObjectId(bucketName, key));
+        return client.getObjectMetadata(new S3ObjectId(bucketName, key));
     }
-    
+
     public S3Object getObject(@Parameter(optional = false) String bucketName,
                               @Parameter(optional = false) String key)
     {
-        return client.getObject(new ObjectId(bucketName, key));
+        return client.getObject(new S3ObjectId(bucketName, key));
     }
 
     public void initialise() throws InitialisationException
@@ -330,5 +323,4 @@ public class S3CloudConnector implements Initialisable
         return o1 != null ? o1 : o0;
     }
 
-    
 }

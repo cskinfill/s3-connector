@@ -154,9 +154,16 @@ public class S3TestCase
     public void getObject() throws Exception
     {
         S3Object s3Object = new S3Object();
-        
+
         when(client.getObject(refEq(new GetObjectRequest(MY_BUCKET, MY_OBJECT)))).thenReturn(s3Object);
         assertSame(s3Object, connector.getObject(MY_BUCKET, MY_OBJECT));
     }
+
+//    @Test
+//    public void deleteObject() throws Exception
+//    {
+//        connector.deleteObject(MY_BUCKET, MY_OBJECT, null);
+//       verify( client.deleteObject(bucketName, key) ); 
+//    }
 
 }

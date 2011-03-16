@@ -14,14 +14,12 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AccessControlList;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.BucketPolicy;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
@@ -146,8 +144,9 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
         s3.setBucketWebsiteConfiguration(bucketName, configuration);
     }
 
+    // TODO provide md5 and content length
     // 4.1
-    public String createObject(@NotNull ObjectId objectId,
+    public String createObject(@NotNull S3ObjectId objectId,
                                @NotNull InputStream input,
                                @NotNull ObjectMetadata metadata,
                                CannedAccessControlList acl,
@@ -167,26 +166,27 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 4.2
-    public void deleteObject(@NotNull ObjectId objectId) throws AmazonClientException, AmazonServiceException
-    {
-        s3.deleteObject(objectId.getBucketName(), objectId.getKey());
-    }
-
-    // 4.2
-    public void deleteVersion(@NotNull ObjectId objectId, String versionId)
+    public void deleteObject(@NotNull S3ObjectId objectId)
         throws AmazonClientException, AmazonServiceException
     {
-        s3.deleteVersion(objectId.getBucketName(), objectId.getKey(), versionId);
+        if (objectId.isVersioned())
+        {
+            s3.deleteVersion(objectId.getBucketName(), objectId.getKey(), objectId.getVersionId());
+        }
+        else
+        {
+            s3.deleteObject(objectId.getBucketName(), objectId.getKey());
+        }
     }
 
     // 4.4
-    public String copyObject(@NotNull ObjectId source,
-                             @NotNull ObjectId destination,
+    public String copyObject(@NotNull S3ObjectId source,
+                             @NotNull S3ObjectId destination,
                              CannedAccessControlList acl,
                              StorageClass storageClass) throws AmazonClientException, AmazonServiceException
     {
         CopyObjectRequest request = new CopyObjectRequest(source.getBucketName(), source.getKey(),
-            destination.getBucketName(), destination.getKey());
+            source.getVersionId(), destination.getBucketName(), destination.getKey());
         request.setCannedAccessControlList(acl);
         if (storageClass != null)
         {
@@ -196,7 +196,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 4.5
-    public URI createPresignedUri(@NotNull ObjectId objectId, Date expiration, HttpMethod method)
+    public URI createPresignedUri(@NotNull S3ObjectId objectId, Date expiration, HttpMethod method)
         throws AmazonClientException, URISyntaxException
     {
         return s3.generatePresignedUrl(objectId.getBucketName(), objectId.getKey(), expiration, method)
@@ -204,30 +204,36 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 4.6
-    public void setObjectStorageClass(@NotNull ObjectId objectId, StorageClass newStorageClass)
+    // TODO this method should return the new version, but Amazon does not answer it
+    public void setObjectStorageClass(@NotNull S3ObjectId objectId, StorageClass newStorageClass)
         throws AmazonClientException, AmazonServiceException
     {
         s3.changeObjectStorageClass(objectId.getBucketName(), objectId.getKey(), newStorageClass);
     }
 
-    // TODO 3. Get latest or specific version, conditional get)
+    // TODO 3. conditional get
     // 4.3
-    public InputStream getObjectContent(@NotNull ObjectId objectId)
+    public InputStream getObjectContent(@NotNull S3ObjectId objectId)
         throws AmazonClientException, AmazonServiceException
     {
-        return s3.getObject(new GetObjectRequest(objectId.getBucketName(), objectId.getKey())).getObjectContent();
+        return s3.getObject(
+            new GetObjectRequest(objectId.getBucketName(), objectId.getKey(), objectId.getVersionId()))
+            .getObjectContent();
     }
 
-    public ObjectMetadata getObjectMetadata(@NotNull ObjectId objectId)
+    public ObjectMetadata getObjectMetadata(@NotNull S3ObjectId objectId)
         throws AmazonClientException, AmazonServiceException
     {
-        return s3.getObjectMetadata(new GetObjectMetadataRequest(objectId.getBucketName(), objectId.getKey()));
+        return s3.getObjectMetadata(new GetObjectMetadataRequest(objectId.getBucketName(), objectId.getKey(),
+            objectId.getVersionId()));
     }
 
-    public S3Object getObject(@NotNull ObjectId objectId)
+    public S3Object getObject(@NotNull S3ObjectId objectId)
     {
-        return s3.getObject(new GetObjectRequest(objectId.getBucketName(), objectId.getKey()));
+        return s3.getObject(new GetObjectRequest(objectId.getBucketName(), objectId.getKey(),
+            objectId.getVersionId()));
     }
 
-    // TODO consistent versioning fetching in objectId
+    
+    
 }

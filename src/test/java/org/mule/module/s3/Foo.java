@@ -10,11 +10,10 @@
 
 package org.mule.module.s3;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.Bucket;
 
@@ -30,8 +29,7 @@ public class Foo
     @Before
     public void setup()
     {
-        AWSCredentials c = new BasicAWSCredentials("",
-            "");
+        AWSCredentials c = new BasicAWSCredentials("", "");
         s3 = new AmazonS3Client(c);
     }
 
@@ -54,7 +52,7 @@ public class Foo
     {
         s3.deleteBucket("nonExistentBucket");
     }
-    
+
     @Test
     public void testOverride() throws Exception
     {
