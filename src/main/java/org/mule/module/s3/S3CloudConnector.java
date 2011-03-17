@@ -37,6 +37,7 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.StorageClass;
 
 import java.io.ByteArrayInputStream;
@@ -45,6 +46,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
@@ -211,19 +213,19 @@ public class S3CloudConnector implements Initialisable
         return client.listBuckets();
     }
 
-    // TODO return keys instead of an object listing?
-    // TODO empty prefix for listing all objects?
-    // TODO support pagination
     /**
+     * Lazily lists all objects for a given prefix. As S3 does not limit in any way
+     * the number of objects, such listing can retrieve an arbitrary amount of
+     * objects, and may need to perform extra calls to the api while it is iterated.
      * Example: {@code <s3:list-objects bucketName="my-bucket" prefix="mk" />}
      * 
      * @param bucketName
      * @param prefix
-     * @return TODO
+     * @return An iterable
      */
     @Operation
-    public ObjectListing listObjects(@Parameter(optional = false) String bucketName,
-                                     @Parameter(optional = false) String prefix)
+    public Iterable<S3ObjectSummary> listObjects(@Parameter(optional = false) String bucketName,
+                                                 @Parameter(optional = false) String prefix)
     {
         return client.listObjects(bucketName, prefix);
     }
@@ -246,6 +248,8 @@ public class S3CloudConnector implements Initialisable
      * @param contentType
      * @param acl
      * @param storageClass
+     * @param userMetadata TODO
+     * @param userMetadata
      * @return the id of the created object, or null, if versioning is not enabled
      */
     @Operation
@@ -256,11 +260,11 @@ public class S3CloudConnector implements Initialisable
                                @Parameter(optional = true) String contentMd5,
                                @Parameter(optional = true) String contentType,
                                @Parameter(optional = true, defaultValue = "Private") String acl,
-                               @Parameter(optional = true, defaultValue = "Standard") String storageClass)
+                               @Parameter(optional = true, defaultValue = "Standard") String storageClass,
+                               @Parameter(optional = true) Map<String, String> userMetadata)
     {
-        // TODO add support for usermetadata
         return client.createObject(new S3ObjectId(bucketName, key), createContent(content, contentLength,
-            contentMd5), contentType, toAcl(acl), toStorageClass(storageClass));
+            contentMd5), contentType, toAcl(acl), toStorageClass(storageClass), userMetadata);
     }
 
     /**

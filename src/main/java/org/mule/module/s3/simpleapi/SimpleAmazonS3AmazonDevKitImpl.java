@@ -30,8 +30,11 @@ import com.amazonaws.services.s3.model.StorageClass;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.AbstractCollection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -83,12 +86,11 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 2.3
-    public ObjectListing listObjects(@NotNull String bucketName, @NotNull String prefix)
-
+    public Iterable<S3ObjectSummary> listObjects(@NotNull String bucketName, @NotNull String prefix)
     {
         Validate.notNull(bucketName);
         Validate.notNull(prefix);
-        return s3.listObjects(bucketName, prefix);
+        return new S3ObjectSummaryIterable(bucketName, prefix);
     }
 
     // 3.1.1
@@ -148,11 +150,13 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
                                @NotNull S3ObjectContent content,
                                String contentType,
                                CannedAccessControlList acl,
-                               StorageClass storageClass)
+                               StorageClass storageClass,
+                               Map<String, String> userMetadata)
     {
         Validate.notNull(content);
         PutObjectRequest request = content.createPutObjectRequest();
         request.getMetadata().setContentType(contentType);
+        request.getMetadata().setUserMetadata(userMetadata);
         request.setBucketName(objectId.getBucketName());
         request.setKey(objectId.getKey());
         request.setCannedAcl(acl);
@@ -217,7 +221,6 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     // TODO 3. conditional get
     // 4.3
     public InputStream getObjectContent(@NotNull S3ObjectId objectId)
-
     {
         return s3.getObject(
             new GetObjectRequest(objectId.getBucketName(), objectId.getKey(), objectId.getVersionId()))
@@ -235,6 +238,66 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     {
         return s3.getObject(new GetObjectRequest(objectId.getBucketName(), objectId.getKey(),
             objectId.getVersionId()));
+    }
+
+    /**
+     * Warning: this class is not a proper collection, just it implements it in order
+     * to be compatible with some mule's collection splitting
+     */
+    private class S3ObjectSummaryIterable extends AbstractCollection<S3ObjectSummary>
+        implements Iterable<S3ObjectSummary>
+    {
+
+        private String bucketName;
+        private String prefix;
+
+        public S3ObjectSummaryIterable(String bucketName, String prefix)
+        {
+            this.bucketName = bucketName;
+            this.prefix = prefix;
+        }
+
+        public Iterator<S3ObjectSummary> iterator()
+        {
+            final ObjectListing listObjects = s3.listObjects(bucketName, prefix);
+            return new Iterator<S3ObjectSummary>()
+            {
+                private ObjectListing currentList = listObjects;
+                private Iterator<S3ObjectSummary> currentIter = listObjects.getObjectSummaries().iterator();
+
+                public boolean hasNext()
+                {
+                    updateIter();
+                    return currentIter.hasNext();
+                }
+
+                public S3ObjectSummary next()
+                {
+                    updateIter();
+                    return currentIter.next();
+                }
+
+                public void remove()
+                {
+                    throw new UnsupportedOperationException();
+                }
+
+                private void updateIter()
+                {
+                    if (!currentIter.hasNext() && currentList.isTruncated())
+                    {
+                        currentList = s3.listNextBatchOfObjects(currentList);
+                        currentIter = currentList.getObjectSummaries().iterator();
+                    }
+                }
+            };
+        }
+
+        @Override
+        public int size()
+        {
+            throw new UnsupportedOperationException();
+        }
     }
 
 }

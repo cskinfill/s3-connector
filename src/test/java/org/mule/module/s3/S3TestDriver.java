@@ -11,7 +11,10 @@
 package org.mule.module.s3;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.Bucket;
@@ -51,7 +54,7 @@ public class S3TestDriver
     public void testDeleteNoForce() throws Exception
     {
         connector.createBucket(bucketName, null, "Private");
-        connector.createObject(bucketName, "anObject", "hello world", null, null, null, null, null);
+        connector.createObject(bucketName, "anObject", "hello world", null, null, null, null, null, null);
 
         connector.deleteBucket(bucketName, false);
     }
@@ -66,13 +69,13 @@ public class S3TestDriver
         assertEquals(bucketName, bucket.getName());
 
         assertEquals(bucketsCount + 1, connector.listBuckets().size());
-        assertEquals(0, connector.listObjects(bucketName, "").getObjectSummaries().size());
+        assertFalse(connector.listObjects(bucketName, "").iterator().hasNext());
 
         String objectVersion = connector.createObject(bucketName, "anObject", "hello world!", null,
-            null, "text/plain", null, "Standard");
+            null, "text/plain", null, "Standard", null);
         // Versioning is not enabled
         assertNull(objectVersion);
 
-        assertEquals(1, connector.listObjects(bucketName, "anObj").getObjectSummaries().size());
+        assertTrue(connector.listObjects(bucketName, "").iterator().hasNext());
     }
 }

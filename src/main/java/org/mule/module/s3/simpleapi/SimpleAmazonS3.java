@@ -15,16 +15,17 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.StorageClass;
 
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -81,7 +82,7 @@ public interface SimpleAmazonS3
      */
     void deleteBucketAndObjects(@NotNull String bucketName);
 
-    ObjectListing listObjects(@NotNull String bucketName, @NotNull String prefix);
+    Iterable<S3ObjectSummary> listObjects(@NotNull String bucketName, @NotNull String prefix);
 
     void deleteBucketPolicy(@NotNull String bucketName);
 
@@ -114,13 +115,15 @@ public interface SimpleAmazonS3
      * @param metadata
      * @param acl
      * @param storageClass
+     * @param userMetadata 
      * @return the version id, if the versioning was enabled
      */
     String createObject(@NotNull S3ObjectId objectId,
                         @NotNull S3ObjectContent content,
                         String contentType,
                         CannedAccessControlList acl,
-                        StorageClass storageClass);
+                        StorageClass storageClass, 
+                        Map<String, String> userMetadata);
 
     /**
      * Deletes and object.

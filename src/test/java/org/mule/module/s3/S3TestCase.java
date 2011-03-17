@@ -10,13 +10,14 @@
 
 package org.mule.module.s3;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
@@ -31,14 +32,17 @@ import com.amazonaws.services.s3.model.CopyObjectResult;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
 import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.StorageClass;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.Iterator;
 
 import org.apache.commons.io.input.NullInputStream;
 import org.hamcrest.BaseMatcher;
@@ -126,7 +130,7 @@ public class S3TestCase
                 new ObjectMetadata()), "metadata", "inputStream"))).thenReturn(new PutObjectResult());
 
         assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, "have a nice release", null, null, null,
-            null, null));
+            null, null, null));
     }
 
     @Test
@@ -136,7 +140,8 @@ public class S3TestCase
         when(
             client.putObject(argThat(new ContentMetadataMatcher(content.length(), "A5B69...", "text/plain")))).thenReturn(
             new PutObjectResult());
-        assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, content, null, "A5B69...", "text/plain", null, null));
+        assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, content, null, "A5B69...", "text/plain",
+            null, null, null));
     }
 
     @Test
@@ -148,7 +153,7 @@ public class S3TestCase
         request.setStorageClass(StorageClass.Standard);
         when(client.putObject(refEq(request, "metadata", "inputStream"))).thenReturn(new PutObjectResult());
         assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, "have a nice release", null, null,
-            "text/plain", "PublicRead", "Standard"));
+            "text/plain", "PublicRead", "Standard", null));
     }
 
     @Test
@@ -272,6 +277,40 @@ public class S3TestCase
         connector.deleteBucketPolicy(MY_BUCKET);
         verify(client).deleteBucketPolicy(MY_BUCKET);
     }
+
+    @Test
+    public void listObjects() throws Exception
+    {
+        Iterable<S3ObjectSummary> listObjects = connector.listObjects(MY_BUCKET, "mk");
+
+        ObjectListing firstListing = new ObjectListing();
+        firstListing.getObjectSummaries().add(newSummary("key1"));
+        firstListing.getObjectSummaries().add(newSummary("key2"));
+        firstListing.setTruncated(true);
+
+        ObjectListing secondListing = new ObjectListing();
+        secondListing.getObjectSummaries().add(newSummary("key3"));
+        secondListing.setTruncated(false);
+
+        when(client.listObjects(eq(MY_BUCKET), eq("mk"))).thenReturn(firstListing);
+        when(client.listNextBatchOfObjects(eq(firstListing))).thenReturn(secondListing);
+        
+        Iterator<S3ObjectSummary> iter = listObjects.iterator();
+        assertTrue(iter.hasNext());
+        assertEquals("key1", iter.next().getKey());
+        assertEquals("key2", iter.next().getKey());
+        assertEquals("key3", iter.next().getKey());
+        assertFalse(iter.hasNext());
+    }
+
+    private S3ObjectSummary newSummary(String key)
+    {
+        S3ObjectSummary summary = new S3ObjectSummary();
+        summary.setKey(key);
+        return summary;
+    }
+
+    // TODO versioning
 
     private final class ContentMetadataMatcher extends BaseMatcher<PutObjectRequest>
     {
