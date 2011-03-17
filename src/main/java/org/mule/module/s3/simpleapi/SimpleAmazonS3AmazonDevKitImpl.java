@@ -11,6 +11,7 @@
 package org.mule.module.s3.simpleapi;
 
 import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
@@ -33,6 +34,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.AbstractCollection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -40,6 +42,7 @@ import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.Validate;
 
 public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
@@ -79,8 +82,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 
     {
         Validate.notNull(bucketName);
-        ObjectListing objects = s3.listObjects(bucketName);
-        for (S3ObjectSummary summary : objects.getObjectSummaries())
+        for (S3ObjectSummary summary : listObjects(bucketName, null))
         {
             s3.deleteObject(bucketName, summary.getKey());
         }
@@ -88,10 +90,9 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 2.3
-    public Iterable<S3ObjectSummary> listObjects(@NotNull String bucketName, @NotNull String prefix)
+    public Iterable<S3ObjectSummary> listObjects(@NotNull String bucketName, String prefix)
     {
         Validate.notNull(bucketName);
-        Validate.notNull(prefix);
         return new S3ObjectSummaryIterable(bucketName, prefix);
     }
 
@@ -157,7 +158,10 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     {
         Validate.notNull(content);
         PutObjectRequest request = content.createPutObjectRequest();
-        request.getMetadata().setContentType(contentType);
+        if (request.getMetadata() != null)
+        {
+            request.getMetadata().setContentType(contentType);
+        }
         request.getMetadata().setUserMetadata(userMetadata);
         request.setBucketName(objectId.getBucketName());
         request.setKey(objectId.getKey());

@@ -219,12 +219,13 @@ public class S3CloudConnector implements Initialisable
      * Example: {@code <s3:list-objects bucketName="my-bucket" prefix="mk" />}
      * 
      * @param bucketName
-     * @param prefix
+     * @param prefix the prefix of the objects to be listed. If absent, all objects
+     *            are listed
      * @return An iterable
      */
     @Operation
     public Iterable<S3ObjectSummary> listObjects(@Parameter(optional = false) String bucketName,
-                                                 @Parameter(optional = false) String prefix)
+                                                 @Parameter(optional = true) String prefix)
     {
         return client.listObjects(bucketName, prefix);
     }

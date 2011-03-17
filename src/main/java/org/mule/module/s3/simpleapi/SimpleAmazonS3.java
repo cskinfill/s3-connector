@@ -82,7 +82,7 @@ public interface SimpleAmazonS3
      */
     void deleteBucketAndObjects(@NotNull String bucketName);
 
-    Iterable<S3ObjectSummary> listObjects(@NotNull String bucketName, @NotNull String prefix);
+    Iterable<S3ObjectSummary> listObjects(@NotNull String bucketName, String prefix);
 
     void deleteBucketPolicy(@NotNull String bucketName);
 

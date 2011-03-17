@@ -8,13 +8,16 @@
  * LICENSE.txt file.
  */
 
-package org.mule.module.s3;
+package org.mule.module.s3.integration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import org.mule.api.lifecycle.InitialisationException;
+import org.mule.module.s3.S3CloudConnector;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.Bucket;
@@ -27,15 +30,15 @@ public class S3TestDriver
 {
     private S3CloudConnector connector;
     private String bucketName;
-    private String accessKey;
-    private String secretKey;
 
     @Before
-    public void setup()
+    public void setup() throws InitialisationException
     {
         connector = new S3CloudConnector();
-        connector.setAccessKey(accessKey);
-        connector.setSecretKey(secretKey);
+        connector.setAccessKey(System.getenv("user.key.access"));
+        connector.setSecretKey(System.getenv("user.key.secret"));
+        bucketName = System.getenv("bucket.name");
+        connector.initialise();
     }
 
     @After
@@ -44,18 +47,12 @@ public class S3TestDriver
         connector.deleteBucket(bucketName, true);
     }
 
-    @Test
-    public void testDeleteUnexistent() throws Exception
-    {
-        connector.deleteBucket("NonExistentBucket", true);
-    }
 
     @Test(expected = AmazonServiceException.class)
     public void testDeleteNoForce() throws Exception
     {
         connector.createBucket(bucketName, null, "Private");
         connector.createObject(bucketName, "anObject", "hello world", null, null, null, null, null, null);
-
         connector.deleteBucket(bucketName, false);
     }
 

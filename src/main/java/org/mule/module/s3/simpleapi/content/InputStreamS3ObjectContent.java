@@ -22,6 +22,7 @@ import java.io.InputStream;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang.Validate;
+
 public class InputStreamS3ObjectContent implements S3ObjectContent
 {
     private final InputStream inputStream;
@@ -40,7 +41,10 @@ public class InputStreamS3ObjectContent implements S3ObjectContent
     {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(length);
-        metadata.setContentMD5(md5base64);
+        if (md5base64 != null)
+        {
+            metadata.setContentMD5(md5base64);
+        }
         return new PutObjectRequest(null, null, inputStream, metadata);
     }
 
