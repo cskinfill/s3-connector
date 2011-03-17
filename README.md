@@ -62,47 +62,91 @@ Create Bucket
 
 Example: 
 
-     <s3:create-bucket bucketName="myBucket" acl="Private" 
+     <s3:create-bucket bucketName="myBucket" acl="Private"/> 
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName||no||
-|region||yes||
-|acl||yes||
+|bucketName| mandatory. The bucket to create|no||
+|region| optional. The region were to create the bucket. Default is
+           US_STANDARD|yes||
+|acl| optional. TODO default ACL is not clear enough in the AmazonS3|yes||
 
-Delete Bucket And Objects
--------------------------
+Delete Bucket
+-------------
 
-| attribute | description | optional | default value | possible values |
-|:-----------|:-----------|:---------|:--------------|:----------------|
-|config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName||no||
-|force||yes|false|
+Example: 
 
-Delete Bucket Policy
---------------------
+     <s3:delete-bucket bucketName="myBucket" force="true"/> 
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName||no||
+|bucketName| mandatory the bucket to delete|no||
+|force| optional {@code true} if the bucket must be deleted even if it is
+           not empty, {@code false} if operation should fail in such scenario.
+           Default is {@code false}|yes|false|
 
 Delete Bucket Website Configuration
 -----------------------------------
 
+Example: 
+
+     <s3:delete-bucket-website-configuration
+    bucketName="myBucket"/>
+
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName||no||
+|bucketName| mandatory the bucket whose policy to delete|no||
 
 Get Bucket Policy
 -----------------
 
+Example: 
+
+     <s3:get-bucket-policy bucketName="myBucket"/>
+
+| attribute | description | optional | default value | possible values |
+|:-----------|:-----------|:---------|:--------------|:----------------|
+|config-ref|Specify which configuration to use for this invocation|yes||
+|bucketName| mandatory the bucket whose policy to retrieve|no||
+
+Set Bucket Policy
+-----------------
+
+Example: 
+
+     <s3:set-bucket-policy bucketName="myBucket"
+    policyText="your policy" />
+
+| attribute | description | optional | default value | possible values |
+|:-----------|:-----------|:---------|:--------------|:----------------|
+|config-ref|Specify which configuration to use for this invocation|yes||
+|bucketName| mandatory the bucket name|no||
+|policyText| mandatory the policy text|no||
+
+Delete Bucket Policy
+--------------------
+
+Example: 
+
+     <s3:delete-bucket-policy bucketName="myBucket"/>
+
+| attribute | description | optional | default value | possible values |
+|:-----------|:-----------|:---------|:--------------|:----------------|
+|config-ref|Specify which configuration to use for this invocation|yes||
+|bucketName| mandatory the bucket whose policy to delete|no||
+
+Set Bucket Website Configuration
+--------------------------------
+
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName||no||
+|suffix||no||
+|errorPage||yes||
 
 Get Bucket Website Configuration
 --------------------------------
@@ -128,25 +172,6 @@ List Objects
 |bucketName||no||
 |prefix||no||
 
-Set Bucket Policy
------------------
-
-| attribute | description | optional | default value | possible values |
-|:-----------|:-----------|:---------|:--------------|:----------------|
-|config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName||no||
-|policyText||no||
-
-Set Bucket Website Configuration
---------------------------------
-
-| attribute | description | optional | default value | possible values |
-|:-----------|:-----------|:---------|:--------------|:----------------|
-|config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName||no||
-|suffix||no||
-|errorPage||yes||
-
 Create Object
 -------------
 
@@ -155,7 +180,7 @@ Create Object
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName||no||
 |key||no||
-|input||no||
+|content||no||
 |contentType||yes||
 |acl||yes||
 |storageClass||yes||
@@ -170,8 +195,8 @@ Delete Object
 |key||no||
 |versionId||yes||
 
-Change Object Storage Class
----------------------------
+Set Object Storage Class
+------------------------
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -179,6 +204,23 @@ Change Object Storage Class
 |bucketName||no||
 |key||no||
 |newStorageClass||no||
+
+Copy Object
+-----------
+
+| attribute | description | optional | default value | possible values |
+|:-----------|:-----------|:---------|:--------------|:----------------|
+|config-ref|Specify which configuration to use for this invocation|yes||
+|sourceBucketName||no||
+|sourceKey||no||
+|sourceVersionId||yes||
+|destinationBucketName||yes||
+|destinationKey||no||
+|destinationAcl||yes||
+|destinationStorageClass||yes||
+
+
+
 
 
 
