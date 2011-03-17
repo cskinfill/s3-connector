@@ -195,7 +195,7 @@ public class S3TestCase
         s3Object.setObjectContent(content);
 
         when(client.getObject(refEq(new GetObjectRequest(MY_BUCKET, MY_OBJECT)))).thenReturn(s3Object);
-        assertSame(content, connector.getObjectContent(MY_BUCKET, MY_OBJECT, null));
+        assertSame(content, connector.getObjectContent(MY_BUCKET, MY_OBJECT, null, null, null));
     }
 
     @Test
@@ -206,7 +206,7 @@ public class S3TestCase
         s3Object.setObjectContent(content);
 
         when(client.getObject(refEq(new GetObjectRequest(MY_BUCKET, MY_OBJECT, "9")))).thenReturn(s3Object);
-        assertSame(content, connector.getObjectContent(MY_BUCKET, MY_OBJECT, "9"));
+        assertSame(content, connector.getObjectContent(MY_BUCKET, MY_OBJECT, "9", null, null));
     }
 
     @Test

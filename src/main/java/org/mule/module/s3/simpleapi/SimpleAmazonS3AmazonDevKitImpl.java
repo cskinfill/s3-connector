@@ -229,12 +229,14 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 
     // TODO 3. conditional get
     // 4.3
-    public InputStream getObjectContent(@NotNull S3ObjectId objectId)
+    public InputStream getObjectContent(@NotNull S3ObjectId objectId, Date modifiedSince, Date unmodifiedSince)
     {
         Validate.notNull(objectId);
-        return s3.getObject(
-            new GetObjectRequest(objectId.getBucketName(), objectId.getKey(), objectId.getVersionId()))
-            .getObjectContent();
+        GetObjectRequest request = new GetObjectRequest(objectId.getBucketName(), objectId.getKey(),
+            objectId.getVersionId());
+        request.setModifiedSinceConstraint(modifiedSince);
+        request.setUnmodifiedSinceConstraint(unmodifiedSince);
+        return s3.getObject(request).getObjectContent();
     }
 
     public ObjectMetadata getObjectMetadata(@NotNull S3ObjectId objectId)

@@ -167,10 +167,12 @@ public interface SimpleAmazonS3
      * Answers the ObjectMetadata content a given {@link S3ObjectId}.
      * 
      * @param objectId
-     * @return
+     * @param modifiedSince
+     * @param unmodifiedSince
+     * @return an input stream to the contents of the object
      * @see AmazonS3#getObject(com.amazonaws.services.s3.model.GetObjectMetadataRequest)
      */
-    InputStream getObjectContent(@NotNull S3ObjectId objectId);
+    InputStream getObjectContent(@NotNull S3ObjectId objectId, Date modifiedSince, Date unmodifiedSince);
 
     /**
      * Answers the ObjectMetadata for a given {@link S3ObjectId}

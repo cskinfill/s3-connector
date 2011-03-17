@@ -327,6 +327,7 @@ public class S3CloudConnector implements Initialisable
             toAcl(destinationAcl), toStorageClass(destinationStorageClass));
     }
 
+    
     @Operation
     public URI createPresignedUri(@Parameter(optional = false) String bucketName,
                                   @Parameter(optional = false) String key,
@@ -346,10 +347,12 @@ public class S3CloudConnector implements Initialisable
     @Operation
     public InputStream getObjectContent(@Parameter(optional = false) String bucketName,
                                         @Parameter(optional = false) String key,
-                                        @Parameter(optional = true) String versionId)
-
+                                        @Parameter(optional = true) String versionId,
+                                        @Parameter(optional = true) Date modifiedSince,
+                                        @Parameter(optional = true) Date unmodifiedSince)
     {
-        return client.getObjectContent(new S3ObjectId(bucketName, key, versionId));
+        return client.getObjectContent(new S3ObjectId(bucketName, key, versionId), modifiedSince,
+            unmodifiedSince);
     }
 
     @Operation

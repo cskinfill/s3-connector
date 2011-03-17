@@ -180,6 +180,9 @@ Example
 List Objects
 ------------
 
+Lazily lists all objects for a given prefix. As S3 does not limit in any way
+the number of objects, such listing can retrieve an arbitrary amount of
+objects, and may need to perform extra calls to the api while it is iterated.
 Example: 
 
      <s3:list-objects bucketName="my-bucket" prefix="mk" />
@@ -188,7 +191,8 @@ Example:
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName||no||
-|prefix||no||
+|prefix| the prefix of the objects to be listed. If absent, all objects
+           are listed|yes||
 
 Create Object
 -------------
@@ -215,6 +219,7 @@ arrays and Files. Example:
 |contentType||yes||
 |acl||yes|Private|
 |storageClass||yes|Standard|
+|userMetadata| TODO|yes||
 
 Delete Object
 -------------
@@ -238,7 +243,7 @@ Set Object Storage Class
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName||no||
 |key||no||
-|newStorageClass||no||
+|storageClass||no||
 
 Copy Object
 -----------
@@ -283,6 +288,8 @@ Get Object Content
 |bucketName||no||
 |key||no||
 |versionId||yes||
+|modifiedSince||yes||
+|unmodifiedSince||yes||
 
 Get Object Metadata
 -------------------
@@ -303,6 +310,15 @@ Get Object
 |bucketName||no||
 |key||no||
 |versionId||yes||
+
+Set Bucket Versioning Status
+----------------------------
+
+| attribute | description | optional | default value | possible values |
+|:-----------|:-----------|:---------|:--------------|:----------------|
+|config-ref|Specify which configuration to use for this invocation|yes||
+|bucketName||no||
+|versioningStatus||no||
 
 
 
