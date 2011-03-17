@@ -224,7 +224,7 @@ public class S3TestCase
         S3Object s3Object = new S3Object();
 
         when(client.getObject(refEq(new GetObjectRequest(MY_BUCKET, MY_OBJECT)))).thenReturn(s3Object);
-        assertSame(s3Object, connector.getObject(MY_BUCKET, MY_OBJECT, null));
+        assertSame(s3Object, connector.getObject(MY_BUCKET, MY_OBJECT, null, null, null));
     }
 
     @Test

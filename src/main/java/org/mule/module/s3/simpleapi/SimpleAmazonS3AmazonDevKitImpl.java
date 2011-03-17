@@ -10,6 +10,8 @@
 
 package org.mule.module.s3.simpleapi;
 
+import org.mule.tools.cloudconnect.annotations.Parameter;
+
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
@@ -232,11 +234,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     public InputStream getObjectContent(@NotNull S3ObjectId objectId, Date modifiedSince, Date unmodifiedSince)
     {
         Validate.notNull(objectId);
-        GetObjectRequest request = new GetObjectRequest(objectId.getBucketName(), objectId.getKey(),
-            objectId.getVersionId());
-        request.setModifiedSinceConstraint(modifiedSince);
-        request.setUnmodifiedSinceConstraint(unmodifiedSince);
-        return s3.getObject(request).getObjectContent();
+        return getObject(objectId, modifiedSince, unmodifiedSince).getObjectContent();
     }
 
     public ObjectMetadata getObjectMetadata(@NotNull S3ObjectId objectId)
@@ -246,11 +244,14 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
             objectId.getVersionId()));
     }
 
-    public S3Object getObject(@NotNull S3ObjectId objectId)
+    public S3Object getObject(@NotNull S3ObjectId objectId, Date modifiedSince, Date unmodifiedSince)
     {
         Validate.notNull(objectId);
-        return s3.getObject(new GetObjectRequest(objectId.getBucketName(), objectId.getKey(),
-            objectId.getVersionId()));
+        GetObjectRequest request = new GetObjectRequest(objectId.getBucketName(), objectId.getKey(),
+            objectId.getVersionId());
+        request.setModifiedSinceConstraint(modifiedSince);
+        request.setUnmodifiedSinceConstraint(unmodifiedSince);
+        return s3.getObject(request);
     }
 
     public void setBucketVersioningStatus(@NotNull String bucketName, @NotNull String versioningStatus)

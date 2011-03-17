@@ -188,11 +188,13 @@ public interface SimpleAmazonS3
      * with caution</strong>, as the retrieved object has an already open inputStream
      * to the object contents. It should be closed quickly.
      * 
-     * @see AmazonS3#getObject(com.amazonaws.services.s3.model.GetObjectRequest)
      * @param objectId
+     * @param unmodifiedSince
+     * @param modifiedSince
      * @return
+     * @see AmazonS3#getObject(com.amazonaws.services.s3.model.GetObjectRequest)
      */
-    S3Object getObject(@NotNull S3ObjectId objectId);
+    S3Object getObject(@NotNull S3ObjectId objectId, Date modifiedSince, Date unmodifiedSince);
 
     void setBucketVersioningStatus(@NotNull String bucketName, @NotNull String versioningStatus);
 
