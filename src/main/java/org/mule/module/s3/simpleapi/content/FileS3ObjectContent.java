@@ -10,7 +10,6 @@
 
 package org.mule.module.s3.simpleapi.content;
 
-import org.mule.module.s3.simpleapi.SimpleAmazonS3;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3.S3ObjectContent;
 
 import com.amazonaws.services.s3.model.ObjectMetadata;

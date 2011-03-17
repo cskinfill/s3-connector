@@ -14,6 +14,7 @@ import com.amazonaws.AmazonClientException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.BucketVersioningConfiguration;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
@@ -25,6 +26,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.SetBucketVersioningConfigurationRequest;
 import com.amazonaws.services.s3.model.StorageClass;
 
 import java.io.InputStream;
@@ -169,8 +171,8 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 
     // 4.2
     public void deleteObject(@NotNull S3ObjectId objectId)
-
     {
+        Validate.notNull(objectId);
         if (objectId.isVersioned())
         {
             s3.deleteVersion(objectId.getBucketName(), objectId.getKey(), objectId.getVersionId());
@@ -187,6 +189,8 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
                              CannedAccessControlList acl,
                              StorageClass storageClass)
     {
+        Validate.notNull(source);
+        Validate.notNull(destination);
         CopyObjectRequest request = new CopyObjectRequest(source.getBucketName(), source.getKey(),
             source.getVersionId(), destination.getBucketName(), destination.getKey());
         request.setCannedAccessControlList(acl);
@@ -200,6 +204,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     // 4.5
     public URI createPresignedUri(@NotNull S3ObjectId objectId, Date expiration, HttpMethod method)
     {
+        Validate.notNull(objectId);
         try
         {
             return s3.generatePresignedUrl(objectId.getBucketName(), objectId.getKey(), expiration, method)
@@ -222,22 +227,34 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     // 4.3
     public InputStream getObjectContent(@NotNull S3ObjectId objectId)
     {
+        Validate.notNull(objectId);
         return s3.getObject(
             new GetObjectRequest(objectId.getBucketName(), objectId.getKey(), objectId.getVersionId()))
             .getObjectContent();
     }
 
     public ObjectMetadata getObjectMetadata(@NotNull S3ObjectId objectId)
-
     {
+        Validate.notNull(objectId);
         return s3.getObjectMetadata(new GetObjectMetadataRequest(objectId.getBucketName(), objectId.getKey(),
             objectId.getVersionId()));
     }
 
     public S3Object getObject(@NotNull S3ObjectId objectId)
     {
+        Validate.notNull(objectId);
         return s3.getObject(new GetObjectRequest(objectId.getBucketName(), objectId.getKey(),
             objectId.getVersionId()));
+    }
+
+    public void setBucketVersioningStatus(@NotNull String bucketName, @NotNull String versioningStatus)
+    {
+        Validate.notNull(bucketName);
+        Validate.isTrue(versioningStatus.equals(BucketVersioningConfiguration.ENABLED)
+                        || versioningStatus.equals(BucketVersioningConfiguration.OFF)
+                        || versioningStatus.equals(BucketVersioningConfiguration.SUSPENDED));
+        s3.setBucketVersioningConfiguration(new SetBucketVersioningConfigurationRequest(bucketName,
+            new BucketVersioningConfiguration(versioningStatus)));
     }
 
     /**

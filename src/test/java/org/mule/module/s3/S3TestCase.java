@@ -10,9 +10,11 @@
 
 package org.mule.module.s3;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.refEq;
@@ -38,6 +40,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.SetBucketVersioningConfigurationRequest;
 import com.amazonaws.services.s3.model.StorageClass;
 
 import java.net.URI;
@@ -144,6 +147,16 @@ public class S3TestCase
             null, null, null));
     }
 
+    @Test
+    public void createObjectInputStreamParameter()
+    {
+        long contentLength = 100L;
+        when(client.putObject(argThat(new ContentMetadataMatcher(contentLength, "A5B69...", "text/plain")))).thenReturn(
+            new PutObjectResult());
+        assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, new NullInputStream(0), contentLength,
+            "A5B69...", "text/plain", null, null, null));
+    }
+    
     @Test
     public void createObjectWithFullOptions() throws Exception
     {
@@ -294,7 +307,7 @@ public class S3TestCase
 
         when(client.listObjects(eq(MY_BUCKET), eq("mk"))).thenReturn(firstListing);
         when(client.listNextBatchOfObjects(eq(firstListing))).thenReturn(secondListing);
-        
+
         Iterator<S3ObjectSummary> iter = listObjects.iterator();
         assertTrue(iter.hasNext());
         assertEquals("key1", iter.next().getKey());
@@ -303,14 +316,33 @@ public class S3TestCase
         assertFalse(iter.hasNext());
     }
 
+    @Test
+    public void setBucketVersioningStatus() throws Exception
+    {
+        connector.setBucketVersioningStatus(MY_BUCKET, "Enabled");
+
+        verify(client).setBucketVersioningConfiguration(
+            argThat(new BaseMatcher<SetBucketVersioningConfigurationRequest>()
+            {
+                public boolean matches(Object item)
+                {
+                    SetBucketVersioningConfigurationRequest request = (SetBucketVersioningConfigurationRequest) item;
+                    return request.getBucketName().equals(MY_BUCKET)
+                           & request.getVersioningConfiguration().getStatus().equals("Enabled");
+                }
+
+                public void describeTo(Description description)
+                {
+                }
+            }));
+    }
+
     private S3ObjectSummary newSummary(String key)
     {
         S3ObjectSummary summary = new S3ObjectSummary();
         summary.setKey(key);
         return summary;
     }
-
-    // TODO versioning
 
     private final class ContentMetadataMatcher extends BaseMatcher<PutObjectRequest>
     {

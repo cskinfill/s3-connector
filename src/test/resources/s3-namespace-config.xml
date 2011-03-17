@@ -21,20 +21,18 @@
 	</flow>
 
 
-	<flow name="CreateBucketFlow">
-		<s3:create-bucket bucketName="mule.connector.s3.test"
-			acl="Private" />
-	</flow>
-
-	<flow name="DeleteBucketFlow">
+	<flow name="BucketCrudFlow">
 		<s3:delete-bucket bucketName="mule.connector.s3.test"
 			force="false" />
+		<s3:create-bucket bucketName="mule.connector.s3.test"
+			acl="Private" />
 	</flow>
 
 	<flow name="GetObjectMetadata">
 		<s3:get-object-metadata bucketName="#[map-payload:bucketName]"
 			key="#[map-payload:key]" />
 	</flow>
+
 
 	<flow name="CreateAndCopyBucketFlow">
 		<description>Creates an object named "anObject", and the copies it to
@@ -50,13 +48,37 @@
 			prefix="" />
 	</flow>
 
-	<flow name="DeleteSetAndGetBucketPolicyFlow">
+	<flow name="BucketPolicyCrudFlow">
 		<description>Deletes existing bucket policy, sets a new one an
 			returns
 			it</description>
 		<s3:delete-bucket-policy bucketName="mule.connector.s3.test" />
 		<s3:set-bucket-policy bucketName="mule.connector.s3.test"
-			policyText="TODO: write a policy" />
+			policyText="a policy" />
 		<s3:get-bucket-policy bucketName="mule.connector.s3.test" />
 	</flow>
+
+	<flow name="CreateUriFlow">
+		<s3:create-presigned-uri bucketName="mule.connector.s3.test"
+			key="anObject" method="GET" />
+	</flow>
+
+	<flow name="StorageClassCrudFlow">
+		<s3:set-object-storage-class bucketName="mule.connector.s3.test"
+			key="anObject" storageClass="Standard" />
+	</flow>
+
+	<flow name="ObjectCrudFlow">
+		<s3:create-object bucketName="mule.connector.s3.test"
+			key="anObject" content="hello world!" contentType="text/plain"
+			contentMd5="c897d1410af8f2c74fba11b1db511e9e" />
+		<s3:delete-object bucketName="mule.connector.s3.test"
+			key="anObject" versionId="15" />
+	</flow>
+
+	<flow name="SetBucketVersioningStatusFlow">
+		<s3:set-bucket-versioning-status
+			bucketName="mule.connector.s3.test" versioningStatus="Suspended" />
+	</flow>
+
 </mule>

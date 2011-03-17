@@ -115,14 +115,14 @@ public interface SimpleAmazonS3
      * @param metadata
      * @param acl
      * @param storageClass
-     * @param userMetadata 
+     * @param userMetadata
      * @return the version id, if the versioning was enabled
      */
     String createObject(@NotNull S3ObjectId objectId,
                         @NotNull S3ObjectContent content,
                         String contentType,
                         CannedAccessControlList acl,
-                        StorageClass storageClass, 
+                        StorageClass storageClass,
                         Map<String, String> userMetadata);
 
     /**
@@ -192,6 +192,8 @@ public interface SimpleAmazonS3
      */
     S3Object getObject(@NotNull S3ObjectId objectId);
 
+    void setBucketVersioningStatus(@NotNull String bucketName, @NotNull String versioningStatus);
+
     /**
      * The content to be uploaded to S3, capable of creating a
      * {@link PutObjectRequest}.
@@ -206,4 +208,5 @@ public interface SimpleAmazonS3
          */
         PutObjectRequest createPutObjectRequest();
     }
+
 }

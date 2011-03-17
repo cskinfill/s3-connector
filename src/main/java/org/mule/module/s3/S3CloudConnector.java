@@ -34,7 +34,6 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
@@ -285,10 +284,10 @@ public class S3CloudConnector implements Initialisable
     @Operation
     public void setObjectStorageClass(@Parameter(optional = false) String bucketName,
                                       @Parameter(optional = false) String key,
-                                      @Parameter(optional = false) String newStorageClass)
+                                      @Parameter(optional = false) String storageClass)
     {
-        Validate.notNull(newStorageClass);
-        client.setObjectStorageClass(new S3ObjectId(bucketName, key), toStorageClass(newStorageClass));
+        Validate.notNull(storageClass);
+        client.setObjectStorageClass(new S3ObjectId(bucketName, key), toStorageClass(storageClass));
     }
 
     private StorageClass toStorageClass(String storageClass)
@@ -369,6 +368,13 @@ public class S3CloudConnector implements Initialisable
         return client.getObject(new S3ObjectId(bucketName, key, versionId));
     }
 
+    @Operation
+    public void setBucketVersioningStatus(@Parameter(optional = false) String bucketName,
+                                          @Parameter(optional = false) String versioningStatus)
+    {
+        client.setBucketVersioningStatus(bucketName, versioningStatus);
+    }
+
     public void initialise() throws InitialisationException
     {
         if (client == null)
@@ -445,4 +451,5 @@ public class S3CloudConnector implements Initialisable
         }
         throw new IllegalArgumentException("Wrong input");
     }
+
 }
