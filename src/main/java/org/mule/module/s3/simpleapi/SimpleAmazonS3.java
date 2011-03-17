@@ -10,8 +10,6 @@
 
 package org.mule.module.s3.simpleapi;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
@@ -19,6 +17,7 @@ import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.StorageClass;
 
@@ -57,7 +56,7 @@ public interface SimpleAmazonS3
     /**
      * Creates a {@link Bucket}.
      * 
-     * @see AmazonS3#createBucket(CreateBucketRequest)
+     * @see AmazonS3#createBucket(com.amazonaws.services.s3.model.CreateBucketRequest)
      * @param bucketName mandatory
      * @param region optional
      * @param acl optional
@@ -111,15 +110,15 @@ public interface SimpleAmazonS3
      * 
      * @param objectId the id of the object to be created. If its versioned, its
      *            version is ignored
-     * @param input
+     * @param content
      * @param metadata
      * @param acl
      * @param storageClass
      * @return the version id, if the versioning was enabled
      */
     String createObject(@NotNull S3ObjectId objectId,
-                        @NotNull InputStream input,
-                        @NotNull ObjectMetadata metadata,
+                        @NotNull S3ObjectContent content,
+                        String contentType,
                         CannedAccessControlList acl,
                         StorageClass storageClass);
 
@@ -189,4 +188,19 @@ public interface SimpleAmazonS3
      * @return
      */
     S3Object getObject(@NotNull S3ObjectId objectId);
+
+    /**
+     * The content to be uploaded to S3, capable of creating a
+     * {@link PutObjectRequest}.
+     */
+    public interface S3ObjectContent
+    {
+        /**
+         * Creates a {@link PutObjectRequest}, which grants to have its metadata
+         * object and its inputstream (or file), populated.
+         * 
+         * @return a new {@link PutObjectRequest}
+         */
+        PutObjectRequest createPutObjectRequest();
+    }
 }

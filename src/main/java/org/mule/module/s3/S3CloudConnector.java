@@ -10,11 +10,16 @@
 
 package org.mule.module.s3;
 
+import static org.mule.module.s3.util.InternalUtils.coalesce;
+
 import org.mule.api.lifecycle.Initialisable;
 import org.mule.api.lifecycle.InitialisationException;
 import org.mule.module.s3.simpleapi.S3ObjectId;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
+import org.mule.module.s3.simpleapi.SimpleAmazonS3.S3ObjectContent;
+import org.mule.module.s3.simpleapi.content.FileS3ObjectContent;
+import org.mule.module.s3.simpleapi.content.InputStreamS3ObjectContent;
 import org.mule.tools.cloudconnect.annotations.Connector;
 import org.mule.tools.cloudconnect.annotations.Operation;
 import org.mule.tools.cloudconnect.annotations.Parameter;
@@ -35,6 +40,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.StorageClass;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
@@ -223,12 +229,20 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
-     * Example: {@code <s3:create-object bucketName="my-bucket" key="helloWorld.txt"
-     * content="#[hello world]" contentType="text/plain" />}
+     * Uploads an object to S3. Supported contents are InputStreams, Strings, byte
+     * arrays and Files. Example: {@code <s3:create-object bucketName="my-bucket"
+     * key="helloWorld.txt" content="#[hello world]" contentType="text/plain" />}
      * 
      * @param bucketName
      * @param key
      * @param content
+     * @param contentLength the content length. If content is a InputStream or byte
+     *            arrays, this parameter should be passed, as not doing so will
+     *            introduce a severe performance loss, otherwise, it is ignored. A
+     *            content length of 0 is interpreted as an absent (null) content
+     *            length
+     * @param contentMd5 the content md5, encoded in base 64. If content is a file,
+     *            it is ignored.
      * @param contentType
      * @param acl
      * @param storageClass
@@ -238,16 +252,15 @@ public class S3CloudConnector implements Initialisable
     public String createObject(@Parameter(optional = false) String bucketName,
                                @Parameter(optional = false) String key,
                                @Parameter(optional = false) Object content,
+                               @Parameter(optional = true) Long contentLength,
+                               @Parameter(optional = true) String contentMd5,
                                @Parameter(optional = true) String contentType,
                                @Parameter(optional = true, defaultValue = "Private") String acl,
                                @Parameter(optional = true, defaultValue = "Standard") String storageClass)
     {
         // TODO add support for usermetadata
-
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentType(contentType);
-        return client.createObject(new S3ObjectId(bucketName, key), createContent(content), metadata,
-            toAcl(acl), toStorageClass(storageClass));
+        return client.createObject(new S3ObjectId(bucketName, key), createContent(content, contentLength,
+            contentMd5), contentType, toAcl(acl), toStorageClass(storageClass));
     }
 
     /**
@@ -400,26 +413,32 @@ public class S3CloudConnector implements Initialisable
         this.client = client;
     }
 
-    private static InputStream createContent(Object content)
+    /**
+     * Creates the {@link S3ObjectContent}. If content is a String or file, the
+     * content length parameter is ignored. Also contentMD5 is ignored if content is
+     * a file, too.
+     */
+    private static S3ObjectContent createContent(Object content, Long contentLength, String contentMd5)
     {
         if (content instanceof InputStream)
         {
-            return (InputStream) content;
+            return new InputStreamS3ObjectContent((InputStream) content, contentLength, contentMd5);
         }
         if (content instanceof String)
         {
-            return new ByteArrayInputStream(((String) content).getBytes());
+            String stringContent = (String) content;
+            return new InputStreamS3ObjectContent(new ByteArrayInputStream(stringContent.getBytes()),
+                (long) stringContent.length(), contentMd5);
         }
         if (content instanceof byte[])
         {
-            return new ByteArrayInputStream((byte[]) content);
+            return new InputStreamS3ObjectContent(new ByteArrayInputStream((byte[]) content), contentLength,
+                contentMd5);
+        }
+        if (content instanceof File)
+        {
+            return new FileS3ObjectContent((File) content);
         }
         throw new IllegalArgumentException("Wrong input");
     }
-
-    private <T> T coalesce(T o0, T o1)
-    {
-        return o0 != null ? o0 : o1;
-    }
-
 }

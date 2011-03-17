@@ -143,19 +143,18 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
         s3.setBucketWebsiteConfiguration(bucketName, configuration);
     }
 
-    // TODO provide md5 and content length
     // 4.1
     public String createObject(@NotNull S3ObjectId objectId,
-                               @NotNull InputStream input,
-                               @NotNull ObjectMetadata metadata,
+                               @NotNull S3ObjectContent content,
+                               String contentType,
                                CannedAccessControlList acl,
                                StorageClass storageClass)
-
     {
-        Validate.notNull(input);
-        Validate.notNull(metadata);
-        PutObjectRequest request = new PutObjectRequest(objectId.getBucketName(), objectId.getKey(), input,
-            metadata);
+        Validate.notNull(content);
+        PutObjectRequest request = content.createPutObjectRequest();
+        request.getMetadata().setContentType(contentType);
+        request.setBucketName(objectId.getBucketName());
+        request.setKey(objectId.getKey());
         request.setCannedAcl(acl);
         if (storageClass != null)
         {

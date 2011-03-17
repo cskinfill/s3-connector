@@ -51,7 +51,7 @@ public class S3TestDriver
     public void testDeleteNoForce() throws Exception
     {
         connector.createBucket(bucketName, null, "Private");
-        connector.createObject(bucketName, "anObject", "hello world", null, null, null);
+        connector.createObject(bucketName, "anObject", "hello world", null, null, null, null, null);
 
         connector.deleteBucket(bucketName, false);
     }
@@ -68,8 +68,8 @@ public class S3TestDriver
         assertEquals(bucketsCount + 1, connector.listBuckets().size());
         assertEquals(0, connector.listObjects(bucketName, "").getObjectSummaries().size());
 
-        String objectVersion = connector.createObject(bucketName, "anObject", "hello world!", "text/plain",
-            null, "Standard");
+        String objectVersion = connector.createObject(bucketName, "anObject", "hello world!", null,
+            null, "text/plain", null, "Standard");
         // Versioning is not enabled
         assertNull(objectVersion);
 

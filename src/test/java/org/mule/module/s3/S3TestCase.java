@@ -16,7 +16,7 @@ import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.when;
 
 import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
@@ -41,6 +41,8 @@ import java.net.URI;
 import java.net.URL;
 
 import org.apache.commons.io.input.NullInputStream;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -123,7 +125,18 @@ public class S3TestCase
             client.putObject(refEq(new PutObjectRequest(MY_BUCKET, MY_OBJECT, new NullInputStream(0),
                 new ObjectMetadata()), "metadata", "inputStream"))).thenReturn(new PutObjectResult());
 
-        assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, "have a nice release", null, null, null));
+        assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, "have a nice release", null, null, null,
+            null, null));
+    }
+
+    @Test
+    public void createObjectStringParameter()
+    {
+        String content = "hello";
+        when(
+            client.putObject(argThat(new ContentMetadataMatcher(content.length(), "A5B69...", "text/plain")))).thenReturn(
+            new PutObjectResult());
+        assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, content, null, "A5B69...", "text/plain", null, null));
     }
 
     @Test
@@ -134,8 +147,8 @@ public class S3TestCase
         request.setCannedAcl(CannedAccessControlList.PublicRead);
         request.setStorageClass(StorageClass.Standard);
         when(client.putObject(refEq(request, "metadata", "inputStream"))).thenReturn(new PutObjectResult());
-        assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, "have a nice release", "text/plain",
-            "PublicRead", "Standard"));
+        assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, "have a nice release", null, null,
+            "text/plain", "PublicRead", "Standard"));
     }
 
     @Test
@@ -228,9 +241,10 @@ public class S3TestCase
     public void setBucketWebsiteConfiguration() throws Exception
     {
         connector.setBucketWebsiteConfiguration(MY_BUCKET, "suffix1", "error.do");
-        verify(client).setBucketWebsiteConfiguration(eq(MY_BUCKET), refEq(new BucketWebsiteConfiguration("suffix1", "error.do")));
+        verify(client).setBucketWebsiteConfiguration(eq(MY_BUCKET),
+            refEq(new BucketWebsiteConfiguration("suffix1", "error.do")));
     }
-    
+
     @Test
     public void getBucketWebsiteConfiguration() throws Exception
     {
@@ -238,14 +252,13 @@ public class S3TestCase
         when(client.getBucketWebsiteConfiguration(MY_BUCKET)).thenReturn(config);
         assertSame(config, connector.getBucketWebsiteConfiguration(MY_BUCKET));
     }
-    
+
     @Test
     public void deleteBucketWebsiteConfiguration() throws Exception
     {
         connector.deleteBucketWebsiteConfiguration(MY_BUCKET);
         verify(client).deleteBucketWebsiteConfiguration(MY_BUCKET);
     }
-
 
     @Test(expected = IllegalArgumentException.class)
     public void setBucketWebsiteConfigurationNoSuffix() throws Exception
@@ -259,7 +272,33 @@ public class S3TestCase
         connector.deleteBucketPolicy(MY_BUCKET);
         verify(client).deleteBucketPolicy(MY_BUCKET);
     }
-    
-    
+
+    private final class ContentMetadataMatcher extends BaseMatcher<PutObjectRequest>
+    {
+
+        private final long contentLength;
+        private final String contentType;
+        private final String contentMd5;
+
+        public ContentMetadataMatcher(long contentLength, String contentMd5, String contentType)
+        {
+            this.contentLength = contentLength;
+            this.contentType = contentType;
+            this.contentMd5 = contentMd5;
+        }
+
+        public boolean matches(Object item)
+        {
+            PutObjectRequest request = (PutObjectRequest) item;
+            ObjectMetadata metadata = request.getMetadata();
+            return metadata.getContentLength() == contentLength
+                   && metadata.getContentType().equals(contentType)
+                   && metadata.getContentMD5().equals(contentMd5);
+        }
+
+        public void describeTo(Description description)
+        {
+        }
+    }
 
 }

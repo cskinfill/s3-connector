@@ -193,10 +193,11 @@ Example:
 Create Object
 -------------
 
-Example: 
+Uploads an object to S3. Supported contents are InputStreams, Strings, byte
+arrays and Files. Example: 
 
-     <s3:create-object bucketName="my-bucket" key="helloWorld.txt"
-    content="#[hello world]" contentType="text/plain" />
+     <s3:create-object bucketName="my-bucket"
+    key="helloWorld.txt" content="#[hello world]" contentType="text/plain" />
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -204,6 +205,13 @@ Example:
 |bucketName||no||
 |key||no||
 |content||no||
+|contentLength| the content length. If content is a InputStream or byte
+           arrays, this parameter should be passed, as not doing so will
+           introduce a severe performance loss, otherwise, it is ignored. A
+           content length of 0 is interpreted as an absent (null) content
+           length|yes||
+|contentMd5| the content md5, encoded in base 64. If content is a file,
+           it is ignored.|yes||
 |contentType||yes||
 |acl||yes|Private|
 |storageClass||yes|Standard|
