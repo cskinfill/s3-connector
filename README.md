@@ -62,30 +62,28 @@ Create Bucket
 
 Example: 
 
-     <s3:create-bucket bucketName="myBucket" acl="Private"/> 
+     <s3:create-bucket bucketName="my-bucket" acl="Private"/> 
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| mandatory. The bucket to create|no||
-|region| optional. The region were to create the bucket. Default is
-           US_STANDARD|yes||
-|acl| optional. TODO default ACL is not clear enough in the AmazonS3|yes||
+|bucketName| . The bucket to create|no||
+|region| optional|yes|US_Standard|
+|acl| optional|yes|Private|
 
 Delete Bucket
 -------------
 
 Example: 
 
-     <s3:delete-bucket bucketName="myBucket" force="true"/> 
+     <s3:delete-bucket bucketName="my-bucket" force="true"/> 
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| mandatory the bucket to delete|no||
-|force| optional {@code true} if the bucket must be deleted even if it is
-           not empty, {@code false} if operation should fail in such scenario.
-           Default is {@code false}|yes|false|
+|bucketName| the bucket to delete|no||
+|force| optional true if the bucket must be deleted even if it is not
+           empty, false if operation should fail in such scenario.|yes|false|
 
 Delete Bucket Website Configuration
 -----------------------------------
@@ -93,63 +91,75 @@ Delete Bucket Website Configuration
 Example: 
 
      <s3:delete-bucket-website-configuration
-    bucketName="myBucket"/>
+    bucketName="my-bucket"/>
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| mandatory the bucket whose policy to delete|no||
+|bucketName| the bucket whose policy to delete|no||
 
 Get Bucket Policy
 -----------------
 
 Example: 
 
-     <s3:get-bucket-policy bucketName="myBucket"/>
+     <s3:get-bucket-policy bucketName="my-bucket"/>
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| mandatory the bucket whose policy to retrieve|no||
+|bucketName| the bucket whose policy to retrieve|no||
 
 Set Bucket Policy
 -----------------
 
 Example: 
 
-     <s3:set-bucket-policy bucketName="myBucket"
+     <s3:set-bucket-policy bucketName="my-bucket"
     policyText="your policy" />
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| mandatory the bucket name|no||
-|policyText| mandatory the policy text|no||
+|bucketName| the bucket name|no||
+|policyText| the policy text|no||
 
 Delete Bucket Policy
 --------------------
 
 Example: 
 
-     <s3:delete-bucket-policy bucketName="myBucket"/>
+     <s3:delete-bucket-policy bucketName="my-bucket"/>
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| mandatory the bucket whose policy to delete|no||
+|bucketName| the bucket whose policy to delete|no||
 
 Set Bucket Website Configuration
 --------------------------------
+
+Example: 
+
+     <s3:set-bucket-website-configuration bucketName="my-bucket"
+    suffix="index.html" errorDocument="errorDocument.html" />
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName||no||
-|suffix||no||
-|errorPage||yes||
+|suffix| The document to serve when a directory is specified (ex:
+           index.html). This path is relative to the requested resource|no||
+|errorDocument| the full path to error document the bucket will use as
+           error page for 4XX errors|yes||
 
 Get Bucket Website Configuration
 --------------------------------
+
+Example: 
+
+     <s3:get-bucket-website-configuration bucketName="my-bucket"
+    />
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -159,12 +169,20 @@ Get Bucket Website Configuration
 List Buckets
 ------------
 
+Example 
+
+     <s3:list-buckets />
+
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 
 List Objects
 ------------
+
+Example: 
+
+     <s3:list-objects bucketName="my-bucket" prefix="mk" />
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -175,6 +193,11 @@ List Objects
 Create Object
 -------------
 
+Example: 
+
+     <s3:create-object bucketName="my-bucket" key="helloWorld.txt"
+    content="#[hello world]" contentType="text/plain" />
+
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
@@ -182,11 +205,15 @@ Create Object
 |key||no||
 |content||no||
 |contentType||yes||
-|acl||yes||
-|storageClass||yes||
+|acl||yes|Private|
+|storageClass||yes|Standard|
 
 Delete Object
 -------------
+
+Example: 
+
+     <s3:delete-object bucketName="my-bucket" key="foo.gzip"/> 
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -208,20 +235,66 @@ Set Object Storage Class
 Copy Object
 -----------
 
+Example: 
+
+     <s3:copy-object sourceBucketName="my-bucket"
+    sourceKey="foo.gzip" destinationKey="bar.gzip"
+    destinationStorageClass="Private" /> 
+
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |sourceBucketName||no||
 |sourceKey||no||
 |sourceVersionId||yes||
-|destinationBucketName||yes||
+|destinationBucketName| the destination object's bucket. If none
+           provided, a local copy is performed, that is, it is copied within
+           the same bucket.|yes||
 |destinationKey||no||
-|destinationAcl||yes||
-|destinationStorageClass||yes||
+|destinationAcl| the acl of the destination object.|yes|Private|
+|destinationStorageClass||yes|Standard|
 
+Create Presigned Uri
+--------------------
 
+| attribute | description | optional | default value | possible values |
+|:-----------|:-----------|:---------|:--------------|:----------------|
+|config-ref|Specify which configuration to use for this invocation|yes||
+|bucketName||no||
+|key||no||
+|versionId||yes||
+|expiration||yes||
+|method||yes|PUT|
 
+Get Object Content
+------------------
 
+| attribute | description | optional | default value | possible values |
+|:-----------|:-----------|:---------|:--------------|:----------------|
+|config-ref|Specify which configuration to use for this invocation|yes||
+|bucketName||no||
+|key||no||
+|versionId||yes||
+
+Get Object Metadata
+-------------------
+
+| attribute | description | optional | default value | possible values |
+|:-----------|:-----------|:---------|:--------------|:----------------|
+|config-ref|Specify which configuration to use for this invocation|yes||
+|bucketName||no||
+|key||no||
+|versionId||yes||
+
+Get Object
+----------
+
+| attribute | description | optional | default value | possible values |
+|:-----------|:-----------|:---------|:--------------|:----------------|
+|config-ref|Specify which configuration to use for this invocation|yes||
+|bucketName||no||
+|key||no||
+|versionId||yes||
 
 
 

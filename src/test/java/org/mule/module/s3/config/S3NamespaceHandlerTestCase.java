@@ -10,80 +10,42 @@
 
 package org.mule.module.s3.config;
 
+import org.mule.api.MuleMessage;
 import org.mule.construct.SimpleFlowConstruct;
 import org.mule.tck.FunctionalTestCase;
 
+import com.amazonaws.services.s3.model.ObjectMetadata;
+
+import java.util.HashMap;
+
 public class S3NamespaceHandlerTestCase extends FunctionalTestCase
 {
+
     @Override
     protected String getConfigResources()
     {
         return "s3-namespace-config.xml";
     }
 
-    public void testListBuckets() throws Exception
+    @Override
+    protected void doSetUp() throws Exception
     {
-        SimpleFlowConstruct flow = lookupFlowConstruct("ListBucketsFlow");
-//        MuleEvent event = getTestEvent("foobar");
-//        try
-//        {
-//            flow.process(event);
-//            fail();
-//        }
-//        catch (MuleException e)
-//        {
-//            assertTrue(e.getCause() instanceof AmazonServiceException);
-//        }
-        // assertEquals("[]", responseEvent.getMessage().getPayloadAsString());
+        getConfigResources();
     }
 
-    public void testCreateBucket() throws Exception
+    public void testGetBucketMetadata() throws Exception
     {
-        SimpleFlowConstruct flow = lookupFlowConstruct("CreateBucketFlow");
-//        MuleEvent event = getTestEvent("foobar");
-//        try
-//        {
-//            flow.process(event);
-//            fail();
-//        }
-//        catch (MuleException e)
-//        {
-//            assertTrue(e.getCause() instanceof AmazonServiceException);
-//        }
-    }
-
-    public void testDeleteBucket() throws Exception
-    {
-        SimpleFlowConstruct flow = lookupFlowConstruct("DeleteBucketFlow");
-//        MuleEvent event = getTestEvent("foobar");
-//        try
-//        {
-//            flow.process(event);
-//            fail();
-//        }
-//        catch (MuleException e)
-//        {
-//            assertTrue(e.getCause() instanceof AmazonServiceException);
-//        }
-    }
-
-    public void testCreateAndCopyBucket() throws Exception
-    {
-        SimpleFlowConstruct flow = lookupFlowConstruct("CreateAndCopyBucketFlow");
-//        MuleEvent event = getTestEvent("foobar");
-//        try
-//        {
-//            flow.process(event);
-//            fail();
-//        }
-//        catch (MuleException e)
-//        {
-//            assertTrue(e.getCause() instanceof AmazonServiceException);
-//        }
+        SimpleFlowConstruct flow = lookupFlowConstruct("GetObjectMetadata");
+        HashMap<String, String> properties = new HashMap<String, String>();
+        properties.put("bucketName", "codinghorrorimg");
+        properties.put("key", "codinghorror-bandwidth-usage.png");
+        MuleMessage message = flow.process(getTestEvent(properties)).getMessage();
+        assertTrue(message.getPayload() instanceof ObjectMetadata);
     }
 
     private SimpleFlowConstruct lookupFlowConstruct(String name)
     {
         return (SimpleFlowConstruct) muleContext.getRegistry().lookupFlowConstruct(name);
     }
+
 }

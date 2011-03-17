@@ -40,8 +40,13 @@ import java.net.URI;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 
+/**
+ * A cloud connector wrapper on {@link SimpleAmazonS3} api. Same exception handling
+ * policies applies
+ */
 @Connector(namespacePrefix = "s3", namespaceUri = "http://www.mulesoft.org/schema/mule/s3")
 public class S3CloudConnector implements Initialisable
 {
@@ -53,22 +58,21 @@ public class S3CloudConnector implements Initialisable
 
     private SimpleAmazonS3 client;
 
-    // TODO defaults
+    // TODO enums
 
     /**
-     * Example: {@code <s3:create-bucket bucketName="myBucket" acl="Private"/> }
+     * Example: {@code <s3:create-bucket bucketName="my-bucket" acl="Private"/> }
      * 
-     * @param bucketName mandatory. The bucket to create
-     * @param region optional. The region were to create the bucket. Default is
-     *            US_STANDARD
-     * @param acl optional. TODO default ACL is not clear enough in the AmazonS3
+     * @param bucketName . The bucket to create
+     * @param region optional
+     * @param acl optional
      * @return the new Bucket
      * @throws AmazonClientException
      */
     @Operation
     public Bucket createBucket(@Parameter(optional = false) String bucketName,
-                               @Parameter(optional = true) String region,
-                               @Parameter(optional = true) String acl)
+                               @Parameter(optional = true, defaultValue = "US_Standard") String region,
+                               @Parameter(optional = true, defaultValue = "Private") String acl)
     {
         return client.createBucket(bucketName, region, toAcl(acl));
     }
@@ -79,12 +83,11 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
-     * Example: {@code <s3:delete-bucket bucketName="myBucket" force="true"/> }
+     * Example: {@code <s3:delete-bucket bucketName="my-bucket" force="true"/> }
      * 
-     * @param bucketName mandatory the bucket to delete
-     * @param force optional {@code true} if the bucket must be deleted even if it is
-     *            not empty, {@code false} if operation should fail in such scenario.
-     *            Default is {@code false}
+     * @param bucketName the bucket to delete
+     * @param force optional true if the bucket must be deleted even if it is not
+     *            empty, false if operation should fail in such scenario.
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
@@ -104,9 +107,9 @@ public class S3CloudConnector implements Initialisable
 
     /**
      * Example: {@code <s3:delete-bucket-website-configuration
-     * bucketName="myBucket"/>}
+     * bucketName="my-bucket"/>}
      * 
-     * @param bucketName mandatory the bucket whose policy to delete
+     * @param bucketName the bucket whose policy to delete
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
@@ -117,10 +120,10 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
-     * Example: {@code <s3:get-bucket-policy bucketName="myBucket"/>}
+     * Example: {@code <s3:get-bucket-policy bucketName="my-bucket"/>}
      * 
-     * @param bucketName mandatory the bucket whose policy to retrieve
-     * @return the bucket policy TODO could be policy absent?
+     * @param bucketName the bucket whose policy to retrieve
+     * @return the bucket policy
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
@@ -131,11 +134,11 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
-     * Example: {@code <s3:set-bucket-policy bucketName="myBucket"
+     * Example: {@code <s3:set-bucket-policy bucketName="my-bucket"
      * policyText="your policy" />}
      * 
-     * @param bucketName mandatory the bucket name
-     * @param policyText mandatory the policy text
+     * @param bucketName the bucket name
+     * @param policyText the policy text
      */
     @Operation
     public void setBucketPolicy(@Parameter(optional = false) String bucketName,
@@ -145,9 +148,9 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
-     * Example: {@code <s3:delete-bucket-policy bucketName="myBucket"/>}
+     * Example: {@code <s3:delete-bucket-policy bucketName="my-bucket"/>}
      * 
-     * @param bucketName mandatory the bucket whose policy to delete
+     * @param bucketName the bucket whose policy to delete
      * @throws AmazonClientException
      * @throws AmazonServiceException
      */
@@ -157,21 +160,45 @@ public class S3CloudConnector implements Initialisable
         client.deleteBucketPolicy(bucketName);
     }
 
+    /**
+     * Example: {@code <s3:set-bucket-website-configuration bucketName="my-bucket"
+     * suffix="index.html" errorDocument="errorDocument.html" />}
+     * 
+     * @param bucketName
+     * @param suffix The document to serve when a directory is specified (ex:
+     *            index.html). This path is relative to the requested resource
+     * @param errorDocument the full path to error document the bucket will use as
+     *            error page for 4XX errors
+     */
     @Operation
     public void setBucketWebsiteConfiguration(@Parameter(optional = false) String bucketName,
                                               @Parameter(optional = false) String suffix,
-                                              @Parameter(optional = true) String errorPage)
+                                              @Parameter(optional = true) String errorDocument)
     {
-        client.setBucketWebsiteConfiguration(bucketName, errorPage != null ? new BucketWebsiteConfiguration(
-            suffix, errorPage) : new BucketWebsiteConfiguration(suffix));
+        client.setBucketWebsiteConfiguration(bucketName,
+            errorDocument != null
+                                 ? new BucketWebsiteConfiguration(suffix, errorDocument)
+                                 : new BucketWebsiteConfiguration(suffix));
     }
 
+    /**
+     * Example: {@code <s3:get-bucket-website-configuration bucketName="my-bucket"
+     * />}
+     * 
+     * @param bucketName
+     * @return a com.amazonaws.services.s3.model.BucketWebsiteConfiguration
+     */
     @Operation
     public BucketWebsiteConfiguration getBucketWebsiteConfiguration(@Parameter(optional = false) String bucketName)
     {
         return client.getBucketWebsiteConfiguration(bucketName);
     }
 
+    /**
+     * Example {@code <s3:list-buckets />}
+     * 
+     * @return a list of com.amazonaws.services.s3.model.BucketWebsiteConfiguration
+     */
     @Operation
     public List<Bucket> listBuckets()
     {
@@ -181,6 +208,13 @@ public class S3CloudConnector implements Initialisable
     // TODO return keys instead of an object listing?
     // TODO empty prefix for listing all objects?
     // TODO support pagination
+    /**
+     * Example: {@code <s3:list-objects bucketName="my-bucket" prefix="mk" />}
+     * 
+     * @param bucketName
+     * @param prefix
+     * @return TODO
+     */
     @Operation
     public ObjectListing listObjects(@Parameter(optional = false) String bucketName,
                                      @Parameter(optional = false) String prefix)
@@ -188,15 +222,27 @@ public class S3CloudConnector implements Initialisable
         return client.listObjects(bucketName, prefix);
     }
 
-    // TODO add support for usermetadata
+    /**
+     * Example: {@code <s3:create-object bucketName="my-bucket" key="helloWorld.txt"
+     * content="#[hello world]" contentType="text/plain" />}
+     * 
+     * @param bucketName
+     * @param key
+     * @param content
+     * @param contentType
+     * @param acl
+     * @param storageClass
+     * @return the id of the created object, or null, if versioning is not enabled
+     */
     @Operation
     public String createObject(@Parameter(optional = false) String bucketName,
                                @Parameter(optional = false) String key,
                                @Parameter(optional = false) Object content,
                                @Parameter(optional = true) String contentType,
-                               @Parameter(optional = true) String acl,
-                               @Parameter(optional = true) String storageClass)
+                               @Parameter(optional = true, defaultValue = "Private") String acl,
+                               @Parameter(optional = true, defaultValue = "Standard") String storageClass)
     {
+        // TODO add support for usermetadata
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentType(contentType);
@@ -204,6 +250,13 @@ public class S3CloudConnector implements Initialisable
             toAcl(acl), toStorageClass(storageClass));
     }
 
+    /**
+     * Example: {@code <s3:delete-object bucketName="my-bucket" key="foo.gzip"/> }
+     * 
+     * @param bucketName
+     * @param key
+     * @param versionId
+     */
     @Operation
     public void deleteObject(@Parameter(optional = false) String bucketName,
                              @Parameter(optional = false) String key,
@@ -226,25 +279,43 @@ public class S3CloudConnector implements Initialisable
         return storageClass != null ? StorageClass.valueOf(storageClass) : null;
     }
 
+    /**
+     * Example: {@code <s3:copy-object sourceBucketName="my-bucket"
+     * sourceKey="foo.gzip" destinationKey="bar.gzip"
+     * destinationStorageClass="Private" /> }
+     * 
+     * @param sourceBucketName
+     * @param sourceKey
+     * @param sourceVersionId
+     * @param destinationBucketName the destination object's bucket. If none
+     *            provided, a local copy is performed, that is, it is copied within
+     *            the same bucket.
+     * @param destinationKey
+     * @param destinationAcl the acl of the destination object.
+     * @param destinationStorageClass
+     * @return the version id of the new object, or null, if versioning is not
+     *         enabled
+     */
     @Operation
     public String copyObject(@Parameter(optional = false) String sourceBucketName,
                              @Parameter(optional = false) String sourceKey,
                              @Parameter(optional = true) String sourceVersionId,
                              @Parameter(optional = true) String destinationBucketName,
                              @Parameter(optional = false) String destinationKey,
-                             @Parameter(optional = true) String destinationAcl,
-                             @Parameter(optional = true) String destinationStorageClass)
+                             @Parameter(optional = true, defaultValue = "Private") String destinationAcl,
+                             @Parameter(optional = true, defaultValue = "Standard") String destinationStorageClass)
     {
         return client.copyObject(new S3ObjectId(sourceBucketName, sourceKey, sourceVersionId),
             new S3ObjectId(coalesce(destinationBucketName, sourceBucketName), destinationKey),
             toAcl(destinationAcl), toStorageClass(destinationStorageClass));
     }
 
+    @Operation
     public URI createPresignedUri(@Parameter(optional = false) String bucketName,
                                   @Parameter(optional = false) String key,
                                   @Parameter(optional = true) String versionId,
                                   @Parameter(optional = true) Date expiration,
-                                  @Parameter(optional = true) String method)
+                                  @Parameter(optional = true, defaultValue = "PUT") String method)
     {
         return client.createPresignedUri(new S3ObjectId(bucketName, key, versionId), expiration,
             toHttpMethod(method));
@@ -255,6 +326,7 @@ public class S3CloudConnector implements Initialisable
         return method != null ? HttpMethod.valueOf(method) : null;
     }
 
+    @Operation
     public InputStream getObjectContent(@Parameter(optional = false) String bucketName,
                                         @Parameter(optional = false) String key,
                                         @Parameter(optional = true) String versionId)
@@ -263,6 +335,7 @@ public class S3CloudConnector implements Initialisable
         return client.getObjectContent(new S3ObjectId(bucketName, key, versionId));
     }
 
+    @Operation
     public ObjectMetadata getObjectMetadata(@Parameter(optional = false) String bucketName,
                                             @Parameter(optional = false) String key,
                                             @Parameter(optional = true) String versionId)
@@ -271,6 +344,7 @@ public class S3CloudConnector implements Initialisable
         return client.getObjectMetadata(new S3ObjectId(bucketName, key, versionId));
     }
 
+    @Operation
     public S3Object getObject(@Parameter(optional = false) String bucketName,
                               @Parameter(optional = false) String key,
                               @Parameter(optional = true) String versionId)
@@ -294,7 +368,7 @@ public class S3CloudConnector implements Initialisable
      */
     private AmazonS3Client createAmazonS3()
     {
-        if (accessKey == null && secretKey == null)
+        if (StringUtils.isEmpty(accessKey) && StringUtils.isEmpty(secretKey))
         {
             return new AmazonS3Client();
         }

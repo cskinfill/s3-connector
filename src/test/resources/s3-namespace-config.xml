@@ -14,11 +14,12 @@
         http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.1/mule.xsd
         http://www.mulesoft.org/schema/mule/s3 http://www.mulesoft.org/schema/mule/s3/3.1/mule-s3.xsd">
 
-	<s3:config accessKey="lalalal" secretKey="lalala" />
+	<s3:config accessKey="" secretKey="" />
 
 	<flow name="ListBucketsFlow">
 		<s3:list-buckets />
 	</flow>
+
 
 	<flow name="CreateBucketFlow">
 		<s3:create-bucket bucketName="mule.connector.s3.test"
@@ -28,6 +29,11 @@
 	<flow name="DeleteBucketFlow">
 		<s3:delete-bucket bucketName="mule.connector.s3.test"
 			force="false" />
+	</flow>
+
+	<flow name="GetObjectMetadata">
+		<s3:get-object-metadata bucketName="#[map-payload:bucketName]"
+			key="#[map-payload:key]" />
 	</flow>
 
 	<flow name="CreateAndCopyBucketFlow">
@@ -45,7 +51,8 @@
 	</flow>
 
 	<flow name="DeleteSetAndGetBucketPolicyFlow">
-		<description>Deletes existing bucket policy, sets a new one an returns
+		<description>Deletes existing bucket policy, sets a new one an
+			returns
 			it</description>
 		<s3:delete-bucket-policy bucketName="mule.connector.s3.test" />
 		<s3:set-bucket-policy bucketName="mule.connector.s3.test"
