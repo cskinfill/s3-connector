@@ -164,24 +164,16 @@ public interface SimpleAmazonS3
     URI createPresignedUri(@NotNull S3ObjectId objectId, Date expiration, HttpMethod method);
 
     /**
-     * Answers the ObjectMetadata content a given {@link S3ObjectId}.
+     * Answers the object content a given {@link S3ObjectId}.
      * 
      * @param objectId
      * @param modifiedSince
      * @param unmodifiedSince
-     * @return an input stream to the contents of the object
+     * @return an input stream to the contents of the object, or null, if there
+     *         conditional request contraints were not met
      * @see AmazonS3#getObject(com.amazonaws.services.s3.model.GetObjectMetadataRequest)
      */
     InputStream getObjectContent(@NotNull S3ObjectId objectId, Date modifiedSince, Date unmodifiedSince);
-
-    /**
-     * Answers the ObjectMetadata for a given {@link S3ObjectId}
-     * 
-     * @param objectId
-     * @return
-     * @see AmazonS3#getObjectMetadata(com.amazonaws.services.s3.model.GetObjectMetadataRequest)
-     */
-    ObjectMetadata getObjectMetadata(@NotNull S3ObjectId objectId);
 
     /**
      * Retrieves an object from S3 given its id. <strong>Warning: use this method
@@ -191,10 +183,19 @@ public interface SimpleAmazonS3
      * @param objectId
      * @param unmodifiedSince
      * @param modifiedSince
-     * @return
+     * @return the object, or null, if conditional request constraints were not met
      * @see AmazonS3#getObject(com.amazonaws.services.s3.model.GetObjectRequest)
      */
     S3Object getObject(@NotNull S3ObjectId objectId, Date modifiedSince, Date unmodifiedSince);
+
+    /**
+     * Answers the ObjectMetadata for a given {@link S3ObjectId}
+     * 
+     * @param objectId
+     * @return
+     * @see AmazonS3#getObjectMetadata(com.amazonaws.services.s3.model.GetObjectMetadataRequest)
+     */
+    ObjectMetadata getObjectMetadata(@NotNull S3ObjectId objectId);
 
     void setBucketVersioningStatus(@NotNull String bucketName, @NotNull String versioningStatus);
 

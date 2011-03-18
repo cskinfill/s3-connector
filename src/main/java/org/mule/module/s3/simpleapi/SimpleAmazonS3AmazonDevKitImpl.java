@@ -229,12 +229,16 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
         s3.changeObjectStorageClass(objectId.getBucketName(), objectId.getKey(), newStorageClass);
     }
 
-    // TODO 3. conditional get
     // 4.3
     public InputStream getObjectContent(@NotNull S3ObjectId objectId, Date modifiedSince, Date unmodifiedSince)
     {
         Validate.notNull(objectId);
-        return getObject(objectId, modifiedSince, unmodifiedSince).getObjectContent();
+        S3Object object = getObject(objectId, modifiedSince, unmodifiedSince);
+        if (object == null)
+        {
+            return null;
+        }
+        return object.getObjectContent();
     }
 
     public ObjectMetadata getObjectMetadata(@NotNull S3ObjectId objectId)

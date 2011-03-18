@@ -31,10 +31,15 @@ import com.amazonaws.HttpMethod;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.internal.Constants;
 import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.BucketVersioningConfiguration;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.Permission;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.StorageClass;
@@ -219,8 +224,8 @@ public class S3CloudConnector implements Initialisable
      * Example: {@code <s3:list-objects bucketName="my-bucket" prefix="mk" />}
      * 
      * @param bucketName
-     * @param prefix the prefix of the objects to be listed. If absent, all objects
-     *            are listed
+     * @param prefix the prefix of the objects to be listed. If unspecified, all
+     *            objects are listed
      * @return An iterable
      */
     @Operation
@@ -239,10 +244,9 @@ public class S3CloudConnector implements Initialisable
      * @param key
      * @param content
      * @param contentLength the content length. If content is a InputStream or byte
-     *            arrays, this parameter should be passed, as not doing so will
+     *            arrays, this parameter should be specified, as not doing so will
      *            introduce a severe performance loss, otherwise, it is ignored. A
-     *            content length of 0 is interpreted as an absent (null) content
-     *            length
+     *            content length of 0 is interpreted as an unspecified content length
      * @param contentMd5 the content md5, encoded in base 64. If content is a file,
      *            it is ignored.
      * @param contentType
@@ -272,7 +276,9 @@ public class S3CloudConnector implements Initialisable
      * 
      * @param bucketName
      * @param key
-     * @param versionId
+     * @param versionId the specific version of the object to delete, if versioning
+     *            is enabled. Left unspecified if the latest version is desired, or
+     *            versioning is not enabled.
      */
     @Operation
     public void deleteObject(@Parameter(optional = false) String bucketName,
@@ -303,7 +309,9 @@ public class S3CloudConnector implements Initialisable
      * 
      * @param sourceBucketName
      * @param sourceKey
-     * @param sourceVersionId
+     * @param sourceVersionId the specific version of the source object to copy, if
+     *            versioning is enabled. Left unspecified if the latest version is
+     *            desired, or versioning is not enabled.
      * @param destinationBucketName the destination object's bucket. If none
      *            provided, a local copy is performed, that is, it is copied within
      *            the same bucket.
@@ -327,6 +335,26 @@ public class S3CloudConnector implements Initialisable
             toAcl(destinationAcl), toStorageClass(destinationStorageClass));
     }
 
+    /**
+     * Returns a pre-signed URL for accessing an Amazon S3 resource. Pre-signed URLs
+     * allow clients to form a URL for an Amazon S3 resource, and then sign it with
+     * the current AWS security credentials. The pre-signed URL can be shared to
+     * other users, allowing access to the resource without providing an account's
+     * AWS security credentials. Example: {@code <s3:create-presigned-uri
+     * bucketName="my-bucket" key="bar.xml" method="GET" /> }
+     * 
+     * @param bucketName The name of the bucket containing the desired object.
+     * @param key The key in the specified bucket under which the desired object is
+     *            stored.
+     * @param versionId the specific version of the object to create the URI, if
+     *            versioning is enabled. Left unspecified if the latest version is
+     *            desired, or versioning is not enabled.
+     * @param expiration The time at which the returned pre-signed URL will expire.
+     * @param method The HTTP method verb to use for this URL
+     * @return A pre-signed URI that can be used to access an Amazon S3 resource
+     *         without requiring the user of the URL to know the account's AWS
+     *         security credentials.
+     */
     @Operation
     public URI createPresignedUri(@Parameter(optional = false) String bucketName,
                                   @Parameter(optional = false) String key,
@@ -343,6 +371,28 @@ public class S3CloudConnector implements Initialisable
         return method != null ? HttpMethod.valueOf(method) : null;
     }
 
+    /**
+     * Gets the object stored in Amazon S3 under the specified bucket and key.
+     * Returns null if the specified constraints weren't met. To get an object from
+     * Amazon S3, the caller must have {@link Permission#Read} access to the object.
+     * Callers should be very careful when using this method; the returned Amazon S3
+     * object contains a direct stream of data from the HTTP connection. The
+     * underlying HTTP connection cannot be closed until the user finishes reading
+     * the data and closes the stream.
+     * 
+     * @param bucketName
+     * @param key
+     * @param versionId the specific version of the object to get its contents, if
+     *            versioning is enabled. Left unspecified if the latest version is
+     *            desired, or versioning is not enabled.
+     * @param modifiedSince The modified constraint that restricts this request to
+     *            executing only if the object has been modified after the specified
+     *            date. Amazon S3 will ignore any dates occurring in the future.
+     * @param unmodifiedSince The unmodified constraint that restricts this request
+     *            to executing only if the object has not been modified after this
+     *            date. Amazon S3 will ignore any dates occurring in the future.
+     * @return an input stream to the objects contents
+     */
     @Operation
     public InputStream getObjectContent(@Parameter(optional = false) String bucketName,
                                         @Parameter(optional = false) String key,
@@ -354,15 +404,20 @@ public class S3CloudConnector implements Initialisable
             unmodifiedSince);
     }
 
-    @Operation
-    public ObjectMetadata getObjectMetadata(@Parameter(optional = false) String bucketName,
-                                            @Parameter(optional = false) String key,
-                                            @Parameter(optional = true) String versionId)
-
-    {
-        return client.getObjectMetadata(new S3ObjectId(bucketName, key, versionId));
-    }
-
+    /**
+     * @param bucketName
+     * @param key
+     * @param versionId the specific version of the object to get its contents, if
+     *            versioning is enabled. Left unspecified if the latest version is
+     *            desired, or versioning is not enabled.
+     * @param modifiedSince The modified constraint that restricts this request to
+     *            executing only if the object has been modified after the specified
+     *            date. Amazon S3 will ignore any dates occurring in the future.
+     * @param unmodifiedSince The unmodified constraint that restricts this request
+     *            to executing only if the object has not been modified after this
+     *            date. Amazon S3 will ignore any dates occurring in the future.
+     * @return an input stream to the objects contents
+     */
     @Operation
     public S3Object getObject(@Parameter(optional = false) String bucketName,
                               @Parameter(optional = false) String key,
@@ -373,6 +428,26 @@ public class S3CloudConnector implements Initialisable
         return client.getObject(new S3ObjectId(bucketName, key, versionId), modifiedSince, unmodifiedSince);
     }
 
+    @Operation
+    public ObjectMetadata getObjectMetadata(@Parameter(optional = false) String bucketName,
+                                            @Parameter(optional = false) String key,
+                                            @Parameter(optional = true) String versionId)
+
+    {
+        return client.getObjectMetadata(new S3ObjectId(bucketName, key, versionId));
+    }
+
+    /**
+     * Sets the versioning status for the given bucket. A bucket's versioning
+     * configuration can be in one of three possible states: Off, Enabled and
+     * Suspended. By default, new buckets are in the Off state. Once versioning is
+     * enabled for a bucket the status can never be reverted to Off. Example: {@code
+     * <s3:set-bucket-versioning-status bucketName="my-bucket"
+     * versioningStatus="Suspended" />}
+     * 
+     * @param bucketName the target bucket name
+     * @param versioningStatus the version status to set
+     */
     @Operation
     public void setBucketVersioningStatus(@Parameter(optional = false) String bucketName,
                                           @Parameter(optional = false) String versioningStatus)
