@@ -21,6 +21,7 @@ import org.mule.module.s3.S3CloudConnector;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 
 import org.junit.After;
 import org.junit.Before;
@@ -51,7 +52,7 @@ public class S3TestDriver
     @Test(expected = AmazonServiceException.class)
     public void testDeleteNoForce() throws Exception
     {
-        connector.createBucket(bucketName, null, "Private");
+        connector.createBucket(bucketName, null, CannedAccessControlList.Private);
         connector.createObject(bucketName, "anObject", "hello world", null, null, null, null, null, null);
         connector.deleteBucket(bucketName, false);
     }

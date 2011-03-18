@@ -87,7 +87,7 @@ public class S3TestCase
     @Test
     public void createBucketWithAcl()
     {
-        connector.createBucket(MY_BUCKET, "US", "Private");
+        connector.createBucket(MY_BUCKET, "US", CannedAccessControlList.Private);
         CreateBucketRequest request = new CreateBucketRequest(MY_BUCKET, "US");
         request.setCannedAcl(CannedAccessControlList.Private);
         verify(client).createBucket(refEq(request));

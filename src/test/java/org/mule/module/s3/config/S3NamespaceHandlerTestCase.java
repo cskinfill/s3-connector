@@ -10,10 +10,12 @@
 
 package org.mule.module.s3.config;
 
+import org.mule.api.MuleException;
 import org.mule.api.MuleMessage;
 import org.mule.construct.SimpleFlowConstruct;
 import org.mule.tck.FunctionalTestCase;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 
 import java.util.HashMap;
@@ -31,6 +33,19 @@ public class S3NamespaceHandlerTestCase extends FunctionalTestCase
     protected void doSetUp() throws Exception
     {
         getConfigResources();
+    }
+
+    public void testBrokenEnums() throws Exception
+    {
+        try
+        {
+            lookupFlowConstruct("BrokenEnumsFlow").process(getTestEvent("hello"));
+        }
+        catch (MuleException e)
+        {
+            System.out.println(e.getMessage());
+            assertTrue(e.getCause() instanceof AmazonServiceException);
+        }
     }
 
     public void testGetBucketMetadata() throws Exception

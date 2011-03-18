@@ -92,9 +92,9 @@ public class S3CloudConnector implements Initialisable
     @Operation
     public Bucket createBucket(@Parameter(optional = false) String bucketName,
                                @Parameter(optional = true, defaultValue = "US_Standard") String region,
-                               @Parameter(optional = true, defaultValue = "Private") String acl)
+                               @Parameter(optional = true, defaultValue = "Private") CannedAccessControlList acl)
     {
-        return client.createBucket(bucketName, region, toAcl(acl));
+        return client.createBucket(bucketName, region, acl);
     }
 
     private CannedAccessControlList toAcl(String acl)

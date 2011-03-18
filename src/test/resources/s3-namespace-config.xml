@@ -20,7 +20,11 @@
 		<s3:list-buckets />
 	</flow>
 
-
+	<flow name="BrokenEnumsFlow">
+		<s3:create-bucket bucketName="mule.connector.s3.test"
+			acl="Private" />
+	</flow>
+	
 	<flow name="BucketCrudFlow">
 		<s3:delete-bucket bucketName="mule.connector.s3.test"
 			force="false" />
