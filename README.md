@@ -60,6 +60,18 @@ Here is detailed list of all the configuration attributes:
 Create Bucket
 -------------
 
+Creates a new bucket; connector must not be configured as annonyomus for this
+operation to succeed. Bucket names must be unique across all of Amazon S3,
+that is, among all their users. Bucket ownership is similar to the ownership
+of Internet domain names. Within Amazon S3, only a single user owns each
+bucket. Once a uniquely named bucket is created in Amazon S3, organize and
+name the objects within the bucket in any way. Ownership of the bucket is
+retained as long as the owner has an Amazon S3 account. To conform with DNS
+requirements, buckets names must: not contain underscores, be between 3 and 63
+characters long, not end with a dash, not contain adjacent periods, not
+contain dashes next to periods and not contain uppercase characters. Do not
+make bucket create or delete calls in the high availability code path of an
+application. Create or delete buckets in a separate initialization or setup
 Example: 
 
      <s3:create-bucket bucketName="my-bucket" acl="Private"/> 
@@ -67,9 +79,9 @@ Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| . The bucket to create|no||
-|region| optional|yes|US_Standard|
-|acl| optional|yes|Private|
+|bucketName| The bucket to create|no||
+|region| the region where to create the new bucket|yes|US_Standard|
+|acl| the acces control list of the new bucket|yes|Private|
 
 Delete Bucket
 -------------
@@ -190,9 +202,9 @@ Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName||no||
-|prefix| the prefix of the objects to be listed. If absent, all objects
-           are listed|yes||
+|bucketName| the target bucket's name|no||
+|prefix| the prefix of the objects to be listed. If unspecified, all
+           objects are listed|yes||
 
 Create Object
 -------------
@@ -206,20 +218,19 @@ arrays and Files. Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName||no||
-|key||no||
+|bucketName| the object's bucket|no||
+|key| the object's key|no||
 |content||no||
 |contentLength| the content length. If content is a InputStream or byte
-           arrays, this parameter should be passed, as not doing so will
+           arrays, this parameter should be specified, as not doing so will
            introduce a severe performance loss, otherwise, it is ignored. A
-           content length of 0 is interpreted as an absent (null) content
-           length|yes||
+           content length of 0 is interpreted as an unspecified content length|yes||
 |contentMd5| the content md5, encoded in base 64. If content is a file,
            it is ignored.|yes||
-|contentType||yes||
-|acl||yes|Private|
-|storageClass||yes|Standard|
-|userMetadata| TODO|yes||
+|contentType| the content type of the new object.|yes||
+|acl| the access control list of the new object|yes|Private|
+|storageClass| the storaga class of the new object|yes|Standard|
+|userMetadata| a map of arbitrary object properties keys and values|yes||
 
 Delete Object
 -------------
@@ -231,9 +242,11 @@ Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName||no||
-|key||no||
-|versionId||yes||
+|bucketName| the object's bucket|no||
+|key| the object's key|no||
+|versionId| the specific version of the object to delete, if versioning
+           is enabled. Left unspecified if the latest version is desired, or
+           versioning is not enabled.|yes||
 
 Set Object Storage Class
 ------------------------
@@ -257,68 +270,123 @@ Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|sourceBucketName||no||
+|sourceBucketName| the source object's bucket|no||
 |sourceKey||no||
-|sourceVersionId||yes||
+|sourceVersionId| the specific version of the source object to copy, if
+           versioning is enabled. Left unspecified if the latest version is
+           desired, or versioning is not enabled.|yes||
 |destinationBucketName| the destination object's bucket. If none
            provided, a local copy is performed, that is, it is copied within
            the same bucket.|yes||
-|destinationKey||no||
+|destinationKey| the destination object's key|no||
 |destinationAcl| the acl of the destination object.|yes|Private|
 |destinationStorageClass||yes|Standard|
 
 Create Presigned Uri
 --------------------
 
+Returns a pre-signed URL for accessing an Amazon S3 object. The pre-signed URL
+can be shared to other users, allowing access to the resource without
+providing an account's AWS security credentials. Example: 
+
+    
+    <s3:create-presigned-uri bucketName="my-bucket" key="bar.xml" method="GET" />
+    * 
+
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName||no||
-|key||no||
-|versionId||yes||
-|expiration||yes||
-|method||yes|PUT|
+|bucketName| the object's bucket|no||
+|key| the object's key|no||
+|versionId| the specific version of the object to create the URI, if
+           versioning is enabled. Left unspecified if the latest version is
+           desired, or versioning is not enabled.|yes||
+|expiration| The time at which the returned pre-signed URL will expire.|yes||
+|method| The HTTP method verb to use for this URL|yes|PUT|
 
 Get Object Content
 ------------------
 
-| attribute | description | optional | default value | possible values |
-|:-----------|:-----------|:---------|:--------------|:----------------|
-|config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName||no||
-|key||no||
-|versionId||yes||
-|modifiedSince||yes||
-|unmodifiedSince||yes||
-
-Get Object Metadata
--------------------
+Gets the content of an object stored in Amazon S3 under the specified bucket
+and key. Returns null if the specified constraints weren't met. To get an
+object's content from Amazon S3, the caller must have {@link Permission#Read}
+access to the object.
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName||no||
-|key||no||
-|versionId||yes||
+|bucketName| the object's bucket|no||
+|key| the object's key|no||
+|versionId| the specific version of the object to get its contents, if
+           versioning is enabled. Left unspecified if the latest version is
+           desired, or versioning is not enabled.|yes||
+|modifiedSince| The modified constraint that restricts this request to
+           executing only if the object has been modified after the specified
+           date. Amazon S3 will ignore any dates occurring in the future.|yes||
+|unmodifiedSince| The unmodified constraint that restricts this request
+           to executing only if the object has not been modified after this
+           date. Amazon S3 will ignore any dates occurring in the future.|yes||
 
 Get Object
 ----------
 
+Gets the object stored in Amazon S3 under the specified bucket and key.
+Returns null if the specified constraints weren't met. To get an object from
+Amazon S3, the caller must have {@link Permission#Read} access to the object.
+Callers should be very careful when using this method; the returned Amazon S3
+object contains a direct stream of data from the HTTP connection. The
+underlying HTTP connection cannot be closed until the user finishes reading
+the data and closes the stream. * @param bucketName the object's bucket
+
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName||no||
-|key||no||
-|versionId||yes||
+|key| the object's key|no||
+|versionId| the specific version of the object to get its contents, if
+           versioning is enabled. Left unspecified if the latest version is
+           desired, or versioning is not enabled.|yes||
+|modifiedSince| The modified constraint that restricts this request to
+           executing only if the object has been modified after the specified
+           date. Amazon S3 will ignore any dates occurring in the future.|yes||
+|unmodifiedSince| The unmodified constraint that restricts this request
+           to executing only if the object has not been modified after this
+           date. Amazon S3 will ignore any dates occurring in the future.|yes||
+
+Get Object Metadata
+-------------------
+
+Gets the metadata for the specified Amazon S3 object without actually fetching
+the object itself. This is useful in obtaining only the object metadata, and
+avoids wasting bandwidth on fetching the object data. Example: 
+
+    
+    <s3:get-object-metadata bucketName="my-bucket" key="baz.bin" />
+
+| attribute | description | optional | default value | possible values |
+|:-----------|:-----------|:---------|:--------------|:----------------|
+|config-ref|Specify which configuration to use for this invocation|yes||
+|bucketName| the object's bucket|no||
+|key| the object's key|no||
+|versionId| the object metadata for the given bucketName and key|yes||
 
 Set Bucket Versioning Status
 ----------------------------
 
+Sets the versioning status for the given bucket. A bucket's versioning
+configuration can be in one of three possible states: Off, Enabled and
+Suspended. By default, new buckets are in the Off state. Once versioning is
+enabled for a bucket the status can never be reverted to Off. Example: 
+
+    
+    <s3:set-bucket-versioning-status bucketName="my-bucket"
+    versioningStatus="Suspended" />
+
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName||no||
-|versioningStatus||no||
+|bucketName| the target bucket name|no||
+|versioningStatus| the version status to set|no||*Off*, *Enabled*, *Suspended*
 
 
 
