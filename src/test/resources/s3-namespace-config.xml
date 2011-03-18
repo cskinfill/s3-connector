@@ -22,14 +22,14 @@
 
 	<flow name="BrokenEnumsFlow">
 		<s3:create-bucket bucketName="mule.connector.s3.test"
-			acl="Private" />
+			acl="PRIVATE" />
 	</flow>
-	
+
 	<flow name="BucketCrudFlow">
 		<s3:delete-bucket bucketName="mule.connector.s3.test"
 			force="false" />
 		<s3:create-bucket bucketName="mule.connector.s3.test"
-			acl="Private" />
+			acl="PRIVATE" />
 	</flow>
 
 	<flow name="GetObjectMetadata">
@@ -47,7 +47,7 @@
 			key="anObject" content="hello world!" />
 		<s3:copy-object sourceBucketName="mule.connector.s3.test"
 			sourceKey="anObject" destinationKey="anotherObject"
-			destinationStorageClass="Private" />
+			destinationStorageClass="Default" />
 		<s3:list-objects bucketName="mule.connector.s3.test"
 			prefix="" />
 	</flow>
@@ -82,7 +82,7 @@
 
 	<flow name="SetBucketVersioningStatusFlow">
 		<s3:set-bucket-versioning-status
-			bucketName="mule.connector.s3.test" versioningStatus="Suspended" />
+			bucketName="mule.connector.s3.test" versioningStatus="SUSPENDED" />
 	</flow>
 
 </mule>

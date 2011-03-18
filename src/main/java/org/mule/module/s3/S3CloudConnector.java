@@ -14,6 +14,7 @@ import static org.mule.module.s3.util.InternalUtils.coalesce;
 
 import org.mule.api.lifecycle.Initialisable;
 import org.mule.api.lifecycle.InitialisationException;
+import org.mule.module.s3.simpleapi.AccessControlList;
 import org.mule.module.s3.simpleapi.S3ObjectId;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
@@ -26,8 +27,6 @@ import org.mule.tools.cloudconnect.annotations.Operation;
 import org.mule.tools.cloudconnect.annotations.Parameter;
 import org.mule.tools.cloudconnect.annotations.Property;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
@@ -54,7 +53,7 @@ import org.apache.commons.lang.Validate;
 
 /**
  * A cloud connector wrapper on {@link SimpleAmazonS3} api. Same exception handling
- * policies applies
+ * policies applies. Documentation is based in that of {@link AmazonS3}
  */
 @Connector(namespacePrefix = "s3", namespaceUri = "http://www.mulesoft.org/schema/mule/s3")
 public class S3CloudConnector implements Initialisable
@@ -84,32 +83,30 @@ public class S3CloudConnector implements Initialisable
      * application. Create or delete buckets in a separate initialization or setup
      * Example: {@code <s3:create-bucket bucketName="my-bucket" acl="Private"/> }
      * 
-     * @param bucketName The bucket to create
+     * @param bucketName The bucket to create. It must not exist yet.
      * @param region the region where to create the new bucket
      * @param acl the acces control list of the new bucket
-     * @return the new Bucket
+     * @return the non null, new Bucket
      */
     @Operation
     public Bucket createBucket(@Parameter(optional = false) String bucketName,
                                @Parameter(optional = true, defaultValue = "US_Standard") String region,
-                               @Parameter(optional = true, defaultValue = "Private") CannedAccessControlList acl)
+                               @Parameter(optional = true, defaultValue = "PRIVATE") AccessControlList acl)
     {
-        return client.createBucket(bucketName, region, acl);
+        return client.createBucket(bucketName, region, acl.toS3Equivalent());
     }
 
-    private CannedAccessControlList toAcl(String acl)
-    {
-        return acl != null ? CannedAccessControlList.valueOf(acl) : null;
-    }
-
+    // FIXME not working with version
     /**
-     * Example: {@code <s3:delete-bucket bucketName="my-bucket" force="true"/> }
+     * Deletes the specified bucket. All objects (and all object versions, if
+     * versioning was ever enabled) in the bucket must be deleted before the bucket
+     * itself can be deleted; this restriction can be relaxed by specifying.
+     * force="true". Example: {@code <s3:delete-bucket bucketName="my-bucket"
+     * force="true"/> }
      * 
      * @param bucketName the bucket to delete
      * @param force optional true if the bucket must be deleted even if it is not
      *            empty, false if operation should fail in such scenario.
-     * @throws AmazonClientException
-     * @throws AmazonServiceException
      */
     @Operation
     public void deleteBucket(@Parameter(optional = false) String bucketName,
@@ -126,12 +123,17 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
+     * Removes the website configuration for a bucket; this operation requires the
+     * DeleteBucketWebsite permission. By default, only the bucket owner can delete
+     * the website configuration attached to a bucket. However, bucket owners can
+     * grant other users permission to delete the website configuration by writing a
+     * bucket policy granting them the <code>S3:DeleteBucketWebsite</code>
+     * permission. Calling this operation on a bucket with no website configuration
+     * does not fail, but calling this operation a bucket that does not exist does.
      * Example: {@code <s3:delete-bucket-website-configuration
      * bucketName="my-bucket"/>}
      * 
      * @param bucketName the bucket whose policy to delete
-     * @throws AmazonClientException
-     * @throws AmazonServiceException
      */
     @Operation
     public void deleteBucketWebsiteConfiguration(@Parameter(optional = false) String bucketName)
@@ -140,12 +142,13 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
-     * Example: {@code <s3:get-bucket-policy bucketName="my-bucket"/>}
+     * Answers the policy for the given bucket. Only the owner of the bucket can
+     * retrieve it. If no policy has been set for the bucket, then a null policy text
+     * field will be returned. Example: {@code <s3:get-bucket-policy
+     * bucketName="my-bucket"/>}
      * 
      * @param bucketName the bucket whose policy to retrieve
-     * @return the bucket policy
-     * @throws AmazonClientException
-     * @throws AmazonServiceException
+     * @return the bucket policy, or null, if not set
      */
     @Operation
     public String getBucketPolicy(@Parameter(optional = false) String bucketName)
@@ -154,8 +157,12 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
-     * Example: {@code <s3:set-bucket-policy bucketName="my-bucket"
-     * policyText="your policy" />}
+     * Sets the bucket's policy, overriding any previously set. Only the owner of the
+     * bucket can set a bucket policy. Bucket policies provide access control
+     * management at the bucket level for both the bucket resource and contained
+     * object resources. Only one policy can be specified per-bucket. Example:
+     * {@code <s3:set-bucket-policy bucketName="my-bucket" policyText="your policy"
+     * />}
      * 
      * @param bucketName the bucket name
      * @param policyText the policy text
@@ -168,11 +175,12 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
-     * Example: {@code <s3:delete-bucket-policy bucketName="my-bucket"/>}
+     * Deletes the bucket's policy. Only the owner of the bucket can delete the
+     * bucket policy. Bucket policies provide access control management at the bucket
+     * level for both the bucket resource and contained object resources. Example:
+     * {@code <s3:delete-bucket-policy bucketName="my-bucket"/>}
      * 
      * @param bucketName the bucket whose policy to delete
-     * @throws AmazonClientException
-     * @throws AmazonServiceException
      */
     @Operation
     public void deleteBucketPolicy(@Parameter(optional = false) String bucketName)
@@ -181,10 +189,15 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
-     * Example: {@code <s3:set-bucket-website-configuration bucketName="my-bucket"
+     * Sets the given bucket's website configuration. This operation requires the
+     * PutBucketWebsite permission. By default, only the bucket owner can configure
+     * the website attached to a bucket. However, bucket owners can allow other users
+     * to set the website configuration by writing a bucket policy granting them the
+     * S3:PutBucketWebsite permission. Example: {@code
+     * <s3:set-bucket-website-configuration bucketName="my-bucket"
      * suffix="index.html" errorDocument="errorDocument.html" />}
      * 
-     * @param bucketName
+     * @param bucketName the target bucket's name
      * @param suffix The document to serve when a directory is specified (ex:
      *            index.html). This path is relative to the requested resource
      * @param errorDocument the full path to error document the bucket will use as
@@ -202,11 +215,15 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
-     * Example: {@code <s3:get-bucket-website-configuration bucketName="my-bucket"
-     * />}
+     * Answers the website of the given bucket. This operation requires the
+     * GetBucketWebsite permission. By default, only the bucket owner can read the
+     * bucket website configuration. However, bucket owners can allow other users to
+     * read the website configuration by writing a bucket policy granting them the
+     * GetBucketWebsite permission. Example: {@code
+     * <s3:get-bucket-website-configuration bucketName="my-bucket" />}
      * 
      * @param bucketName
-     * @return a com.amazonaws.services.s3.model.BucketWebsiteConfiguration
+     * @return a non null com.amazonaws.services.s3.model.BucketWebsiteConfiguration
      */
     @Operation
     public BucketWebsiteConfiguration getBucketWebsiteConfiguration(@Parameter(optional = false) String bucketName)
@@ -215,9 +232,13 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
-     * Example {@code <s3:list-buckets />}
+     * Answers a list of all Amazon S3 buckets that the authenticated sender of the
+     * request owns. Users must authenticate with a valid AWS Access Key ID that is
+     * registered with Amazon S3. Anonymous requests cannot list buckets, and users
+     * cannot list buckets that they did not create. Example {@code <s3:list-buckets
+     * />}
      * 
-     * @return a list of com.amazonaws.services.s3.model.BucketWebsiteConfiguration
+     * @return a non null list of com.amazonaws.services.s3.model.Bucket
      */
     @Operation
     public List<Bucket> listBuckets()
@@ -257,7 +278,7 @@ public class S3CloudConnector implements Initialisable
      *            content length of 0 is interpreted as an unspecified content length
      * @param contentMd5 the content md5, encoded in base 64. If content is a file,
      *            it is ignored.
-     * @param contentType the content type of the new object. 
+     * @param contentType the content type of the new object.
      * @param acl the access control list of the new object
      * @param storageClass the storaga class of the new object
      * @param userMetadata a map of arbitrary object properties keys and values
@@ -270,12 +291,12 @@ public class S3CloudConnector implements Initialisable
                                @Parameter(optional = true) Long contentLength,
                                @Parameter(optional = true) String contentMd5,
                                @Parameter(optional = true) String contentType,
-                               @Parameter(optional = true, defaultValue = "Private") String acl,
+                               @Parameter(optional = true, defaultValue = "PRIVATE") AccessControlList acl,
                                @Parameter(optional = true, defaultValue = "Standard") String storageClass,
                                @Parameter(optional = true) Map<String, String> userMetadata)
     {
         return client.createObject(new S3ObjectId(bucketName, key), createContent(content, contentLength,
-            contentMd5), contentType, toAcl(acl), toStorageClass(storageClass), userMetadata);
+            contentMd5), contentType, acl.toS3Equivalent(), toStorageClass(storageClass), userMetadata);
     }
 
     /**
@@ -295,6 +316,16 @@ public class S3CloudConnector implements Initialisable
         client.deleteObject(new S3ObjectId(bucketName, key, versionId));
     }
 
+    /**
+     * Sets the Amazon S3 storage class for the given object. Changing the storage
+     * class of an object in a bucket that has enabled versioning creates a new
+     * version of the object with the new storage class. The existing version of the
+     * object preservers the previous storage class.
+     * 
+     * @param bucketName the object's bucket name
+     * @param key the object's key
+     * @param storageClass the storage class to set
+     */
     @Operation
     public void setObjectStorageClass(@Parameter(optional = false) String bucketName,
                                       @Parameter(optional = false) String key,
@@ -334,20 +365,19 @@ public class S3CloudConnector implements Initialisable
                              @Parameter(optional = true) String sourceVersionId,
                              @Parameter(optional = true) String destinationBucketName,
                              @Parameter(optional = false) String destinationKey,
-                             @Parameter(optional = true, defaultValue = "Private") String destinationAcl,
+                             @Parameter(optional = true, defaultValue = "PRIVATE") AccessControlList destinationAcl,
                              @Parameter(optional = true, defaultValue = "Standard") String destinationStorageClass)
     {
         return client.copyObject(new S3ObjectId(sourceBucketName, sourceKey, sourceVersionId),
             new S3ObjectId(coalesce(destinationBucketName, sourceBucketName), destinationKey),
-            toAcl(destinationAcl), toStorageClass(destinationStorageClass));
+            destinationAcl.toS3Equivalent(), toStorageClass(destinationStorageClass));
     }
 
     /**
      * Returns a pre-signed URL for accessing an Amazon S3 object. The pre-signed URL
      * can be shared to other users, allowing access to the resource without
      * providing an account's AWS security credentials. Example: {@code
-     * <s3:create-presigned-uri bucketName="my-bucket" key="bar.xml" method="GET" />
-     * * }
+     * <s3:create-presigned-uri bucketName="my-bucket" key="bar.xml" method="GET" />}
      * 
      * @param bucketName the object's bucket
      * @param key the object's key
@@ -356,9 +386,9 @@ public class S3CloudConnector implements Initialisable
      *            desired, or versioning is not enabled.
      * @param expiration The time at which the returned pre-signed URL will expire.
      * @param method The HTTP method verb to use for this URL
-     * @return A pre-signed URI that can be used to access an Amazon S3 resource
-     *         without requiring the user of the URL to know the account's AWS
-     *         security credentials.
+     * @return A non null pre-signed URI that can be used to access an Amazon S3
+     *         resource without requiring the user of the URL to know the account's
+     *         AWS security credentials.
      */
     @Operation
     public URI createPresignedUri(@Parameter(optional = false) String bucketName,
@@ -425,8 +455,7 @@ public class S3CloudConnector implements Initialisable
      * @param unmodifiedSince The unmodified constraint that restricts this request
      *            to executing only if the object has not been modified after this
      *            date. Amazon S3 will ignore any dates occurring in the future.
-     * @return an input stream to the objects contents, or null, if conditional get
-     *         constraints did not match
+     * @return the S3Object, or null, if conditional get constraints did not match
      */
     @Operation
     public S3Object getObject(@Parameter(optional = false) String bucketName,

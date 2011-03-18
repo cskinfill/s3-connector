@@ -1,6 +1,6 @@
-/*
- * $Id$
- * --------------------------------------------------------------------------------------
+/**
+ * Mule S3 Cloud Connector
+ *
  * Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
  *
  * The software in this package is published under the terms of the CPAL v1.0
@@ -10,11 +10,26 @@
 
 package org.mule.module.s3.simpleapi;
 
+import com.amazonaws.services.s3.model.BucketVersioningConfiguration;
+
 /**
- * The posible versioning status. Notice: they follow the AmazonS3 enums case,
- * instead of the standard Java case.
+ * The posible versioning status.
  */
 public enum VersioningStatus
 {
-    Off, Enabled, Suspended
+    OFF(BucketVersioningConfiguration.OFF), ENABLED(BucketVersioningConfiguration.ENABLED), SUSPENDED(
+                    BucketVersioningConfiguration.SUSPENDED);
+
+    private String versioningStatusString;
+
+    private VersioningStatus(String s3Equivalent)
+    {
+        this.versioningStatusString = s3Equivalent;
+    }
+
+    public String toString()
+    {
+        return versioningStatusString;
+    }
+
 }

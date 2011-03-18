@@ -10,6 +10,7 @@
 
 package org.mule.module.s3;
 
+import static org.mule.module.s3.simpleapi.AccessControlList.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -22,6 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.mule.module.s3.simpleapi.AccessControlList;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
 import org.mule.module.s3.simpleapi.VersioningStatus;
 
@@ -78,16 +80,9 @@ public class S3TestCase
     }
 
     @Test
-    public void createBucket()
-    {
-        connector.createBucket(MY_BUCKET, "US", null);
-        verify(client).createBucket(refEq(new CreateBucketRequest(MY_BUCKET, "US")));
-    }
-
-    @Test
     public void createBucketWithAcl()
     {
-        connector.createBucket(MY_BUCKET, "US", CannedAccessControlList.Private);
+        connector.createBucket(MY_BUCKET, "US", PRIVATE);
         CreateBucketRequest request = new CreateBucketRequest(MY_BUCKET, "US");
         request.setCannedAcl(CannedAccessControlList.Private);
         verify(client).createBucket(refEq(request));
@@ -98,10 +93,14 @@ public class S3TestCase
     {
         CopyObjectResult result = new CopyObjectResult();
         result.setVersionId("12");
-        when(client.copyObject(refEq(new CopyObjectRequest(MY_BUCKET, MY_OBJECT, MY_BUCKET, "myObject2")))).thenReturn(
-            result);
+        CopyObjectRequest request = new CopyObjectRequest(MY_BUCKET, MY_OBJECT, MY_BUCKET, "myObject2");
+        request.setCannedAccessControlList(CannedAccessControlList.PublicRead);
+        when(client.copyObject(refEq(request))).thenReturn(new CopyObjectResult());
 
-        assertEquals("12", connector.copyObject(MY_BUCKET, MY_OBJECT, null, null, "myObject2", null, null));
+        when(client.copyObject(refEq(request))).thenReturn(result);
+
+        assertEquals("12", connector.copyObject(MY_BUCKET, MY_OBJECT, null, null, "myObject2", PUBLIC_READ,
+            null));
     }
 
     @Test
@@ -109,11 +108,12 @@ public class S3TestCase
     {
         CopyObjectResult result = new CopyObjectResult();
         result.setVersionId("12");
-        when(
-            client.copyObject(refEq(new CopyObjectRequest(MY_BUCKET, MY_OBJECT, "12", MY_BUCKET, "myObject2")))).thenReturn(
-            result);
 
-        assertEquals("12", connector.copyObject(MY_BUCKET, MY_OBJECT, "12", null, "myObject2", null, null));
+        CopyObjectRequest request = new CopyObjectRequest(MY_BUCKET, MY_OBJECT, "12", MY_BUCKET, "myObject2");
+        request.setCannedAccessControlList(CannedAccessControlList.Private);
+        when(client.copyObject(refEq(request))).thenReturn(result);
+
+        assertEquals("12", connector.copyObject(MY_BUCKET, MY_OBJECT, "12", null, "myObject2", PRIVATE, null));
     }
 
     @Test
@@ -123,18 +123,19 @@ public class S3TestCase
         request.setCannedAccessControlList(CannedAccessControlList.Private);
         when(client.copyObject(refEq(request))).thenReturn(new CopyObjectResult());
 
-        assertNull(connector.copyObject(MY_BUCKET, MY_OBJECT, null, "myBucket2", "myObject2", "Private", null));
+        assertNull(connector.copyObject(MY_BUCKET, MY_OBJECT, null, "myBucket2", "myObject2", PRIVATE, null));
     }
 
     @Test
     public void createObjectSimple()
     {
-        when(
-            client.putObject(refEq(new PutObjectRequest(MY_BUCKET, MY_OBJECT, new NullInputStream(0),
-                new ObjectMetadata()), "metadata", "inputStream"))).thenReturn(new PutObjectResult());
+        PutObjectRequest request = new PutObjectRequest(MY_BUCKET, MY_OBJECT, new NullInputStream(0),
+            new ObjectMetadata());
+        request.setCannedAcl(CannedAccessControlList.Private);
+        when(client.putObject(refEq(request, "metadata", "inputStream"))).thenReturn(new PutObjectResult());
 
         assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, "have a nice release", null, null, null,
-            null, null, null));
+            PRIVATE, null, null));
     }
 
     @Test
@@ -145,7 +146,7 @@ public class S3TestCase
             client.putObject(argThat(new ContentMetadataMatcher(content.length(), "A5B69...", "text/plain")))).thenReturn(
             new PutObjectResult());
         assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, content, null, "A5B69...", "text/plain",
-            null, null, null));
+            PUBLIC_READ_WRITE, null, null));
     }
 
     @Test
@@ -155,9 +156,9 @@ public class S3TestCase
         when(client.putObject(argThat(new ContentMetadataMatcher(contentLength, "A5B69...", "text/plain")))).thenReturn(
             new PutObjectResult());
         assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, new NullInputStream(0), contentLength,
-            "A5B69...", "text/plain", null, null, null));
+            "A5B69...", "text/plain", PUBLIC_READ_WRITE, null, null));
     }
-    
+
     @Test
     public void createObjectWithFullOptions() throws Exception
     {
@@ -167,7 +168,7 @@ public class S3TestCase
         request.setStorageClass(StorageClass.Standard);
         when(client.putObject(refEq(request, "metadata", "inputStream"))).thenReturn(new PutObjectResult());
         assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, "have a nice release", null, null,
-            "text/plain", "PublicRead", "Standard", null));
+            "text/plain", PUBLIC_READ, "Standard", null));
     }
 
     @Test
@@ -320,7 +321,7 @@ public class S3TestCase
     @Test
     public void setBucketVersioningStatus() throws Exception
     {
-        connector.setBucketVersioningStatus(MY_BUCKET, VersioningStatus.Enabled);
+        connector.setBucketVersioningStatus(MY_BUCKET, VersioningStatus.ENABLED);
 
         verify(client).setBucketVersioningConfiguration(
             argThat(new BaseMatcher<SetBucketVersioningConfigurationRequest>()

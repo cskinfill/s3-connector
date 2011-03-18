@@ -10,6 +10,8 @@
 
 package org.mule.module.s3.simpleapi;
 
+import org.mule.util.scan.annotations.NonMeta;
+
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
@@ -52,6 +54,7 @@ import javax.validation.constraints.NotNull;
  */
 public interface SimpleAmazonS3
 {
+    @NotNull
     List<Bucket> listBuckets();
 
     /**
@@ -88,7 +91,11 @@ public interface SimpleAmazonS3
 
     void deleteBucketPolicy(@NotNull String bucketName);
 
-    @NotNull
+    /**
+     * Answers the bucket policy, or null, if not set . 
+     * @param bucketName
+     * @return the nullable bucket policy text
+     */
     String getBucketPolicy(@NotNull String bucketName);
 
     void setBucketPolicy(@NotNull String bucketName, @NotNull String policyText);

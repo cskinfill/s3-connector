@@ -60,7 +60,6 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 
     // 2.1
     public Bucket createBucket(@NotNull String bucketName, String region, CannedAccessControlList acl)
-
     {
         Validate.notNull(bucketName);
         CreateBucketRequest request = new CreateBucketRequest(bucketName, region);
@@ -218,7 +217,6 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 4.6
-    // TODO this method should return the new version, but Amazon does not answer it
     public void setObjectStorageClass(@NotNull S3ObjectId objectId, StorageClass newStorageClass)
     {
         s3.changeObjectStorageClass(objectId.getBucketName(), objectId.getKey(), newStorageClass);

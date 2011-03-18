@@ -15,13 +15,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mule.module.s3.simpleapi.AccessControlList.PRIVATE;
 
 import org.mule.api.lifecycle.InitialisationException;
 import org.mule.module.s3.S3CloudConnector;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
 
 import org.junit.After;
 import org.junit.Before;
@@ -48,11 +48,10 @@ public class S3TestDriver
         connector.deleteBucket(bucketName, true);
     }
 
-
     @Test(expected = AmazonServiceException.class)
     public void testDeleteNoForce() throws Exception
     {
-        connector.createBucket(bucketName, null, CannedAccessControlList.Private);
+        connector.createBucket(bucketName, null, PRIVATE);
         connector.createObject(bucketName, "anObject", "hello world", null, null, null, null, null, null);
         connector.deleteBucket(bucketName, false);
     }
@@ -69,8 +68,8 @@ public class S3TestDriver
         assertEquals(bucketsCount + 1, connector.listBuckets().size());
         assertFalse(connector.listObjects(bucketName, "").iterator().hasNext());
 
-        String objectVersion = connector.createObject(bucketName, "anObject", "hello world!", null,
-            null, "text/plain", null, "Standard", null);
+        String objectVersion = connector.createObject(bucketName, "anObject", "hello world!", null, null,
+            "text/plain", null, "Standard", null);
         // Versioning is not enabled
         assertNull(objectVersion);
 

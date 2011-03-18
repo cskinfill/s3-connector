@@ -79,16 +79,20 @@ Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| The bucket to create|no||
+|bucketName| The bucket to create. It must not exist yet.|no||
 |region| the region where to create the new bucket|yes|US_Standard|
-|acl| the acces control list of the new bucket|yes|Private|
+|acl| the acces control list of the new bucket|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
 
 Delete Bucket
 -------------
 
-Example: 
+Deletes the specified bucket. All objects (and all object versions, if
+versioning was ever enabled) in the bucket must be deleted before the bucket
+itself can be deleted; this restriction can be relaxed by specifying.
+force="true". Example: 
 
-     <s3:delete-bucket bucketName="my-bucket" force="true"/> 
+     <s3:delete-bucket bucketName="my-bucket"
+    force="true"/> 
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -100,6 +104,13 @@ Example:
 Delete Bucket Website Configuration
 -----------------------------------
 
+Removes the website configuration for a bucket; this operation requires the
+DeleteBucketWebsite permission. By default, only the bucket owner can delete
+the website configuration attached to a bucket. However, bucket owners can
+grant other users permission to delete the website configuration by writing a
+bucket policy granting them the <code>S3:DeleteBucketWebsite</code>
+permission. Calling this operation on a bucket with no website configuration
+does not fail, but calling this operation a bucket that does not exist does.
 Example: 
 
      <s3:delete-bucket-website-configuration
@@ -113,9 +124,12 @@ Example:
 Get Bucket Policy
 -----------------
 
-Example: 
+Answers the policy for the given bucket. Only the owner of the bucket can
+retrieve it. If no policy has been set for the bucket, then a null policy text
+field will be returned. Example: 
 
-     <s3:get-bucket-policy bucketName="my-bucket"/>
+     <s3:get-bucket-policy
+    bucketName="my-bucket"/>
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -125,10 +139,14 @@ Example:
 Set Bucket Policy
 -----------------
 
-Example: 
+Sets the bucket's policy, overriding any previously set. Only the owner of the
+bucket can set a bucket policy. Bucket policies provide access control
+management at the bucket level for both the bucket resource and contained
+object resources. Only one policy can be specified per-bucket. Example:
 
-     <s3:set-bucket-policy bucketName="my-bucket"
-    policyText="your policy" />
+
+     <s3:set-bucket-policy bucketName="my-bucket" policyText="your policy"
+    />
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -139,7 +157,10 @@ Example:
 Delete Bucket Policy
 --------------------
 
-Example: 
+Deletes the bucket's policy. Only the owner of the bucket can delete the
+bucket policy. Bucket policies provide access control management at the bucket
+level for both the bucket resource and contained object resources. Example:
+
 
      <s3:delete-bucket-policy bucketName="my-bucket"/>
 
@@ -151,15 +172,20 @@ Example:
 Set Bucket Website Configuration
 --------------------------------
 
-Example: 
+Sets the given bucket's website configuration. This operation requires the
+PutBucketWebsite permission. By default, only the bucket owner can configure
+the website attached to a bucket. However, bucket owners can allow other users
+to set the website configuration by writing a bucket policy granting them the
+S3:PutBucketWebsite permission. Example: 
 
-     <s3:set-bucket-website-configuration bucketName="my-bucket"
+    
+    <s3:set-bucket-website-configuration bucketName="my-bucket"
     suffix="index.html" errorDocument="errorDocument.html" />
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName||no||
+|bucketName| the target bucket's name|no||
 |suffix| The document to serve when a directory is specified (ex:
            index.html). This path is relative to the requested resource|no||
 |errorDocument| the full path to error document the bucket will use as
@@ -168,10 +194,14 @@ Example:
 Get Bucket Website Configuration
 --------------------------------
 
-Example: 
+Answers the website of the given bucket. This operation requires the
+GetBucketWebsite permission. By default, only the bucket owner can read the
+bucket website configuration. However, bucket owners can allow other users to
+read the website configuration by writing a bucket policy granting them the
+GetBucketWebsite permission. Example: 
 
-     <s3:get-bucket-website-configuration bucketName="my-bucket"
-    />
+    
+    <s3:get-bucket-website-configuration bucketName="my-bucket" />
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -181,9 +211,13 @@ Example:
 List Buckets
 ------------
 
-Example 
+Answers a list of all Amazon S3 buckets that the authenticated sender of the
+request owns. Users must authenticate with a valid AWS Access Key ID that is
+registered with Amazon S3. Anonymous requests cannot list buckets, and users
+cannot list buckets that they did not create. Example 
 
-     <s3:list-buckets />
+     <s3:list-buckets
+    />
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -228,7 +262,7 @@ arrays and Files. Example:
 |contentMd5| the content md5, encoded in base 64. If content is a file,
            it is ignored.|yes||
 |contentType| the content type of the new object.|yes||
-|acl| the access control list of the new object|yes|Private|
+|acl| the access control list of the new object|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
 |storageClass| the storaga class of the new object|yes|Standard|
 |userMetadata| a map of arbitrary object properties keys and values|yes||
 
@@ -251,12 +285,17 @@ Example:
 Set Object Storage Class
 ------------------------
 
+Sets the Amazon S3 storage class for the given object. Changing the storage
+class of an object in a bucket that has enabled versioning creates a new
+version of the object with the new storage class. The existing version of the
+object preservers the previous storage class.
+
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName||no||
-|key||no||
-|storageClass||no||
+|bucketName| the object's bucket name|no||
+|key| the object's key|no||
+|storageClass| the storage class to set|no||
 
 Copy Object
 -----------
@@ -279,7 +318,7 @@ Example:
            provided, a local copy is performed, that is, it is copied within
            the same bucket.|yes||
 |destinationKey| the destination object's key|no||
-|destinationAcl| the acl of the destination object.|yes|Private|
+|destinationAcl| the acl of the destination object.|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
 |destinationStorageClass||yes|Standard|
 
 Create Presigned Uri
@@ -291,7 +330,6 @@ providing an account's AWS security credentials. Example:
 
     
     <s3:create-presigned-uri bucketName="my-bucket" key="bar.xml" method="GET" />
-    * 
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -386,7 +424,7 @@ enabled for a bucket the status can never be reverted to Off. Example:
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName| the target bucket name|no||
-|versioningStatus| the version status to set|no||*Off*, *Enabled*, *Suspended*
+|versioningStatus| the version status to set|no||*OFF*, *ENABLED*, *SUSPENDED*, *versioningStatusString*
 
 
 
