@@ -10,6 +10,7 @@
 
 package org.mule.module.s3;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -31,6 +32,7 @@ import org.mule.module.s3.simpleapi.VersioningStatus;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.BucketPolicy;
+import com.amazonaws.services.s3.model.BucketVersioningConfiguration;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
@@ -56,7 +58,7 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Before;
 import org.junit.Test;
-
+import static org.mockito.Mockito.*;
 public class S3TestCase
 {
     private static final String POLICY_TEXT = "policy1";
@@ -345,7 +347,14 @@ public class S3TestCase
                 }
             }));
     }
-
+    
+    @Test
+    public void deleteBucketNoForce() throws Exception
+    {
+        connector.deleteBucket(MY_BUCKET, false);
+        verify(client).deleteBucket(MY_BUCKET);
+    }
+    
     private S3ObjectSummary newSummary(String key)
     {
         S3ObjectSummary summary = new S3ObjectSummary();
