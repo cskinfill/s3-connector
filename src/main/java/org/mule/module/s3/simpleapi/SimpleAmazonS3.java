@@ -64,6 +64,7 @@ public interface SimpleAmazonS3
      * @return the new Bucket
      * @throws com.amazonaws.AmazonServiceException
      */
+    @NotNull
     Bucket createBucket(@NotNull String bucketName, String region, CannedAccessControlList acl);
 
     /**
@@ -82,16 +83,19 @@ public interface SimpleAmazonS3
      */
     void deleteBucketAndObjects(@NotNull String bucketName);
 
+    @NotNull
     Iterable<S3ObjectSummary> listObjects(@NotNull String bucketName, String prefix);
 
     void deleteBucketPolicy(@NotNull String bucketName);
 
+    @NotNull
     String getBucketPolicy(@NotNull String bucketName);
 
     void setBucketPolicy(@NotNull String bucketName, @NotNull String policyText);
 
     void deleteBucketWebsiteConfiguration(@NotNull String bucketName);
 
+    @NotNull
     BucketWebsiteConfiguration getBucketWebsiteConfiguration(@NotNull String bucketName);
 
     /**
@@ -161,6 +165,7 @@ public interface SimpleAmazonS3
      * @see AmazonS3#generatePresignedUrl(com.amazonaws.services.s3.model.
      *      GeneratePresignedUrlRequest)
      */
+    @NotNull
     URI createPresignedUri(@NotNull S3ObjectId objectId, Date expiration, HttpMethod method);
 
     /**
@@ -195,9 +200,10 @@ public interface SimpleAmazonS3
      * @return
      * @see AmazonS3#getObjectMetadata(com.amazonaws.services.s3.model.GetObjectMetadataRequest)
      */
+    @NotNull
     ObjectMetadata getObjectMetadata(@NotNull S3ObjectId objectId);
 
-    void setBucketVersioningStatus(@NotNull String bucketName, @NotNull String versioningStatus);
+    void setBucketVersioningStatus(@NotNull String bucketName, @NotNull VersioningStatus versioningStatus);
 
     /**
      * The content to be uploaded to S3, capable of creating a

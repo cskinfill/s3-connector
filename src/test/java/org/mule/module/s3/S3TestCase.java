@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
+import org.mule.module.s3.simpleapi.VersioningStatus;
 
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
@@ -319,7 +320,7 @@ public class S3TestCase
     @Test
     public void setBucketVersioningStatus() throws Exception
     {
-        connector.setBucketVersioningStatus(MY_BUCKET, "Enabled");
+        connector.setBucketVersioningStatus(MY_BUCKET, VersioningStatus.Enabled);
 
         verify(client).setBucketVersioningConfiguration(
             argThat(new BaseMatcher<SetBucketVersioningConfigurationRequest>()

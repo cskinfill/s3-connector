@@ -10,10 +10,7 @@
 
 package org.mule.module.s3.simpleapi;
 
-import org.mule.tools.cloudconnect.annotations.Parameter;
-
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
@@ -36,7 +33,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.AbstractCollection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -44,7 +40,6 @@ import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.Validate;
 
 public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
@@ -241,6 +236,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
         return object.getObjectContent();
     }
 
+    @NotNull
     public ObjectMetadata getObjectMetadata(@NotNull S3ObjectId objectId)
     {
         Validate.notNull(objectId);
@@ -258,14 +254,12 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
         return s3.getObject(request);
     }
 
-    public void setBucketVersioningStatus(@NotNull String bucketName, @NotNull String versioningStatus)
+    public void setBucketVersioningStatus(@NotNull String bucketName,
+                                          @NotNull VersioningStatus versioningStatus)
     {
         Validate.notNull(bucketName);
-        Validate.isTrue(versioningStatus.equals(BucketVersioningConfiguration.ENABLED)
-                        || versioningStatus.equals(BucketVersioningConfiguration.OFF)
-                        || versioningStatus.equals(BucketVersioningConfiguration.SUSPENDED));
         s3.setBucketVersioningConfiguration(new SetBucketVersioningConfigurationRequest(bucketName,
-            new BucketVersioningConfiguration(versioningStatus)));
+            new BucketVersioningConfiguration(versioningStatus.toString())));
     }
 
     /**

@@ -17,6 +17,7 @@ import org.mule.api.lifecycle.InitialisationException;
 import org.mule.module.s3.simpleapi.S3ObjectId;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
+import org.mule.module.s3.simpleapi.VersioningStatus;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3.S3ObjectContent;
 import org.mule.module.s3.simpleapi.content.FileS3ObjectContent;
 import org.mule.module.s3.simpleapi.content.InputStreamS3ObjectContent;
@@ -31,13 +32,9 @@ import com.amazonaws.HttpMethod;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.internal.Constants;
 import com.amazonaws.services.s3.model.Bucket;
-import com.amazonaws.services.s3.model.BucketVersioningConfiguration;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.Permission;
 import com.amazonaws.services.s3.model.S3Object;
@@ -73,13 +70,24 @@ public class S3CloudConnector implements Initialisable
     // TODO enums
 
     /**
+     * Creates a new bucket; connector must not be configured as annonyomus for this
+     * operation to succeed. Bucket names must be unique across all of Amazon S3,
+     * that is, among all their users. Bucket ownership is similar to the ownership
+     * of Internet domain names. Within Amazon S3, only a single user owns each
+     * bucket. Once a uniquely named bucket is created in Amazon S3, organize and
+     * name the objects within the bucket in any way. Ownership of the bucket is
+     * retained as long as the owner has an Amazon S3 account. To conform with DNS
+     * requirements, buckets names must: not contain underscores, be between 3 and 63
+     * characters long, not end with a dash, not contain adjacent periods, not
+     * contain dashes next to periods and not contain uppercase characters. Do not
+     * make bucket create or delete calls in the high availability code path of an
+     * application. Create or delete buckets in a separate initialization or setup
      * Example: {@code <s3:create-bucket bucketName="my-bucket" acl="Private"/> }
      * 
-     * @param bucketName . The bucket to create
-     * @param region optional
-     * @param acl optional
+     * @param bucketName The bucket to create
+     * @param region the region where to create the new bucket
+     * @param acl the acces control list of the new bucket
      * @return the new Bucket
-     * @throws AmazonClientException
      */
     @Operation
     public Bucket createBucket(@Parameter(optional = false) String bucketName,
@@ -223,7 +231,7 @@ public class S3CloudConnector implements Initialisable
      * objects, and may need to perform extra calls to the api while it is iterated.
      * Example: {@code <s3:list-objects bucketName="my-bucket" prefix="mk" />}
      * 
-     * @param bucketName
+     * @param bucketName the target bucket's name
      * @param prefix the prefix of the objects to be listed. If unspecified, all
      *            objects are listed
      * @return An iterable
@@ -240,8 +248,8 @@ public class S3CloudConnector implements Initialisable
      * arrays and Files. Example: {@code <s3:create-object bucketName="my-bucket"
      * key="helloWorld.txt" content="#[hello world]" contentType="text/plain" />}
      * 
-     * @param bucketName
-     * @param key
+     * @param bucketName the object's bucket
+     * @param key the object's key
      * @param content
      * @param contentLength the content length. If content is a InputStream or byte
      *            arrays, this parameter should be specified, as not doing so will
@@ -249,11 +257,10 @@ public class S3CloudConnector implements Initialisable
      *            content length of 0 is interpreted as an unspecified content length
      * @param contentMd5 the content md5, encoded in base 64. If content is a file,
      *            it is ignored.
-     * @param contentType
-     * @param acl
-     * @param storageClass
-     * @param userMetadata TODO
-     * @param userMetadata
+     * @param contentType the content type of the new object. 
+     * @param acl the access control list of the new object
+     * @param storageClass the storaga class of the new object
+     * @param userMetadata a map of arbitrary object properties keys and values
      * @return the id of the created object, or null, if versioning is not enabled
      */
     @Operation
@@ -274,8 +281,8 @@ public class S3CloudConnector implements Initialisable
     /**
      * Example: {@code <s3:delete-object bucketName="my-bucket" key="foo.gzip"/> }
      * 
-     * @param bucketName
-     * @param key
+     * @param bucketName the object's bucket
+     * @param key the object's key
      * @param versionId the specific version of the object to delete, if versioning
      *            is enabled. Left unspecified if the latest version is desired, or
      *            versioning is not enabled.
@@ -307,15 +314,15 @@ public class S3CloudConnector implements Initialisable
      * sourceKey="foo.gzip" destinationKey="bar.gzip"
      * destinationStorageClass="Private" /> }
      * 
-     * @param sourceBucketName
-     * @param sourceKey
+     * @param sourceBucketName the source object's bucket
+     * @param sourcekey the source object's key
      * @param sourceVersionId the specific version of the source object to copy, if
      *            versioning is enabled. Left unspecified if the latest version is
      *            desired, or versioning is not enabled.
      * @param destinationBucketName the destination object's bucket. If none
      *            provided, a local copy is performed, that is, it is copied within
      *            the same bucket.
-     * @param destinationKey
+     * @param destinationKey the destination object's key
      * @param destinationAcl the acl of the destination object.
      * @param destinationStorageClass
      * @return the version id of the new object, or null, if versioning is not
@@ -336,16 +343,14 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
-     * Returns a pre-signed URL for accessing an Amazon S3 resource. Pre-signed URLs
-     * allow clients to form a URL for an Amazon S3 resource, and then sign it with
-     * the current AWS security credentials. The pre-signed URL can be shared to
-     * other users, allowing access to the resource without providing an account's
-     * AWS security credentials. Example: {@code <s3:create-presigned-uri
-     * bucketName="my-bucket" key="bar.xml" method="GET" /> }
+     * Returns a pre-signed URL for accessing an Amazon S3 object. The pre-signed URL
+     * can be shared to other users, allowing access to the resource without
+     * providing an account's AWS security credentials. Example: {@code
+     * <s3:create-presigned-uri bucketName="my-bucket" key="bar.xml" method="GET" />
+     * * }
      * 
-     * @param bucketName The name of the bucket containing the desired object.
-     * @param key The key in the specified bucket under which the desired object is
-     *            stored.
+     * @param bucketName the object's bucket
+     * @param key the object's key
      * @param versionId the specific version of the object to create the URI, if
      *            versioning is enabled. Left unspecified if the latest version is
      *            desired, or versioning is not enabled.
@@ -372,16 +377,13 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
-     * Gets the object stored in Amazon S3 under the specified bucket and key.
-     * Returns null if the specified constraints weren't met. To get an object from
-     * Amazon S3, the caller must have {@link Permission#Read} access to the object.
-     * Callers should be very careful when using this method; the returned Amazon S3
-     * object contains a direct stream of data from the HTTP connection. The
-     * underlying HTTP connection cannot be closed until the user finishes reading
-     * the data and closes the stream.
+     * Gets the content of an object stored in Amazon S3 under the specified bucket
+     * and key. Returns null if the specified constraints weren't met. To get an
+     * object's content from Amazon S3, the caller must have {@link Permission#Read}
+     * access to the object.
      * 
-     * @param bucketName
-     * @param key
+     * @param bucketName the object's bucket
+     * @param key the object's key
      * @param versionId the specific version of the object to get its contents, if
      *            versioning is enabled. Left unspecified if the latest version is
      *            desired, or versioning is not enabled.
@@ -405,8 +407,15 @@ public class S3CloudConnector implements Initialisable
     }
 
     /**
-     * @param bucketName
-     * @param key
+     * Gets the object stored in Amazon S3 under the specified bucket and key.
+     * Returns null if the specified constraints weren't met. To get an object from
+     * Amazon S3, the caller must have {@link Permission#Read} access to the object.
+     * Callers should be very careful when using this method; the returned Amazon S3
+     * object contains a direct stream of data from the HTTP connection. The
+     * underlying HTTP connection cannot be closed until the user finishes reading
+     * the data and closes the stream. * @param bucketName the object's bucket
+     * 
+     * @param key the object's key
      * @param versionId the specific version of the object to get its contents, if
      *            versioning is enabled. Left unspecified if the latest version is
      *            desired, or versioning is not enabled.
@@ -416,7 +425,8 @@ public class S3CloudConnector implements Initialisable
      * @param unmodifiedSince The unmodified constraint that restricts this request
      *            to executing only if the object has not been modified after this
      *            date. Amazon S3 will ignore any dates occurring in the future.
-     * @return an input stream to the objects contents
+     * @return an input stream to the objects contents, or null, if conditional get
+     *         constraints did not match
      */
     @Operation
     public S3Object getObject(@Parameter(optional = false) String bucketName,
@@ -428,11 +438,21 @@ public class S3CloudConnector implements Initialisable
         return client.getObject(new S3ObjectId(bucketName, key, versionId), modifiedSince, unmodifiedSince);
     }
 
+    /**
+     * Gets the metadata for the specified Amazon S3 object without actually fetching
+     * the object itself. This is useful in obtaining only the object metadata, and
+     * avoids wasting bandwidth on fetching the object data. Example: {@code
+     * <s3:get-object-metadata bucketName="my-bucket" key="baz.bin" />}
+     * 
+     * @param bucketName the object's bucket
+     * @param key the object's key
+     * @param versionId the object metadata for the given bucketName and key
+     * @return the non null object metadata
+     */
     @Operation
     public ObjectMetadata getObjectMetadata(@Parameter(optional = false) String bucketName,
                                             @Parameter(optional = false) String key,
                                             @Parameter(optional = true) String versionId)
-
     {
         return client.getObjectMetadata(new S3ObjectId(bucketName, key, versionId));
     }
@@ -450,7 +470,7 @@ public class S3CloudConnector implements Initialisable
      */
     @Operation
     public void setBucketVersioningStatus(@Parameter(optional = false) String bucketName,
-                                          @Parameter(optional = false) String versioningStatus)
+                                          @Parameter(optional = false) VersioningStatus versioningStatus)
     {
         client.setBucketVersioningStatus(bucketName, versioningStatus);
     }
