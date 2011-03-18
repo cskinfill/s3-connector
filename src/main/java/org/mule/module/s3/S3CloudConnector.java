@@ -93,7 +93,6 @@ public class S3CloudConnector implements Initialisable
         return client.createBucket(bucketName, region, acl.toS3Equivalent());
     }
 
-    // FIXME not working with version
     /**
      * Deletes the specified bucket. All objects (and all object versions, if
      * versioning was ever enabled) in the bucket must be deleted before the bucket

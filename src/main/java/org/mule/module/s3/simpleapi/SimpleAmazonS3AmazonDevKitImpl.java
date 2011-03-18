@@ -26,8 +26,10 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.S3VersionSummary;
 import com.amazonaws.services.s3.model.SetBucketVersioningConfigurationRequest;
 import com.amazonaws.services.s3.model.StorageClass;
+import com.amazonaws.services.s3.model.VersionListing;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -78,9 +80,21 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 
     {
         Validate.notNull(bucketName);
-        for (S3ObjectSummary summary : listObjects(bucketName, null))
+        if (!s3.getBucketVersioningConfiguration(bucketName).getStatus().equals(
+            BucketVersioningConfiguration.OFF))
         {
-            s3.deleteObject(bucketName, summary.getKey());
+            for (S3VersionSummary summary : new S3VersionSummaryIterable(bucketName))
+            {
+                System.out.println(summary.getKey() + ":" + summary.getVersionId());
+                s3.deleteVersion(bucketName, summary.getKey(), summary.getVersionId());
+            }
+        }
+        else
+        {
+            for (S3ObjectSummary summary : listObjects(bucketName, null))
+            {
+                s3.deleteObject(bucketName, summary.getKey());
+            }
         }
         deleteBucket(bucketName);
     }
@@ -260,12 +274,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
             new BucketVersioningConfiguration(versioningStatus.toString())));
     }
 
-    /**
-     * Warning: this class is not a proper collection, just it implements it in order
-     * to be compatible with some mule's collection splitting
-     */
-    private class S3ObjectSummaryIterable extends AbstractCollection<S3ObjectSummary>
-        implements Iterable<S3ObjectSummary>
+    private class S3ObjectSummaryIterable extends S3SummaryIterable<S3ObjectSummary, ObjectListing>
     {
 
         private String bucketName;
@@ -277,13 +286,81 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
             this.prefix = prefix;
         }
 
-        public Iterator<S3ObjectSummary> iterator()
+        @Override
+        protected Iterator<S3ObjectSummary> getSummariesIterator(ObjectListing summaryListing)
         {
-            final ObjectListing listObjects = s3.listObjects(bucketName, prefix);
-            return new Iterator<S3ObjectSummary>()
+            return summaryListing.getObjectSummaries().iterator();
+        }
+
+        @Override
+        protected boolean isTruncated(ObjectListing summaryListing)
+        {
+            return summaryListing.isTruncated();
+        }
+
+        @Override
+        protected ObjectListing listNext(ObjectListing currentList)
+        {
+            return s3.listNextBatchOfObjects(currentList);
+        }
+
+        @Override
+        protected ObjectListing listSummaries()
+        {
+            return s3.listObjects(bucketName, prefix);
+        }
+    }
+
+    private class S3VersionSummaryIterable extends S3SummaryIterable<S3VersionSummary, VersionListing>
+    {
+
+        private String bucketName;
+
+        public S3VersionSummaryIterable(String bucketName)
+        {
+            this.bucketName = bucketName;
+        }
+
+        @Override
+        protected Iterator<S3VersionSummary> getSummariesIterator(VersionListing summaryListing)
+        {
+            return summaryListing.getVersionSummaries().iterator();
+        }
+
+        @Override
+        protected boolean isTruncated(VersionListing summaryListing)
+        {
+            return summaryListing.isTruncated();
+        }
+
+        @Override
+        protected VersionListing listNext(VersionListing currentList)
+        {
+            return s3.listNextBatchOfVersions(currentList);
+        }
+
+        @Override
+        protected VersionListing listSummaries()
+        {
+            return s3.listVersions(bucketName, null);
+        }
+    }
+
+    /**
+     * Warning: this class is not a proper collection, just it implements it in order
+     * to be compatible with some mule's collection splitting
+     */
+    private abstract class S3SummaryIterable<SummaryType, ListingType> extends
+        AbstractCollection<SummaryType> implements Iterable<SummaryType>
+    {
+
+        public Iterator<SummaryType> iterator()
+        {
+            final ListingType summaryListing = listSummaries();
+            return new Iterator<SummaryType>()
             {
-                private ObjectListing currentList = listObjects;
-                private Iterator<S3ObjectSummary> currentIter = listObjects.getObjectSummaries().iterator();
+                private ListingType currentList = summaryListing;
+                private Iterator<SummaryType> currentIter = getSummariesIterator(summaryListing);
 
                 public boolean hasNext()
                 {
@@ -291,7 +368,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
                     return currentIter.hasNext();
                 }
 
-                public S3ObjectSummary next()
+                public SummaryType next()
                 {
                     updateIter();
                     return currentIter.next();
@@ -304,14 +381,22 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
 
                 private void updateIter()
                 {
-                    if (!currentIter.hasNext() && currentList.isTruncated())
+                    if (!currentIter.hasNext() && isTruncated(currentList))
                     {
-                        currentList = s3.listNextBatchOfObjects(currentList);
-                        currentIter = currentList.getObjectSummaries().iterator();
+                        currentList = listNext(currentList);
+                        currentIter = getSummariesIterator(currentList);
                     }
                 }
             };
         }
+
+        protected abstract ListingType listNext(ListingType currentList);
+
+        protected abstract boolean isTruncated(ListingType summaryListing);
+
+        protected abstract ListingType listSummaries();
+
+        protected abstract Iterator<SummaryType> getSummariesIterator(ListingType summaryListing);
 
         @Override
         public int size()

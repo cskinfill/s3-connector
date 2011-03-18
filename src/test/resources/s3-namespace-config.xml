@@ -21,15 +21,12 @@
 	</flow>
 
 	<flow name="BrokenEnumsFlow">
-		<s3:create-bucket bucketName="mule.connector.s3.test"
-			acl="PRIVATE" />
+		<s3:create-bucket bucketName="my-bucket" acl="PRIVATE" />
 	</flow>
 
 	<flow name="BucketCrudFlow">
-		<s3:delete-bucket bucketName="mule.connector.s3.test"
-			force="false" />
-		<s3:create-bucket bucketName="mule.connector.s3.test"
-			acl="PRIVATE" />
+		<s3:delete-bucket bucketName="my-bucket" force="false" />
+		<s3:create-bucket bucketName="my-bucket" acl="PRIVATE" />
 	</flow>
 
 	<flow name="GetObjectMetadata">
@@ -43,46 +40,61 @@
 			"anotherObject",
 			within the same bucket. Answers the list of objects
 			in the bucket</description>
-		<s3:create-object bucketName="mule.connector.s3.test"
-			key="anObject" content="hello world!" />
-		<s3:copy-object sourceBucketName="mule.connector.s3.test"
-			sourceKey="anObject" destinationKey="anotherObject"
-			destinationStorageClass="STANDARD" />
-		<s3:list-objects bucketName="mule.connector.s3.test"
-			prefix="" />
+		<s3:create-object bucketName="my-bucket" key="anObject"
+			content="hello world!" />
+		<s3:copy-object sourceBucketName="my-bucket" sourceKey="anObject"
+			destinationKey="anotherObject" destinationStorageClass="STANDARD" />
+		<s3:list-objects bucketName="my-bucket" prefix="" />
 	</flow>
 
 	<flow name="BucketPolicyCrudFlow">
 		<description>Deletes existing bucket policy, sets a new one an
 			returns
 			it</description>
-		<s3:delete-bucket-policy bucketName="mule.connector.s3.test" />
-		<s3:set-bucket-policy bucketName="mule.connector.s3.test"
+		<s3:delete-bucket-policy bucketName="my-bucket" />
+		<s3:set-bucket-policy bucketName="my-bucket"
 			policyText="a policy" />
-		<s3:get-bucket-policy bucketName="mule.connector.s3.test" />
+		<s3:get-bucket-policy bucketName="my-bucket" />
 	</flow>
 
 	<flow name="CreateUriFlow">
-		<s3:create-presigned-uri bucketName="mule.connector.s3.test"
+		<s3:create-presigned-uri bucketName="my-bucket"
 			key="anObject" method="GET" />
 	</flow>
 
 	<flow name="StorageClassCrudFlow">
-		<s3:set-object-storage-class bucketName="mule.connector.s3.test"
+		<s3:set-object-storage-class bucketName="my-bucket"
 			key="anObject" storageClass="STANDARD" />
 	</flow>
 
 	<flow name="ObjectCrudFlow">
-		<s3:create-object bucketName="mule.connector.s3.test"
-			key="anObject" content="hello world!" contentType="text/plain"
-			contentMd5="c897d1410af8f2c74fba11b1db511e9e" />
-		<s3:delete-object bucketName="mule.connector.s3.test"
-			key="anObject" versionId="15" />
+		<s3:create-object bucketName="my-bucket" key="anObject"
+			content="hello world!" contentType="text/plain" contentMd5="c897d1410af8f2c74fba11b1db511e9e" />
+		<s3:delete-object bucketName="my-bucket" key="anObject"
+			versionId="15" />
 	</flow>
 
 	<flow name="SetBucketVersioningStatusFlow">
 		<s3:set-bucket-versioning-status
-			bucketName="mule.connector.s3.test" versioningStatus="SUSPENDED" />
+			bucketName="my-bucket" versioningStatus="SUSPENDED" />
 	</flow>
 
+	<flow name="GetObjectFlow">
+		<s3:get-object bucketName="my-bucket" key="anObject"
+			versionId="13" />
+	</flow>
+
+	<flow name="GetObjectContentFlow">
+		<s3:get-object-content bucketName="my-bucket"
+			key="anObject" />
+	</flow>
+
+	<flow name="WebsiteConfigCrud">
+		<s3:get-bucket-website-configuration
+			bucketName="my-bucket" />
+		<s3:set-bucket-website-configuration
+			bucketName="my-bucket" suffix="index.html" errorDocument="errorDocument.html" />
+		<s3:delete-bucket-website-configuration
+			bucketName="my-bucket" />
+	</flow>
 </mule>
