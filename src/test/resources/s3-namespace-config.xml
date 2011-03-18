@@ -47,7 +47,7 @@
 			key="anObject" content="hello world!" />
 		<s3:copy-object sourceBucketName="mule.connector.s3.test"
 			sourceKey="anObject" destinationKey="anotherObject"
-			destinationStorageClass="Default" />
+			destinationStorageClass="STANDARD" />
 		<s3:list-objects bucketName="mule.connector.s3.test"
 			prefix="" />
 	</flow>
@@ -69,7 +69,7 @@
 
 	<flow name="StorageClassCrudFlow">
 		<s3:set-object-storage-class bucketName="mule.connector.s3.test"
-			key="anObject" storageClass="Standard" />
+			key="anObject" storageClass="STANDARD" />
 	</flow>
 
 	<flow name="ObjectCrudFlow">

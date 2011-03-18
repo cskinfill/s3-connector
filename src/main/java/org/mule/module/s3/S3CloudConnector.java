@@ -14,7 +14,6 @@ import static org.mule.module.s3.util.InternalUtils.coalesce;
 
 import org.mule.api.lifecycle.Initialisable;
 import org.mule.api.lifecycle.InitialisationException;
-import org.mule.module.s3.simpleapi.AccessControlList;
 import org.mule.module.s3.simpleapi.S3ObjectId;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
@@ -33,12 +32,10 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.Permission;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.services.s3.model.StorageClass;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -292,15 +289,22 @@ public class S3CloudConnector implements Initialisable
                                @Parameter(optional = true) String contentMd5,
                                @Parameter(optional = true) String contentType,
                                @Parameter(optional = true, defaultValue = "PRIVATE") AccessControlList acl,
-                               @Parameter(optional = true, defaultValue = "Standard") String storageClass,
+                               @Parameter(optional = true, defaultValue = "STANDARD") StorageClass storageClass,
                                @Parameter(optional = true) Map<String, String> userMetadata)
     {
         return client.createObject(new S3ObjectId(bucketName, key), createContent(content, contentLength,
-            contentMd5), contentType, acl.toS3Equivalent(), toStorageClass(storageClass), userMetadata);
+            contentMd5), contentType, acl.toS3Equivalent(), storageClass.toS3Equivalent(), userMetadata);
     }
 
     /**
-     * Example: {@code <s3:delete-object bucketName="my-bucket" key="foo.gzip"/> }
+     * Deletes a given object, only the owner of the bucket containing the version
+     * can perform this operation. If version is specified, versioning must be
+     * enabled, and once deleted, there is no method to restore such version.
+     * Otherwise, once deleted, the object can only be restored if versioning was
+     * enabled when the object was deleted. If attempting to delete an object that
+     * does not exist, Amazon S3 will return a success message instead of an error
+     * message. Example: {@code <s3:delete-object bucketName="my-bucket"
+     * key="foo.gzip"/> }
      * 
      * @param bucketName the object's bucket
      * @param key the object's key
@@ -329,18 +333,22 @@ public class S3CloudConnector implements Initialisable
     @Operation
     public void setObjectStorageClass(@Parameter(optional = false) String bucketName,
                                       @Parameter(optional = false) String key,
-                                      @Parameter(optional = false) String storageClass)
+                                      @Parameter(optional = false) StorageClass storageClass)
     {
         Validate.notNull(storageClass);
-        client.setObjectStorageClass(new S3ObjectId(bucketName, key), toStorageClass(storageClass));
+        client.setObjectStorageClass(new S3ObjectId(bucketName, key), storageClass.toS3Equivalent());
     }
 
-    private StorageClass toStorageClass(String storageClass)
-    {
-        return storageClass != null ? StorageClass.valueOf(storageClass) : null;
-    }
 
+    // TODO pass new metadata
     /**
+     * Copies a source object to a new destination; to copy an object, the caller's
+     * account must have read access to the source object and write access to the
+     * destination bucket. By default, all object metadata for the source object are
+     * copied to the new destination object, unless new object metadata in the
+     * specified is provided. The AccesControlList is not copied to the new object,
+     * and, unless another ACL specified, PRIVATE is assumed. If no destination
+     * bucket is specified, the same that the source bucket is used - local copy.
      * Example: {@code <s3:copy-object sourceBucketName="my-bucket"
      * sourceKey="foo.gzip" destinationKey="bar.gzip"
      * destinationStorageClass="Private" /> }
@@ -366,11 +374,11 @@ public class S3CloudConnector implements Initialisable
                              @Parameter(optional = true) String destinationBucketName,
                              @Parameter(optional = false) String destinationKey,
                              @Parameter(optional = true, defaultValue = "PRIVATE") AccessControlList destinationAcl,
-                             @Parameter(optional = true, defaultValue = "Standard") String destinationStorageClass)
+                             @Parameter(optional = true, defaultValue = "STANDARD") StorageClass destinationStorageClass)
     {
         return client.copyObject(new S3ObjectId(sourceBucketName, sourceKey, sourceVersionId),
             new S3ObjectId(coalesce(destinationBucketName, sourceBucketName), destinationKey),
-            destinationAcl.toS3Equivalent(), toStorageClass(destinationStorageClass));
+            destinationAcl.toS3Equivalent(), destinationStorageClass.toS3Equivalent());
     }
 
     /**

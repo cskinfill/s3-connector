@@ -8,7 +8,7 @@
  * LICENSE.txt file.
  */
 
-package org.mule.module.s3.simpleapi;
+package org.mule.module.s3;
 
 import static com.amazonaws.services.s3.model.CannedAccessControlList.AuthenticatedRead;
 import static com.amazonaws.services.s3.model.CannedAccessControlList.BucketOwnerFullControl;

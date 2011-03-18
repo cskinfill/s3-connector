@@ -263,15 +263,22 @@ arrays and Files. Example:
            it is ignored.|yes||
 |contentType| the content type of the new object.|yes||
 |acl| the access control list of the new object|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
-|storageClass| the storaga class of the new object|yes|Standard|
+|storageClass| the storaga class of the new object|yes|STANDARD|*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
 |userMetadata| a map of arbitrary object properties keys and values|yes||
 
 Delete Object
 -------------
 
-Example: 
+Deletes a given object, only the owner of the bucket containing the version
+can perform this operation. If version is specified, versioning must be
+enabled, and once deleted, there is no method to restore such version.
+Otherwise, once deleted, the object can only be restored if versioning was
+enabled when the object was deleted. If attempting to delete an object that
+does not exist, Amazon S3 will return a success message instead of an error
+message. Example: 
 
-     <s3:delete-object bucketName="my-bucket" key="foo.gzip"/> 
+     <s3:delete-object bucketName="my-bucket"
+    key="foo.gzip"/> 
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -295,11 +302,18 @@ object preservers the previous storage class.
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName| the object's bucket name|no||
 |key| the object's key|no||
-|storageClass| the storage class to set|no||
+|storageClass| the storage class to set|no||*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
 
 Copy Object
 -----------
 
+Copies a source object to a new destination; to copy an object, the caller's
+account must have read access to the source object and write access to the
+destination bucket. By default, all object metadata for the source object are
+copied to the new destination object, unless new object metadata in the
+specified is provided. The AccesControlList is not copied to the new object,
+and, unless another ACL specified, PRIVATE is assumed. If no destination
+bucket is specified, the same that the source bucket is used - local copy.
 Example: 
 
      <s3:copy-object sourceBucketName="my-bucket"
@@ -319,7 +333,7 @@ Example:
            the same bucket.|yes||
 |destinationKey| the destination object's key|no||
 |destinationAcl| the acl of the destination object.|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
-|destinationStorageClass||yes|Standard|
+|destinationStorageClass||yes|STANDARD|*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
 
 Create Presigned Uri
 --------------------

@@ -15,10 +15,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mule.module.s3.simpleapi.AccessControlList.PRIVATE;
+import static org.mule.module.s3.AccessControlList.PRIVATE;
 
 import org.mule.api.lifecycle.InitialisationException;
 import org.mule.module.s3.S3CloudConnector;
+import org.mule.module.s3.StorageClass;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.Bucket;
@@ -69,7 +70,7 @@ public class S3TestDriver
         assertFalse(connector.listObjects(bucketName, "").iterator().hasNext());
 
         String objectVersion = connector.createObject(bucketName, "anObject", "hello world!", null, null,
-            "text/plain", null, "Standard", null);
+            "text/plain", null, StorageClass.STANDARD, null);
         // Versioning is not enabled
         assertNull(objectVersion);
 

@@ -10,7 +10,6 @@
 
 package org.mule.module.s3;
 
-import static org.mule.module.s3.simpleapi.AccessControlList.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -22,8 +21,10 @@ import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mule.module.s3.AccessControlList.PRIVATE;
+import static org.mule.module.s3.AccessControlList.PUBLIC_READ;
+import static org.mule.module.s3.AccessControlList.PUBLIC_READ_WRITE;
 
-import org.mule.module.s3.simpleapi.AccessControlList;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
 import org.mule.module.s3.simpleapi.VersioningStatus;
 
@@ -75,7 +76,7 @@ public class S3TestCase
     @Test
     public void setObjectStorageClass()
     {
-        connector.setObjectStorageClass(MY_BUCKET, MY_OBJECT, "Standard");
+        connector.setObjectStorageClass(MY_BUCKET, MY_OBJECT, org.mule.module.s3.StorageClass.STANDARD);
         verify(client).changeObjectStorageClass(MY_BUCKET, MY_OBJECT, StorageClass.Standard);
     }
 
@@ -95,12 +96,13 @@ public class S3TestCase
         result.setVersionId("12");
         CopyObjectRequest request = new CopyObjectRequest(MY_BUCKET, MY_OBJECT, MY_BUCKET, "myObject2");
         request.setCannedAccessControlList(CannedAccessControlList.PublicRead);
+        request.setStorageClass(StorageClass.Standard);
         when(client.copyObject(refEq(request))).thenReturn(new CopyObjectResult());
 
         when(client.copyObject(refEq(request))).thenReturn(result);
 
         assertEquals("12", connector.copyObject(MY_BUCKET, MY_OBJECT, null, null, "myObject2", PUBLIC_READ,
-            null));
+            org.mule.module.s3.StorageClass.STANDARD));
     }
 
     @Test
@@ -111,9 +113,11 @@ public class S3TestCase
 
         CopyObjectRequest request = new CopyObjectRequest(MY_BUCKET, MY_OBJECT, "12", MY_BUCKET, "myObject2");
         request.setCannedAccessControlList(CannedAccessControlList.Private);
+        request.setStorageClass(StorageClass.Standard);
         when(client.copyObject(refEq(request))).thenReturn(result);
 
-        assertEquals("12", connector.copyObject(MY_BUCKET, MY_OBJECT, "12", null, "myObject2", PRIVATE, null));
+        assertEquals("12", connector.copyObject(MY_BUCKET, MY_OBJECT, "12", null, "myObject2", PRIVATE,
+            org.mule.module.s3.StorageClass.STANDARD));
     }
 
     @Test
@@ -121,9 +125,11 @@ public class S3TestCase
     {
         CopyObjectRequest request = new CopyObjectRequest(MY_BUCKET, MY_OBJECT, "myBucket2", "myObject2");
         request.setCannedAccessControlList(CannedAccessControlList.Private);
+        request.setStorageClass(StorageClass.Standard);
         when(client.copyObject(refEq(request))).thenReturn(new CopyObjectResult());
 
-        assertNull(connector.copyObject(MY_BUCKET, MY_OBJECT, null, "myBucket2", "myObject2", PRIVATE, null));
+        assertNull(connector.copyObject(MY_BUCKET, MY_OBJECT, null, "myBucket2", "myObject2", PRIVATE,
+            org.mule.module.s3.StorageClass.STANDARD));
     }
 
     @Test
@@ -132,10 +138,11 @@ public class S3TestCase
         PutObjectRequest request = new PutObjectRequest(MY_BUCKET, MY_OBJECT, new NullInputStream(0),
             new ObjectMetadata());
         request.setCannedAcl(CannedAccessControlList.Private);
+        request.setStorageClass(StorageClass.ReducedRedundancy);
         when(client.putObject(refEq(request, "metadata", "inputStream"))).thenReturn(new PutObjectResult());
 
         assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, "have a nice release", null, null, null,
-            PRIVATE, null, null));
+            PRIVATE, org.mule.module.s3.StorageClass.REDUCED_REDUNDANCY, null));
     }
 
     @Test
@@ -146,7 +153,7 @@ public class S3TestCase
             client.putObject(argThat(new ContentMetadataMatcher(content.length(), "A5B69...", "text/plain")))).thenReturn(
             new PutObjectResult());
         assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, content, null, "A5B69...", "text/plain",
-            PUBLIC_READ_WRITE, null, null));
+            PUBLIC_READ_WRITE, org.mule.module.s3.StorageClass.STANDARD, null));
     }
 
     @Test
@@ -156,7 +163,7 @@ public class S3TestCase
         when(client.putObject(argThat(new ContentMetadataMatcher(contentLength, "A5B69...", "text/plain")))).thenReturn(
             new PutObjectResult());
         assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, new NullInputStream(0), contentLength,
-            "A5B69...", "text/plain", PUBLIC_READ_WRITE, null, null));
+            "A5B69...", "text/plain", PUBLIC_READ_WRITE, org.mule.module.s3.StorageClass.STANDARD, null));
     }
 
     @Test
@@ -168,7 +175,7 @@ public class S3TestCase
         request.setStorageClass(StorageClass.Standard);
         when(client.putObject(refEq(request, "metadata", "inputStream"))).thenReturn(new PutObjectResult());
         assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, "have a nice release", null, null,
-            "text/plain", PUBLIC_READ, "Standard", null));
+            "text/plain", PUBLIC_READ, org.mule.module.s3.StorageClass.STANDARD, null));
     }
 
     @Test
