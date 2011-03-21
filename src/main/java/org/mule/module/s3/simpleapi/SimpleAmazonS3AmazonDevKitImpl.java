@@ -61,10 +61,10 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 2.1
-    public Bucket createBucket(@NotNull String bucketName, String region, CannedAccessControlList acl)
+    public Bucket createBucket(@NotNull String bucketName, Region region, CannedAccessControlList acl)
     {
         Validate.notNull(bucketName);
-        CreateBucketRequest request = new CreateBucketRequest(bucketName, region);
+        CreateBucketRequest request = new CreateBucketRequest(bucketName, region.toS3Equivalent());
         request.setCannedAcl(acl);
         return s3.createBucket(request);
     }
@@ -85,7 +85,6 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
         {
             for (S3VersionSummary summary : new S3VersionSummaryIterable(bucketName))
             {
-                System.out.println(summary.getKey() + ":" + summary.getVersionId());
                 s3.deleteVersion(bucketName, summary.getKey(), summary.getVersionId());
             }
         }
@@ -216,7 +215,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 4.5
-    public URI createPresignedUri(@NotNull S3ObjectId objectId, Date expiration, HttpMethod method)
+    public URI createObjectPresignedUri(@NotNull S3ObjectId objectId, Date expiration, HttpMethod method)
     {
         Validate.notNull(objectId);
         try
@@ -272,6 +271,19 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
         Validate.notNull(bucketName);
         s3.setBucketVersioningConfiguration(new SetBucketVersioningConfigurationRequest(bucketName,
             new BucketVersioningConfiguration(versioningStatus.toString())));
+    }
+    
+    public URI createObjectUriUsingDefaultServer(S3ObjectId objectId)
+    {
+        Validate.notNull(objectId);
+        return Region.getDefaultRegion().getObjectUri(objectId);
+    }
+    
+    public URI createObjectUri(S3ObjectId objectId)
+    {
+        Validate.notNull(objectId);
+        String location = s3.getBucketLocation(objectId.getBucketName());
+        return Region.from(location).getObjectUri(objectId);
     }
 
     private class S3ObjectSummaryIterable extends S3SummaryIterable<S3ObjectSummary, ObjectListing>

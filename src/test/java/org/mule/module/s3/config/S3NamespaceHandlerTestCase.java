@@ -10,6 +10,8 @@
 
 package org.mule.module.s3.config;
 
+import static org.junit.Assert.*;
+
 import org.mule.api.MuleException;
 import org.mule.api.MuleMessage;
 import org.mule.construct.SimpleFlowConstruct;
@@ -19,6 +21,8 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 
 import java.util.HashMap;
+
+import org.junit.Test;
 
 public class S3NamespaceHandlerTestCase extends FunctionalTestCase
 {
@@ -56,6 +60,14 @@ public class S3NamespaceHandlerTestCase extends FunctionalTestCase
         properties.put("key", "codinghorror-bandwidth-usage.png");
         MuleMessage message = flow.process(getTestEvent(properties)).getMessage();
         assertTrue(message.getPayload() instanceof ObjectMetadata);
+    }
+
+    @Test
+    public void testCreateUri() throws Exception
+    {
+        SimpleFlowConstruct flow = lookupFlowConstruct("CreateUriFlow");
+        MuleMessage message = flow.process(getTestEvent("")).getMessage();
+        assertEquals("http://my-bucket.s3.amazonaws.com/anObject", message.getPayloadAsString());
     }
 
     private SimpleFlowConstruct lookupFlowConstruct(String name)

@@ -57,9 +57,14 @@
 		<s3:get-bucket-policy bucketName="my-bucket" />
 	</flow>
 
+	<flow name="CreatePresignedUriFlow">
+		<s3:create-object-presigned-uri
+			bucketName="my-bucket" key="anObject" method="GET" />
+	</flow>
+
 	<flow name="CreateUriFlow">
-		<s3:create-presigned-uri bucketName="my-bucket"
-			key="anObject" method="GET" />
+		<s3:create-object-uri
+			bucketName="my-bucket" key="anObject" useDefaultServer="true"/>
 	</flow>
 
 	<flow name="StorageClassCrudFlow">

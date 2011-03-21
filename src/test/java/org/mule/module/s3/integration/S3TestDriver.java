@@ -10,7 +10,6 @@
 
 package org.mule.module.s3.integration;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -19,12 +18,16 @@ import static org.junit.Assert.assertTrue;
 import static org.mule.module.s3.AccessControlList.PRIVATE;
 
 import org.mule.api.lifecycle.InitialisationException;
+import org.mule.module.s3.AccessControlList;
 import org.mule.module.s3.S3CloudConnector;
 import org.mule.module.s3.StorageClass;
+import org.mule.module.s3.simpleapi.Region;
 import org.mule.module.s3.simpleapi.VersioningStatus;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.Bucket;
+
+import java.net.URI;
 
 import org.junit.After;
 import org.junit.Before;
@@ -46,15 +49,26 @@ public class S3TestDriver
     }
 
     @After
-    public void teardown()
+    public void deleteTestBucket()
     {
         connector.deleteBucket(bucketName, true);
+    }
+
+    @Test
+    public void testCreatePresignedUri() throws Exception
+    {
+        connector.createBucket(bucketName, Region.US_STANDARD, AccessControlList.PRIVATE);
+        connector.createObject(bucketName, "myObject", "hello world", null, null, "text/plain",
+            AccessControlList.PUBLIC_READ, StorageClass.STANDARD, null);
+        URI uri = connector.createObjectPresignedUri(bucketName, "myObject", null, null, "GET");
+        assertTrue(uri.toString().startsWith(
+            String.format("https://%s.s3.amazonaws.com/%s", bucketName, "myObject")));
     }
 
     @Test(expected = AmazonServiceException.class)
     public void testDeleteNoForce() throws Exception
     {
-        connector.createBucket(bucketName, null, PRIVATE);
+        connector.createBucket(bucketName, Region.US_STANDARD, PRIVATE);
         connector.createObject(bucketName, "anObject", "hello world", null, null, null, PRIVATE,
             StorageClass.STANDARD, null);
         connector.deleteBucket(bucketName, false);
@@ -63,7 +77,8 @@ public class S3TestDriver
     /**
      * Creates a bucket, and asserts that buckets count has now increased in 1, and
      * that it is empty of objects. Then adds a new object and asserts that its
-     * version is null (versioning disabled), and that the bucket is not empty anymore
+     * version is null (versioning disabled), and that the bucket is not empty
+     * anymore
      */
     @Test
     public void testCreateBucketAndObjects() throws Exception
@@ -72,7 +87,7 @@ public class S3TestDriver
         int bucketsCount = connector.listBuckets().size();
 
         // op1
-        Bucket bucket = connector.createBucket(bucketName, null, PRIVATE);
+        Bucket bucket = connector.createBucket(bucketName, Region.US_STANDARD, PRIVATE);
 
         // pos1
         assertNotNull(bucket);
@@ -95,7 +110,7 @@ public class S3TestDriver
     @Test
     public void testCreateBucketAndObjectsWithVersions() throws Exception
     {
-        connector.createBucket(bucketName, null, PRIVATE);
+        connector.createBucket(bucketName, Region.US_STANDARD, PRIVATE);
         connector.setBucketVersioningStatus(bucketName, VersioningStatus.ENABLED);
         String versionId1 = connector.createObject(bucketName, "anObject", "hello", null, null, null,
             PRIVATE, StorageClass.STANDARD, null);
@@ -105,4 +120,5 @@ public class S3TestDriver
         assertNotNull(versionId2);
         assertFalse(versionId1.equals(versionId2));
     }
+
 }

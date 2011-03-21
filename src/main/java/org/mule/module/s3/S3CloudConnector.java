@@ -14,6 +14,7 @@ import static org.mule.module.s3.util.InternalUtils.coalesce;
 
 import org.mule.api.lifecycle.Initialisable;
 import org.mule.api.lifecycle.InitialisationException;
+import org.mule.module.s3.simpleapi.Region;
 import org.mule.module.s3.simpleapi.S3ObjectId;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
@@ -63,8 +64,6 @@ public class S3CloudConnector implements Initialisable
 
     private SimpleAmazonS3 client;
 
-    // TODO enums
-
     /**
      * Creates a new bucket; connector must not be configured as annonyomus for this
      * operation to succeed. Bucket names must be unique across all of Amazon S3,
@@ -87,7 +86,7 @@ public class S3CloudConnector implements Initialisable
      */
     @Operation
     public Bucket createBucket(@Parameter(optional = false) String bucketName,
-                               @Parameter(optional = true, defaultValue = "US_Standard") String region,
+                               @Parameter(optional = true, defaultValue = "US_STANDARD") Region region,
                                @Parameter(optional = true, defaultValue = "PRIVATE") AccessControlList acl)
     {
         return client.createBucket(bucketName, region, acl.toS3Equivalent());
@@ -194,8 +193,8 @@ public class S3CloudConnector implements Initialisable
      * suffix="index.html" errorDocument="errorDocument.html" />}
      * 
      * @param bucketName the target bucket's name
-     * @param suffix The document to serve when a directory is specified (ex:
-     *            index.html). This path is relative to the requested resource
+     * @param suffix The document to serve when a directory is specified, relative to
+     *            the requested resource
      * @param errorDocument the full path to error document the bucket will use as
      *            error page for 4XX errors
      */
@@ -338,7 +337,6 @@ public class S3CloudConnector implements Initialisable
         client.setObjectStorageClass(new S3ObjectId(bucketName, key), storageClass.toS3Equivalent());
     }
 
-
     // TODO pass new metadata
     /**
      * Copies a source object to a new destination; to copy an object, the caller's
@@ -398,13 +396,13 @@ public class S3CloudConnector implements Initialisable
      *         AWS security credentials.
      */
     @Operation
-    public URI createPresignedUri(@Parameter(optional = false) String bucketName,
-                                  @Parameter(optional = false) String key,
-                                  @Parameter(optional = true) String versionId,
-                                  @Parameter(optional = true) Date expiration,
-                                  @Parameter(optional = true, defaultValue = "PUT") String method)
+    public URI createObjectPresignedUri(@Parameter(optional = false) String bucketName,
+                                        @Parameter(optional = false) String key,
+                                        @Parameter(optional = true) String versionId,
+                                        @Parameter(optional = true) Date expiration,
+                                        @Parameter(optional = true, defaultValue = "PUT") String method)
     {
-        return client.createPresignedUri(new S3ObjectId(bucketName, key, versionId), expiration,
+        return client.createObjectPresignedUri(new S3ObjectId(bucketName, key, versionId), expiration,
             toHttpMethod(method));
     }
 
@@ -417,19 +415,20 @@ public class S3CloudConnector implements Initialisable
      * Gets the content of an object stored in Amazon S3 under the specified bucket
      * and key. Returns null if the specified constraints weren't met. To get an
      * object's content from Amazon S3, the caller must have {@link Permission#Read}
-     * access to the object.
+     * access to the object. Regarding conditional get constraints, Amazon S3 will
+     * ignore any dates occurring in the future.
      * 
      * @param bucketName the object's bucket
      * @param key the object's key
      * @param versionId the specific version of the object to get its contents, if
-     *            versioning is enabled. Left unspecified if the latest version is
+     *            versioning is enabled, left unspecified if the latest version is
      *            desired, or versioning is not enabled.
      * @param modifiedSince The modified constraint that restricts this request to
      *            executing only if the object has been modified after the specified
-     *            date. Amazon S3 will ignore any dates occurring in the future.
+     *            date.
      * @param unmodifiedSince The unmodified constraint that restricts this request
      *            to executing only if the object has not been modified after this
-     *            date. Amazon S3 will ignore any dates occurring in the future.
+     *            date.
      * @return an input stream to the objects contents
      */
     @Operation
@@ -450,18 +449,20 @@ public class S3CloudConnector implements Initialisable
      * Callers should be very careful when using this method; the returned Amazon S3
      * object contains a direct stream of data from the HTTP connection. The
      * underlying HTTP connection cannot be closed until the user finishes reading
-     * the data and closes the stream. * @param bucketName the object's bucket
+     * the data and closes the stream. Regarding conditional get constraints, Amazon
+     * S3 will ignore any dates occurring in the future.
      * 
+     * @param bucketName the object's bucket
      * @param key the object's key
      * @param versionId the specific version of the object to get its contents, if
      *            versioning is enabled. Left unspecified if the latest version is
      *            desired, or versioning is not enabled.
      * @param modifiedSince The modified constraint that restricts this request to
      *            executing only if the object has been modified after the specified
-     *            date. Amazon S3 will ignore any dates occurring in the future.
+     *            date.
      * @param unmodifiedSince The unmodified constraint that restricts this request
      *            to executing only if the object has not been modified after this
-     *            date. Amazon S3 will ignore any dates occurring in the future.
+     *            date.
      * @return the S3Object, or null, if conditional get constraints did not match
      */
     @Operation
@@ -510,6 +511,38 @@ public class S3CloudConnector implements Initialisable
     {
         client.setBucketVersioningStatus(bucketName, versioningStatus);
     }
+
+    /**
+     * Creates an http URI for the given object id. The useDefaultServer option
+     * enables using default US Amazon server subdomain in the URI regardless of the
+     * region. The main benefit of such feature is that this operation does not need
+     * to hit the Amazon servers, but the drawback is that using the given URI as an
+     * URL to the resource have unnecessary latency penalties for standard regions other than US_STANDARD.
+     * 
+     * @return a non secure http URI to the object. Unlike the presigned URI, object
+     * @param bucketName
+     * @param key
+     * @param useDefaultServer if the default US Amazon server subdomain should be
+     *            used in the URI regardless of the region.
+     * @return a non secure http URI to the object. Unlike the presigned URI, object
+     *         must have PUBLIC_READ or PUBLIC_READ_WRITE persmission
+     */
+    @Operation
+    public URI createObjectUri(@Parameter(optional = false) String bucketName,
+                               @Parameter(optional = false) String key,
+                               @Parameter(optional = true, defaultValue = "false") boolean useDefaultServer)
+    {
+        if (useDefaultServer)
+        {
+            return client.createObjectUriUsingDefaultServer(new S3ObjectId(bucketName, key));
+        }
+        else
+        {
+            return client.createObjectUri(new S3ObjectId(bucketName, key));
+        }
+    }
+    
+    
 
     public void initialise() throws InitialisationException
     {

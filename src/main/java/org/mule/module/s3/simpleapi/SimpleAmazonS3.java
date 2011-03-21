@@ -68,7 +68,7 @@ public interface SimpleAmazonS3
      * @throws com.amazonaws.AmazonServiceException
      */
     @NotNull
-    Bucket createBucket(@NotNull String bucketName, String region, CannedAccessControlList acl);
+    Bucket createBucket(@NotNull String bucketName, Region region, CannedAccessControlList acl);
 
     /**
      * Deletes a Bucket
@@ -92,7 +92,8 @@ public interface SimpleAmazonS3
     void deleteBucketPolicy(@NotNull String bucketName);
 
     /**
-     * Answers the bucket policy, or null, if not set . 
+     * Answers the bucket policy, or null, if not set .
+     * 
      * @param bucketName
      * @return the nullable bucket policy text
      */
@@ -173,7 +174,7 @@ public interface SimpleAmazonS3
      *      GeneratePresignedUrlRequest)
      */
     @NotNull
-    URI createPresignedUri(@NotNull S3ObjectId objectId, Date expiration, HttpMethod method);
+    URI createObjectPresignedUri(@NotNull S3ObjectId objectId, Date expiration, HttpMethod method);
 
     /**
      * Answers the object content a given {@link S3ObjectId}.
@@ -211,6 +212,12 @@ public interface SimpleAmazonS3
     ObjectMetadata getObjectMetadata(@NotNull S3ObjectId objectId);
 
     void setBucketVersioningStatus(@NotNull String bucketName, @NotNull VersioningStatus versioningStatus);
+
+    @NotNull
+    URI createObjectUriUsingDefaultServer(@NotNull S3ObjectId objectId);
+
+    @NotNull
+    URI createObjectUri(@NotNull S3ObjectId objectId);
 
     /**
      * The content to be uploaded to S3, capable of creating a

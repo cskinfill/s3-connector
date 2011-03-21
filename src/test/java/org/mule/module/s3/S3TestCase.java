@@ -10,7 +10,6 @@
 
 package org.mule.module.s3;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -26,13 +25,13 @@ import static org.mule.module.s3.AccessControlList.PRIVATE;
 import static org.mule.module.s3.AccessControlList.PUBLIC_READ;
 import static org.mule.module.s3.AccessControlList.PUBLIC_READ_WRITE;
 
+import org.mule.module.s3.simpleapi.Region;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
 import org.mule.module.s3.simpleapi.VersioningStatus;
 
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.BucketPolicy;
-import com.amazonaws.services.s3.model.BucketVersioningConfiguration;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
@@ -58,12 +57,11 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Before;
 import org.junit.Test;
-import static org.mockito.Mockito.*;
 public class S3TestCase
 {
     private static final String POLICY_TEXT = "policy1";
     private static final String MY_OBJECT = "myObject";
-    private static final String MY_BUCKET = "myBucket";
+    private static final String MY_BUCKET = "my-bucket";
     private S3CloudConnector connector;
     private AmazonS3 client;
 
@@ -85,8 +83,8 @@ public class S3TestCase
     @Test
     public void createBucketWithAcl()
     {
-        connector.createBucket(MY_BUCKET, "US", PRIVATE);
-        CreateBucketRequest request = new CreateBucketRequest(MY_BUCKET, "US");
+        connector.createBucket(MY_BUCKET, Region.US_STANDARD, PRIVATE);
+        CreateBucketRequest request = new CreateBucketRequest(MY_BUCKET);
         request.setCannedAcl(CannedAccessControlList.Private);
         verify(client).createBucket(refEq(request));
     }
@@ -194,7 +192,7 @@ public class S3TestCase
     {
         when(client.generatePresignedUrl(MY_BUCKET, MY_OBJECT, null, HttpMethod.GET)).thenReturn(
             new URL("http://www.foo.com"));
-        assertEquals(new URI("http://www.foo.com"), connector.createPresignedUri(MY_BUCKET, MY_OBJECT, null,
+        assertEquals(new URI("http://www.foo.com"), connector.createObjectPresignedUri(MY_BUCKET, MY_OBJECT, null,
             null, "GET"));
     }
 
@@ -353,6 +351,21 @@ public class S3TestCase
     {
         connector.deleteBucket(MY_BUCKET, false);
         verify(client).deleteBucket(MY_BUCKET);
+    }   
+    
+    @Test
+    public void createUriUseDefaultServer() throws Exception
+    {
+        assertEquals("http://my-bucket.s3.amazonaws.com/myObject", connector.createObjectUri(MY_BUCKET,
+            MY_OBJECT, true).toString());
+    }
+    
+    @Test
+    public void createObjectUri() throws Exception
+    {
+        when(client.getBucketLocation(MY_BUCKET)).thenReturn(Region.EU_IRELAND.toS3Equivalent().toString());
+        assertEquals("http://my-bucket.s3-external-1.amazonaws.com/myObject", connector.createObjectUri(MY_BUCKET,
+            MY_OBJECT, false).toString());
     }
     
     private S3ObjectSummary newSummary(String key)
