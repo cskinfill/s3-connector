@@ -289,7 +289,7 @@ public class S3CloudConnector implements Initialisable
                                @Parameter(optional = true, defaultValue = "PRIVATE") AccessControlList acl,
                                @Parameter(optional = true, defaultValue = "STANDARD") StorageClass storageClass,
                                @Parameter(optional = true) Map<String, String> userMetadata)
-    {
+    {   
         return client.createObject(new S3ObjectId(bucketName, key), createContent(content, contentLength,
             contentMd5), contentType, acl.toS3Equivalent(), storageClass.toS3Equivalent(), userMetadata);
     }

@@ -27,6 +27,8 @@ import org.mule.module.s3.simpleapi.VersioningStatus;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.Bucket;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.net.URI;
 
 import org.junit.After;
@@ -52,6 +54,14 @@ public class S3TestDriver
     public void deleteTestBucket()
     {
         connector.deleteBucket(bucketName, true);
+    }
+
+    @Test
+    public void testname() throws Exception
+    {
+        connector.createObject("mule.s3.demo.publish", "googlelogo.png", new FileInputStream(
+            "/home/franco/tmp/googlelogo.png"), null, null, null, AccessControlList.PUBLIC_READ,
+            StorageClass.STANDARD, null);
     }
 
     @Test
@@ -119,6 +129,19 @@ public class S3TestDriver
             PRIVATE, StorageClass.STANDARD, null);
         assertNotNull(versionId2);
         assertFalse(versionId1.equals(versionId2));
+    }
+
+    /**
+     * Creates a new Bucket, copies an object from an other bucket to it, and sets
+     * the bucket configuration
+     */
+    @Test
+    public void testCopyAndSetWebsiteConfiguration() throws Exception
+    {
+        connector.createBucket(bucketName, Region.US_STANDARD, PRIVATE);
+        connector.copyObject("camaraenclaromeco", "axis.jpg", null, bucketName, "axis.jpg",
+            AccessControlList.PRIVATE, StorageClass.STANDARD);
+        connector.setBucketWebsiteConfiguration(bucketName, "axis.jpg", "axis.jpg");
     }
 
 }

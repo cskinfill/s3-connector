@@ -11,6 +11,7 @@
 	<properties>
 		<muleVersion>3.1.0</muleVersion>
 		<ibeansVersion>1.1</ibeansVersion>
+		<mule.s3.version>1.0-SNAPSHOT</mule.s3.version>
 	</properties>
 
 	<description>S3 demo for uploading a content, creating an url, and publishing it in twitter</description>
@@ -68,7 +69,6 @@
 						<inclusion>
 							<groupId>org.mule.ibeans</groupId>
 							<artifactId>bitly-ibean</artifactId>
-							 
 						</inclusion>
 					</inclusions>
 				</configuration>
@@ -100,12 +100,7 @@
 		<dependency>
 			<groupId>org.mule.modules</groupId>
 			<artifactId>mule-module-s3</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mule.modules</groupId>
-			<artifactId>mule-module-ognl</artifactId>
-			<version>${muleVersion}</version>
+			<version>${mule.s3.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mule.ibeans</groupId>
