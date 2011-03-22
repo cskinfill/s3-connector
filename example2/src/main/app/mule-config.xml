@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Mule S3 Cloud Connector
+
+    Copyright (c) MuleSoft, Inc.  All rights reserved.  http://www.mulesoft.com
+
+    The software in this package is published under the terms of the CPAL v1.0
+    license, a copy of which has been included with this distribution in the
+    LICENSE.txt file.
+
+-->
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:bitly="http://www.mulesoft.org/schema/mule/bitly"
+	xmlns:s3="http://www.mulesoft.org/schema/mule/s3" 
+	xmlns:json="http://www.mulesoft.org/schema/mule/json"
+	xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+	xmlns:spring="http://www.springframework.org/schema/beans"
+	xmlns:twitter="http://www.mulesoft.org/schema/mule/twitter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.mulesoft.org/schema/mule/bitly   http://www.mulesoft.org/schema/mule/bitly/3.1/mule-bitly.xsd
+       http://www.mulesoft.org/schema/mule/s3      http://www.mulesoft.org/schema/mule/s3/1.0/mule-s3.xsd
+       http://www.mulesoft.org/schema/mule/core    http://www.mulesoft.org/schema/mule/core/3.1/mule.xsd
+       http://www.mulesoft.org/schema/mule/json    http://www.mulesoft.org/schema/mule/json/3.1/mule-json.xsd
+       http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/3.1/mule-scripting.xsd 
+       http://www.mulesoft.org/schema/mule/twitter http://www.mulesoft.org/schema/mule/twitter/3.1/mule-twitter.xsd
+       ">
+	<!-- twitter autorization -->
+	
+<!--	<container-context  />-->
+	<global-property name="twitter.consumer.key" value="GEDBcCgOrbSRxvED70yZmA" />
+	<global-property name="twitter.consumer.secret"
+		value="pKJTwFA6nuvk1MiQPmA4Zeq3SSMh80WADvOcMsNvWQ" />
+	<global-property name="twitter.access.key"
+		value="50074149-j8EVyKqc1fZB9gIeFuCgzLnpMdAyxwFhnmm79xuY" />
+	<global-property name="twitter.access.secret"
+		value="wrBTf7FqA5YdCGkecJvsgFJ3X3PkL7tTW7LlLiA1NY" />
+
+	<!-- configuration! -->
+	<twitter:config name="twitteraccount1" format="JSON"
+		consumerKey="${twitter.consumer.key}" consumerSecret="${twitter.consumer.secret}"
+		oauthToken="${twitter.access.key}" oauthTokenSecret="${twitter.access.secret}" />
+	<s3:config accessKey="${s3.accessKey}" secretKey="${s3.secretKey}" />
+	<bitly:config login="mulecmistest" apiKey="R_a0e377a5a61e90eb96ac5fe8c3ee9073" />
+	
+	<flow name="PublishFlow" >
+		<description>Uploads a file contained in an http server to AmazonS3,
+			creates an URI to it, shortens it, a publish into twitter
+		</description>
+		<poll frequency="30000">
+			<scripting:component>
+				<scripting:script engine="groovy">
+				     import java.text.SimpleDateFormat;
+					return "axis" + new SimpleDateFormat("yyyy-MM-dd-HH-mm").format(new Date()) + ".jpg";
+	            </scripting:script>
+			</scripting:component>
+		</poll>
+		<enricher target="#[variable:inbound:newImageKey]" >
+			<expression-transformer>
+				<return-argument expression="" evaluator="payload" />
+			</expression-transformer>
+		</enricher>	
+		<flow-ref name="copy-object"/>
+		<s3:create-object-uri
+			bucketName="${s3.bucketName}" 
+			key="#[variable:inbound:newImageKey]" 
+			useDefaultServer="true"/>
+		<logger level="INFO" category="Retrieving"/>
+		<flow-ref name="shortenLinkFlow"/>
+		<flow-ref name="publishTwitterFlow"/>
+	</flow>
+	
+	<flow name="copy-object">
+			<s3:copy-object
+			 sourceBucketName="camaraenclaromeco" sourceKey="axis.jpg"
+			 destinationBucketName="${s3.bucketName}" 
+			 destinationKey="#[variable:inbound:newImageKey]" 
+			 destinationStorageClass="STANDARD" />
+	
+	</flow>
+	
+		
+	<flow name="shortenLinkFlow">
+		<description>
+			Shorten links with bitly. Receives as payload the uri to
+			be shorten and
+			returns as payload
+			the shortened uri. If it fails it
+			returns the original uri.
+		</description>
+		<enricher target="#[variable:url]">
+			<expression-transformer>
+				<return-argument expression="" evaluator="payload" />
+			</expression-transformer>
+		</enricher>
+		<bitly:shorten url="#[payload]" />
+		<choice>
+			<when expression="errorCode = 0" evaluator="json">
+				<splitter expression="results" evaluator="json" />
+				<json:json-to-object-transformer />
+				<scripting:component>
+					<scripting:script engine="groovy">
+						longUrl = message.getInvocationProperty('longUrl');
+						status = message.payload.get("'"+ longUrl + "'")
+						if(status.get('shortUrl') != null) {
+							ret = status.get('shortUrl').valueAsText;
+						} else {
+							ret = longUrl;
+						}
+						return ret;
+                 </scripting:script>
+				</scripting:component>
+			</when>
+			<otherwise>
+				<expression-transformer>
+					<return-argument expression="url" evaluator="variable" />
+				</expression-transformer>
+			</otherwise>
+		</choice>
+	</flow>
+
+	<flow name="publishTwitterFlow">
+		<description>
+			publish payload to twitter
+      </description>
+		<scripting:component>
+			<scripting:script engine="groovy">
+				import org.apache.commons.lang.StringUtils;
+				return StringUtils.abbreviate("Hey, new image: " + message.payload, 140);
+                </scripting:script>
+		</scripting:component>
+		<twitter:update-status status="#[payload]"
+			config-ref="twitteraccount1" />
+	</flow>
+
+	
+
+</mule>

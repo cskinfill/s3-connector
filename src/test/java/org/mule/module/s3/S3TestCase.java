@@ -53,10 +53,12 @@ import java.net.URL;
 import java.util.Iterator;
 
 import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.lang.ObjectUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Before;
 import org.junit.Test;
+
 public class S3TestCase
 {
     private static final String POLICY_TEXT = "policy1";
@@ -157,6 +159,17 @@ public class S3TestCase
     }
 
     @Test
+    public void createObjectByteArrayParameter()
+    {
+        byte[] content = "hello".getBytes();
+        when(
+            client.putObject(argThat(new ContentMetadataMatcher(content.length, "A5B69...", null)))).thenReturn(
+            new PutObjectResult());
+        assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, content, null, "A5B69...", null,
+            PUBLIC_READ_WRITE, org.mule.module.s3.StorageClass.STANDARD, null));
+    }
+
+    @Test
     public void createObjectInputStreamParameter()
     {
         long contentLength = 100L;
@@ -192,8 +205,8 @@ public class S3TestCase
     {
         when(client.generatePresignedUrl(MY_BUCKET, MY_OBJECT, null, HttpMethod.GET)).thenReturn(
             new URL("http://www.foo.com"));
-        assertEquals(new URI("http://www.foo.com"), connector.createObjectPresignedUri(MY_BUCKET, MY_OBJECT, null,
-            null, "GET"));
+        assertEquals(new URI("http://www.foo.com"), connector.createObjectPresignedUri(MY_BUCKET, MY_OBJECT,
+            null, null, "GET"));
     }
 
     @Test
@@ -345,29 +358,29 @@ public class S3TestCase
                 }
             }));
     }
-    
+
     @Test
     public void deleteBucketNoForce() throws Exception
     {
         connector.deleteBucket(MY_BUCKET, false);
         verify(client).deleteBucket(MY_BUCKET);
-    }   
-    
+    }
+
     @Test
     public void createUriUseDefaultServer() throws Exception
     {
         assertEquals("http://my-bucket.s3.amazonaws.com/myObject", connector.createObjectUri(MY_BUCKET,
             MY_OBJECT, true).toString());
     }
-    
+
     @Test
     public void createObjectUri() throws Exception
     {
         when(client.getBucketLocation(MY_BUCKET)).thenReturn(Region.EU_IRELAND.toS3Equivalent().toString());
-        assertEquals("http://my-bucket.s3-external-1.amazonaws.com/myObject", connector.createObjectUri(MY_BUCKET,
-            MY_OBJECT, false).toString());
+        assertEquals("http://my-bucket.s3-external-1.amazonaws.com/myObject", connector.createObjectUri(
+            MY_BUCKET, MY_OBJECT, false).toString());
     }
-    
+
     private S3ObjectSummary newSummary(String key)
     {
         S3ObjectSummary summary = new S3ObjectSummary();
@@ -394,7 +407,7 @@ public class S3TestCase
             PutObjectRequest request = (PutObjectRequest) item;
             ObjectMetadata metadata = request.getMetadata();
             return metadata.getContentLength() == contentLength
-                   && metadata.getContentType().equals(contentType)
+                   && ObjectUtils.equals(metadata.getContentType(), contentType)
                    && metadata.getContentMD5().equals(contentMd5);
         }
 

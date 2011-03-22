@@ -15,6 +15,12 @@ import org.mule.construct.SimpleFlowConstruct;
 import org.mule.tck.FunctionalTestCase;
 import org.mule.transport.NullPayload;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.springframework.format.annotation.DateTimeFormat.ISO;
+
 public class S3TestDriver extends FunctionalTestCase
 {
     /*
@@ -30,8 +36,8 @@ public class S3TestDriver extends FunctionalTestCase
 
     public void testUpload() throws Exception
     {
-        final MuleEvent event = getTestEvent("");
-        final SimpleFlowConstruct flow = lookupFlowConstruct("UploadFlow");
+        final MuleEvent event = getTestEvent("test");
+        final SimpleFlowConstruct flow = lookupFlowConstruct("PublishFlow");
         final MuleEvent responseEvent = flow.process(event);
         assertTrue(responseEvent.getMessage().getPayload() instanceof NullPayload);
     }

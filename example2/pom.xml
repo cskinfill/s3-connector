@@ -3,9 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.mule.demos</groupId>
-	<artifactId>mule-s3-demo-upload</artifactId>
+	<artifactId>mule-s3-demo-publish</artifactId>
 	<packaging>mule</packaging>
-	<name>Mule S3 Upload Demo</name>
+	<name>Mule S3 Demo Publish</name>
 	<version>1.0</version>
 
 	<properties>
@@ -14,7 +14,7 @@
 		<mule.s3.version>1.0-SNAPSHOT</mule.s3.version>
 	</properties>
 
-	<description>Simple S3 demo for uploading a content to S3</description>
+	<description>S3 demo for copying a content, creating an url, and publishing it in twitter</description>
 
 	<build>
 		<defaultGoal>install</defaultGoal>

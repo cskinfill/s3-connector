@@ -19,9 +19,6 @@ import org.mule.module.s3.simpleapi.S3ObjectId;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
 import org.mule.module.s3.simpleapi.VersioningStatus;
-import org.mule.module.s3.simpleapi.SimpleAmazonS3.S3ObjectContent;
-import org.mule.module.s3.simpleapi.content.FileS3ObjectContent;
-import org.mule.module.s3.simpleapi.content.InputStreamS3ObjectContent;
 import org.mule.tools.cloudconnect.annotations.Connector;
 import org.mule.tools.cloudconnect.annotations.Operation;
 import org.mule.tools.cloudconnect.annotations.Parameter;
@@ -38,8 +35,6 @@ import com.amazonaws.services.s3.model.Permission;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
@@ -289,9 +284,10 @@ public class S3CloudConnector implements Initialisable
                                @Parameter(optional = true, defaultValue = "PRIVATE") AccessControlList acl,
                                @Parameter(optional = true, defaultValue = "STANDARD") StorageClass storageClass,
                                @Parameter(optional = true) Map<String, String> userMetadata)
-    {   
-        return client.createObject(new S3ObjectId(bucketName, key), createContent(content, contentLength,
-            contentMd5), contentType, acl.toS3Equivalent(), storageClass.toS3Equivalent(), userMetadata);
+    {
+        return client.createObject(new S3ObjectId(bucketName, key), S3ContentUtils.createContent(content,
+            contentLength, contentMd5), contentType, acl.toS3Equivalent(), storageClass.toS3Equivalent(),
+            userMetadata);
     }
 
     /**
@@ -517,7 +513,8 @@ public class S3CloudConnector implements Initialisable
      * enables using default US Amazon server subdomain in the URI regardless of the
      * region. The main benefit of such feature is that this operation does not need
      * to hit the Amazon servers, but the drawback is that using the given URI as an
-     * URL to the resource have unnecessary latency penalties for standard regions other than US_STANDARD.
+     * URL to the resource have unnecessary latency penalties for standard regions
+     * other than US_STANDARD.
      * 
      * @return a non secure http URI to the object. Unlike the presigned URI, object
      * @param bucketName
@@ -541,8 +538,6 @@ public class S3CloudConnector implements Initialisable
             return client.createObjectUri(new S3ObjectId(bucketName, key));
         }
     }
-    
-    
 
     public void initialise() throws InitialisationException
     {
@@ -590,35 +585,6 @@ public class S3CloudConnector implements Initialisable
     public void setClient(SimpleAmazonS3 client)
     {
         this.client = client;
-    }
-
-    /**
-     * Creates the {@link S3ObjectContent}. If content is a String or file, the
-     * content length parameter is ignored. Also contentMD5 is ignored if content is
-     * a file, too.
-     */
-    private static S3ObjectContent createContent(Object content, Long contentLength, String contentMd5)
-    {
-        if (content instanceof InputStream)
-        {
-            return new InputStreamS3ObjectContent((InputStream) content, contentLength, contentMd5);
-        }
-        if (content instanceof String)
-        {
-            String stringContent = (String) content;
-            return new InputStreamS3ObjectContent(new ByteArrayInputStream(stringContent.getBytes()),
-                (long) stringContent.length(), contentMd5);
-        }
-        if (content instanceof byte[])
-        {
-            return new InputStreamS3ObjectContent(new ByteArrayInputStream((byte[]) content), contentLength,
-                contentMd5);
-        }
-        if (content instanceof File)
-        {
-            return new FileS3ObjectContent((File) content);
-        }
-        throw new IllegalArgumentException("Wrong input");
     }
 
 }

@@ -57,14 +57,6 @@ public class S3TestDriver
     }
 
     @Test
-    public void testname() throws Exception
-    {
-        connector.createObject("mule.s3.demo.publish", "googlelogo.png", new FileInputStream(
-            "/home/franco/tmp/googlelogo.png"), null, null, null, AccessControlList.PUBLIC_READ,
-            StorageClass.STANDARD, null);
-    }
-
-    @Test
     public void testCreatePresignedUri() throws Exception
     {
         connector.createBucket(bucketName, Region.US_STANDARD, AccessControlList.PRIVATE);
