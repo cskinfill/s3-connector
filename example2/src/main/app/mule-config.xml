@@ -69,6 +69,13 @@
 		<flow-ref name="publishTwitterFlow"/>
 	</flow>
 	
+	<flow name="PollingPublishFlow">
+		<poll frequency="3600000">
+			<flow-ref name="PublishFlow"/>
+		</poll>
+		<echo-component/>
+	</flow>
+	
 	<flow name="copy-object">
 			<s3:copy-object
 			 sourceBucketName="camaraenclaromeco" 
@@ -131,7 +138,7 @@
 				return StringUtils.abbreviate("Hey, new image: " + message.payload, 140);
                 </scripting:script>
 		</scripting:component>
-		<logger level="ERROR" message="Published in twitter #[payload]" />
+		<logger message="Published in twitter #[payload]" />
 		<twitter:update-status status="#[payload]"
 			config-ref="twitteraccount1" />
 	</flow>
