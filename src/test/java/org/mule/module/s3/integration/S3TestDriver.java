@@ -26,6 +26,7 @@ import org.mule.module.s3.simpleapi.VersioningStatus;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.S3VersionSummary;
 
 import java.net.URI;
 
@@ -119,6 +120,9 @@ public class S3TestDriver
             PRIVATE, StorageClass.STANDARD, null);
         assertNotNull(versionId2);
         assertFalse(versionId1.equals(versionId2));
+        
+        Iterable<S3VersionSummary> version = connector.listObjectVersions(bucketName);
+        assertTrue(version.iterator().hasNext());
     }
 
     /**

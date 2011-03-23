@@ -39,6 +39,9 @@
 		<s3:create-object content="#[message]"
 				bucketName="${s3.bucketName}" 
 				key="mulelogo.jpg" acl="PUBLIC_READ" />
+		<s3:list-object-versions bucketName="${s3.bucketName}"/>
+		<collection-splitter/>
+		<echo-component/>
 	</flow>
 	
 	<flow name="SetupFlow" >

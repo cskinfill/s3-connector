@@ -15,6 +15,12 @@ import org.mule.construct.SimpleFlowConstruct;
 import org.mule.tck.FunctionalTestCase;
 import org.mule.transport.NullPayload;
 
+import com.amazonaws.services.s3.model.S3VersionSummary;
+
+import java.util.Collection;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+
 public class S3TestDriver extends FunctionalTestCase
 {
     /*
@@ -33,12 +39,17 @@ public class S3TestDriver extends FunctionalTestCase
      * http://www.mulesoft.com:80/images/index/front-esb.jpg 
      * to the bucket. 
      */
+    @SuppressWarnings("unchecked")
     public void testUpload() throws Exception
     {
         final MuleEvent event = getTestEvent("");
         final SimpleFlowConstruct flow = lookupFlowConstruct("UploadFlow");
         final MuleEvent responseEvent = flow.process(event);
-        assertTrue(responseEvent.getMessage().getPayload() instanceof NullPayload);
+        assertTrue(responseEvent.getMessage().getPayload() instanceof Collection<?>);
+        for(S3VersionSummary summary : (Collection<S3VersionSummary>)responseEvent.getMessage().getPayload())
+        {
+            System.out.println(ToStringBuilder.reflectionToString(summary));
+        }
     }
 
     /**

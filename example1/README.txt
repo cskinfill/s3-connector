@@ -2,8 +2,8 @@ S3 UPLOAD DEMO
 =============
 
 INTRODUCTION
-  This is minimalistic a demo about uploading contents to an S3 bucket. This demo covers the creation an versioning enabling of buckets, and 
-  the object uploading.  
+  This is minimalistic a demo about uploading contents to an S3 bucket. This demo covers the creation an versioning enabling of buckets,  
+  the object uploading, and versioning listing.  
 
 HOW TO DEMO:
   1. Set the following system properties:
@@ -20,7 +20,8 @@ HOW IT WORKS:
    - The UploadFlow downloads the file to upload to s3 using an http endpoint 
    - The S3 Connector uploads the returned input stream. It recognizes that such input stream has http metadata, so not passing the content length 
    has no performance penalties
+   - A list with the versions at the bucket is returned
 
 WHAT HAS NOT BEEN DEMO:
-    Deletion operations over buckets and objects, object copying and bucket and versioning listing.  
+    Deletion operations over buckets and objects, object copying and bucket and bucket listing.  
     

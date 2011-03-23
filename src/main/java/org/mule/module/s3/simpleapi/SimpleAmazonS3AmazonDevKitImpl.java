@@ -35,8 +35,10 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.AbstractCollection;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -424,6 +426,19 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
         protected abstract ListingType listSummaries();
 
         protected abstract Iterator<SummaryType> getSummariesIterator(ListingType summaryListing);
+        
+        /**Hack for enabling collection splitter to work, which forces evaluation of whole iterable.
+         * This will not work with huge lists, but there is no better solution*/
+        @Override
+        public Object[] toArray()
+        {
+            LinkedList<Object> l = new LinkedList<Object>();
+            for (Object o : this)
+            {
+                l.add(o);
+            }
+            return l.toArray();
+        }
 
         @Override
         public int size()
