@@ -32,7 +32,7 @@ Add the connector's maven repo to your pom.xml:
     </repositories>
 
 Add the connector as a dependency to your project. This can be done by adding
-the following under the <dependencies> element in the pom.xml file of the
+the following under the dependencies element in the pom.xml file of the
 application:
 
     <dependency>
@@ -80,7 +80,7 @@ Example:
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName| The bucket to create. It must not exist yet.|no||
-|region| the region where to create the new bucket|yes|US_Standard|
+|region| the region where to create the new bucket|yes|US_STANDARD|*US_STANDARD*, *US_WEST*, *EU_IRELAND*, *AP_SINGAPORE*, *s3Equivalent*, *domain*
 |acl| the acces control list of the new bucket|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
 
 Delete Bucket
@@ -186,8 +186,8 @@ S3:PutBucketWebsite permission. Example:
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName| the target bucket's name|no||
-|suffix| The document to serve when a directory is specified (ex:
-           index.html). This path is relative to the requested resource|no||
+|suffix| The document to serve when a directory is specified, relative to
+           the requested resource|no||
 |errorDocument| the full path to error document the bucket will use as
            error page for 4XX errors|yes||
 
@@ -335,8 +335,8 @@ Example:
 |destinationAcl| the acl of the destination object.|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
 |destinationStorageClass||yes|STANDARD|*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
 
-Create Presigned Uri
---------------------
+Create Object Presigned Uri
+---------------------------
 
 Returns a pre-signed URL for accessing an Amazon S3 object. The pre-signed URL
 can be shared to other users, allowing access to the resource without
@@ -362,7 +362,35 @@ Get Object Content
 Gets the content of an object stored in Amazon S3 under the specified bucket
 and key. Returns null if the specified constraints weren't met. To get an
 object's content from Amazon S3, the caller must have {@link Permission#Read}
-access to the object.
+access to the object. Regarding conditional get constraints, Amazon S3 will
+ignore any dates occurring in the future.
+
+| attribute | description | optional | default value | possible values |
+|:-----------|:-----------|:---------|:--------------|:----------------|
+|config-ref|Specify which configuration to use for this invocation|yes||
+|bucketName| the object's bucket|no||
+|key| the object's key|no||
+|versionId| the specific version of the object to get its contents, if
+           versioning is enabled, left unspecified if the latest version is
+           desired, or versioning is not enabled.|yes||
+|modifiedSince| The modified constraint that restricts this request to
+           executing only if the object has been modified after the specified
+           date.|yes||
+|unmodifiedSince| The unmodified constraint that restricts this request
+           to executing only if the object has not been modified after this
+           date.|yes||
+
+Get Object
+----------
+
+Gets the object stored in Amazon S3 under the specified bucket and key.
+Returns null if the specified constraints weren't met. To get an object from
+Amazon S3, the caller must have {@link Permission#Read} access to the object.
+Callers should be very careful when using this method; the returned Amazon S3
+object contains a direct stream of data from the HTTP connection. The
+underlying HTTP connection cannot be closed until the user finishes reading
+the data and closes the stream. Regarding conditional get constraints, Amazon
+S3 will ignore any dates occurring in the future.
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -374,36 +402,10 @@ access to the object.
            desired, or versioning is not enabled.|yes||
 |modifiedSince| The modified constraint that restricts this request to
            executing only if the object has been modified after the specified
-           date. Amazon S3 will ignore any dates occurring in the future.|yes||
+           date.|yes||
 |unmodifiedSince| The unmodified constraint that restricts this request
            to executing only if the object has not been modified after this
-           date. Amazon S3 will ignore any dates occurring in the future.|yes||
-
-Get Object
-----------
-
-Gets the object stored in Amazon S3 under the specified bucket and key.
-Returns null if the specified constraints weren't met. To get an object from
-Amazon S3, the caller must have {@link Permission#Read} access to the object.
-Callers should be very careful when using this method; the returned Amazon S3
-object contains a direct stream of data from the HTTP connection. The
-underlying HTTP connection cannot be closed until the user finishes reading
-the data and closes the stream. * @param bucketName the object's bucket
-
-| attribute | description | optional | default value | possible values |
-|:-----------|:-----------|:---------|:--------------|:----------------|
-|config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName||no||
-|key| the object's key|no||
-|versionId| the specific version of the object to get its contents, if
-           versioning is enabled. Left unspecified if the latest version is
-           desired, or versioning is not enabled.|yes||
-|modifiedSince| The modified constraint that restricts this request to
-           executing only if the object has been modified after the specified
-           date. Amazon S3 will ignore any dates occurring in the future.|yes||
-|unmodifiedSince| The unmodified constraint that restricts this request
-           to executing only if the object has not been modified after this
-           date. Amazon S3 will ignore any dates occurring in the future.|yes||
+           date.|yes||
 
 Get Object Metadata
 -------------------
@@ -439,6 +441,24 @@ enabled for a bucket the status can never be reverted to Off. Example:
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName| the target bucket name|no||
 |versioningStatus| the version status to set|no||*OFF*, *ENABLED*, *SUSPENDED*, *versioningStatusString*
+
+Create Object Uri
+-----------------
+
+Creates an http URI for the given object id. The useDefaultServer option
+enables using default US Amazon server subdomain in the URI regardless of the
+region. The main benefit of such feature is that this operation does not need
+to hit the Amazon servers, but the drawback is that using the given URI as an
+URL to the resource have unnecessary latency penalties for standard regions
+other than US_STANDARD.
+
+| attribute | description | optional | default value | possible values |
+|:-----------|:-----------|:---------|:--------------|:----------------|
+|config-ref|Specify which configuration to use for this invocation|yes||
+|bucketName||no||
+|key||no||
+|useDefaultServer| if the default US Amazon server subdomain should be
+           used in the URI regardless of the region.|yes|false|
 
 
 
