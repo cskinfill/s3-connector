@@ -10,6 +10,7 @@
 
 package org.mule.module.s3;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -28,7 +29,10 @@ import static org.mule.module.s3.AccessControlList.PUBLIC_READ_WRITE;
 import org.mule.module.s3.simpleapi.Region;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
 import org.mule.module.s3.simpleapi.VersioningStatus;
+import org.mule.module.s3.simpleapi.SimpleAmazonS3.S3ObjectContent;
+import org.mule.module.s3.simpleapi.content.FileS3ObjectContent;
 
+import static org.hamcrest.CoreMatchers.*;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.BucketPolicy;
@@ -45,11 +49,17 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.S3VersionSummary;
 import com.amazonaws.services.s3.model.SetBucketVersioningConfigurationRequest;
 import com.amazonaws.services.s3.model.StorageClass;
+import com.amazonaws.services.s3.model.VersionListing;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -59,6 +69,7 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 
 public class S3TestCase
 {
@@ -336,18 +347,42 @@ public class S3TestCase
         Iterable<S3ObjectSummary> listObjects = connector.listObjects(MY_BUCKET, "mk");
 
         ObjectListing firstListing = new ObjectListing();
-        firstListing.getObjectSummaries().add(newSummary("key1"));
-        firstListing.getObjectSummaries().add(newSummary("key2"));
+        firstListing.getObjectSummaries().add(newObjectSummary("key1"));
+        firstListing.getObjectSummaries().add(newObjectSummary("key2"));
         firstListing.setTruncated(true);
 
         ObjectListing secondListing = new ObjectListing();
-        secondListing.getObjectSummaries().add(newSummary("key3"));
+        secondListing.getObjectSummaries().add(newObjectSummary("key3"));
         secondListing.setTruncated(false);
 
         when(client.listObjects(eq(MY_BUCKET), eq("mk"))).thenReturn(firstListing);
         when(client.listNextBatchOfObjects(eq(firstListing))).thenReturn(secondListing);
 
         Iterator<S3ObjectSummary> iter = listObjects.iterator();
+        assertTrue(iter.hasNext());
+        assertEquals("key1", iter.next().getKey());
+        assertEquals("key2", iter.next().getKey());
+        assertEquals("key3", iter.next().getKey());
+        assertFalse(iter.hasNext());
+    }
+    
+    @Test
+    public void listVersions() throws Exception
+    {
+        Iterable<S3VersionSummary> listObjects = connector.listObjectVersions(MY_BUCKET);
+
+        VersionListing firstListing = new VersionListing();
+        firstListing.setVersionSummaries(Arrays.asList(newVersionSummary("key1"), newVersionSummary("key2")));
+        firstListing.setTruncated(true);
+
+        VersionListing secondListing = new VersionListing();
+        secondListing.setVersionSummaries(Collections.singletonList(newVersionSummary("key3")));
+        secondListing.setTruncated(false);
+
+        when(client.listVersions(eq(MY_BUCKET), (String) Matchers.isNull())).thenReturn(firstListing);
+        when(client.listNextBatchOfVersions(eq(firstListing))).thenReturn(secondListing);
+
+        Iterator<S3VersionSummary> iter = listObjects.iterator();
         assertTrue(iter.hasNext());
         assertEquals("key1", iter.next().getKey());
         assertEquals("key2", iter.next().getKey());
@@ -397,14 +432,31 @@ public class S3TestCase
         assertEquals("http://my-bucket.s3-external-1.amazonaws.com/myObject", connector.createObjectUri(
             MY_BUCKET, MY_OBJECT, false).toString());
     }
+    
+    @Test
+    public void testContent() throws Exception
+    {
+        S3ObjectContent content = S3ContentUtils.createContent(
+            new ByteArrayInputStream(new byte[]{20, 30, 6}), null, null);
+        assertThat(content, instanceOf(FileS3ObjectContent.class));
+        assertNotNull(content.createPutObjectRequest().getFile());
+    }
 
-    private S3ObjectSummary newSummary(String key)
+    private S3ObjectSummary newObjectSummary(String key)
     {
         S3ObjectSummary summary = new S3ObjectSummary();
         summary.setKey(key);
         return summary;
     }
 
+    private S3VersionSummary newVersionSummary(String key)
+    {
+        S3VersionSummary summary = new S3VersionSummary();
+        summary.setKey(key);
+        return summary;
+    }
+
+    
     private final class ContentMetadataMatcher extends BaseMatcher<PutObjectRequest>
     {
 

@@ -85,7 +85,7 @@ public class S3CloudConnector implements Initialisable
      * The optional  proxy port
      */
     @Property(optional = true)
-    private String proxyHost;
+    private String proxyHost;   
     
     private SimpleAmazonS3 client;
 

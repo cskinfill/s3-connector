@@ -45,6 +45,7 @@
 		<s3:copy-object sourceBucketName="my-bucket" sourceKey="anObject"
 			destinationKey="anotherObject" destinationStorageClass="STANDARD" />
 		<s3:list-objects bucketName="my-bucket" prefix="" />
+		<s3:list-object-versions bucketName="my-bucket" />
 	</flow>
 
 	<flow name="BucketPolicyCrudFlow">
