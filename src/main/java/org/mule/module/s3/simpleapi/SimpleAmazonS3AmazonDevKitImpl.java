@@ -200,7 +200,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     public String copyObject(@NotNull S3ObjectId source,
                              @NotNull S3ObjectId destination,
                              CannedAccessControlList acl,
-                             StorageClass storageClass, 
+                             StorageClass storageClass,
                              Map<String, String> userMetadata)
     {
         Validate.notNull(source);
@@ -242,10 +242,10 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 4.3
-    public InputStream getObjectContent(@NotNull S3ObjectId objectId, Date modifiedSince, Date unmodifiedSince)
+    public InputStream getObjectContent(@NotNull S3ObjectId objectId, @NotNull ConditionalConstraints conditionalConstraints)
     {
         Validate.notNull(objectId);
-        S3Object object = getObject(objectId, modifiedSince, unmodifiedSince);
+        S3Object object = getObject(objectId, conditionalConstraints);
         if (object == null)
         {
             return null;
@@ -261,13 +261,13 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
             objectId.getVersionId()));
     }
 
-    public S3Object getObject(@NotNull S3ObjectId objectId, Date modifiedSince, Date unmodifiedSince)
+    public S3Object getObject(@NotNull S3ObjectId objectId,
+                              @NotNull ConditionalConstraints conditionalConstraints)
     {
         Validate.notNull(objectId);
         GetObjectRequest request = new GetObjectRequest(objectId.getBucketName(), objectId.getKey(),
             objectId.getVersionId());
-        request.setModifiedSinceConstraint(modifiedSince);
-        request.setUnmodifiedSinceConstraint(unmodifiedSince);
+        conditionalConstraints.populate(request);
         return s3.getObject(request);
     }
 
@@ -278,13 +278,13 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
         s3.setBucketVersioningConfiguration(new SetBucketVersioningConfigurationRequest(bucketName,
             new BucketVersioningConfiguration(versioningStatus.toString())));
     }
-    
+
     public URI createObjectUriUsingDefaultServer(S3ObjectId objectId)
     {
         Validate.notNull(objectId);
         return Region.getDefaultRegion().getObjectUri(objectId);
     }
-    
+
     public URI createObjectUri(S3ObjectId objectId)
     {
         Validate.notNull(objectId);

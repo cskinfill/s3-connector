@@ -14,6 +14,7 @@ import static org.mule.module.s3.util.InternalUtils.coalesce;
 
 import org.mule.api.lifecycle.Initialisable;
 import org.mule.api.lifecycle.InitialisationException;
+import org.mule.module.s3.simpleapi.ConditionalConstraints;
 import org.mule.module.s3.simpleapi.Region;
 import org.mule.module.s3.simpleapi.S3ObjectId;
 import org.mule.module.s3.simpleapi.SimpleAmazonS3;
@@ -333,7 +334,7 @@ public class S3CloudConnector implements Initialisable
         client.setObjectStorageClass(new S3ObjectId(bucketName, key), storageClass.toS3Equivalent());
     }
 
-    // TODO pass conditional headers to copy 
+    // TODO pass conditional headers to copy
     /**
      * Copies a source object to a new destination; to copy an object, the caller's
      * account must have read access to the source object and write access to the
@@ -357,6 +358,8 @@ public class S3CloudConnector implements Initialisable
      * @param destinationKey the destination object's key
      * @param destinationAcl the acl of the destination object.
      * @param destinationStorageClass
+     * @param destinationUserMetadata the new metadata of the destination object,
+     *            that if specified, overrides that copied from the source object
      * @return the version id of the new object, or null, if versioning is not
      *         enabled
      */
@@ -372,7 +375,8 @@ public class S3CloudConnector implements Initialisable
     {
         return client.copyObject(new S3ObjectId(sourceBucketName, sourceKey, sourceVersionId),
             new S3ObjectId(coalesce(destinationBucketName, sourceBucketName), destinationKey),
-            destinationAcl.toS3Equivalent(), destinationStorageClass.toS3Equivalent(), destinationUserMetadata);
+            destinationAcl.toS3Equivalent(), destinationStorageClass.toS3Equivalent(),
+            destinationUserMetadata);
     }
 
     /**
@@ -435,8 +439,8 @@ public class S3CloudConnector implements Initialisable
                                         @Parameter(optional = true) Date modifiedSince,
                                         @Parameter(optional = true) Date unmodifiedSince)
     {
-        return client.getObjectContent(new S3ObjectId(bucketName, key, versionId), modifiedSince,
-            unmodifiedSince);
+        return client.getObjectContent(new S3ObjectId(bucketName, key, versionId), 
+            ConditionalConstraints.from(modifiedSince, unmodifiedSince));
     }
 
     /**
@@ -469,7 +473,8 @@ public class S3CloudConnector implements Initialisable
                               @Parameter(optional = true) Date modifiedSince,
                               @Parameter(optional = true) Date unmodifiedSince)
     {
-        return client.getObject(new S3ObjectId(bucketName, key, versionId), modifiedSince, unmodifiedSince);
+        return client.getObject(new S3ObjectId(bucketName, key, versionId), 
+            ConditionalConstraints.from(modifiedSince, unmodifiedSince));
     }
 
     /**

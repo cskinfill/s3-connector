@@ -27,8 +27,6 @@ import org.mule.module.s3.simpleapi.VersioningStatus;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.Bucket;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.net.URI;
 
 import org.junit.After;
