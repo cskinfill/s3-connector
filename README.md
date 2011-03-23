@@ -357,7 +357,9 @@ Example:
 |destinationKey|the destination object's key|no||
 |destinationAcl|the acl of the destination object.|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
 |destinationStorageClass||yes|STANDARD|*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
-|destinationUserMetadata||yes||
+|destinationUserMetadata|the new metadata of the destination object, that if specified, overrides that copied from the source object|yes||
+|modifiedSince||yes||
+|unmodifiedSince||yes||
 
 Returns version id of the new object, or null, if versioning is not enabled
 
