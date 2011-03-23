@@ -77,7 +77,7 @@ public class S3CloudConnector implements Initialisable
      * 
      * @param bucketName The bucket to create. It must not exist yet.
      * @param region the region where to create the new bucket
-     * @param acl the acces control list of the new bucket
+     * @param acl the access control list of the new bucket
      * @return the non null, new Bucket
      */
     @Operation
@@ -120,8 +120,8 @@ public class S3CloudConnector implements Initialisable
      * bucket policy granting them the <code>S3:DeleteBucketWebsite</code>
      * permission. Calling this operation on a bucket with no website configuration
      * does not fail, but calling this operation a bucket that does not exist does.
-     * Example: {@code <s3:delete-bucket-website-configuration
-     * bucketName="my-bucket"/>}
+     * Example: 
+     * {@code <s3:delete-bucket-website-configuration bucketName="my-bucket"/>}
      * 
      * @param bucketName the bucket whose policy to delete
      */
@@ -134,8 +134,8 @@ public class S3CloudConnector implements Initialisable
     /**
      * Answers the policy for the given bucket. Only the owner of the bucket can
      * retrieve it. If no policy has been set for the bucket, then a null policy text
-     * field will be returned. Example: {@code <s3:get-bucket-policy
-     * bucketName="my-bucket"/>}
+     * field will be returned. Example: 
+     * {@code <s3:get-bucket-policy bucketName="my-bucket"/>}
      * 
      * @param bucketName the bucket whose policy to retrieve
      * @return the bucket policy, or null, if not set
@@ -151,8 +151,7 @@ public class S3CloudConnector implements Initialisable
      * bucket can set a bucket policy. Bucket policies provide access control
      * management at the bucket level for both the bucket resource and contained
      * object resources. Only one policy can be specified per-bucket. Example:
-     * {@code <s3:set-bucket-policy bucketName="my-bucket" policyText="your policy"
-     * />}
+     * {@code <s3:set-bucket-policy bucketName="my-bucket" policyText="your policy" />}
      * 
      * @param bucketName the bucket name
      * @param policyText the policy text
@@ -184,8 +183,8 @@ public class S3CloudConnector implements Initialisable
      * the website attached to a bucket. However, bucket owners can allow other users
      * to set the website configuration by writing a bucket policy granting them the
      * S3:PutBucketWebsite permission. Example: {@code
-     * <s3:set-bucket-website-configuration bucketName="my-bucket"
-     * suffix="index.html" errorDocument="errorDocument.html" />}
+     * <s3:set-bucket-website-configuration bucketName="my-bucket" suffix="index.html" 
+     *                                      errorDocument="errorDocument.html" />}
      * 
      * @param bucketName the target bucket's name
      * @param suffix The document to serve when a directory is specified, relative to
@@ -209,8 +208,8 @@ public class S3CloudConnector implements Initialisable
      * GetBucketWebsite permission. By default, only the bucket owner can read the
      * bucket website configuration. However, bucket owners can allow other users to
      * read the website configuration by writing a bucket policy granting them the
-     * GetBucketWebsite permission. Example: {@code
-     * <s3:get-bucket-website-configuration bucketName="my-bucket" />}
+     * GetBucketWebsite permission. Example: 
+     * {@code <s3:get-bucket-website-configuration bucketName="my-bucket" />}
      * 
      * @param bucketName
      * @return a non null com.amazonaws.services.s3.model.BucketWebsiteConfiguration
@@ -255,8 +254,9 @@ public class S3CloudConnector implements Initialisable
 
     /**
      * Uploads an object to S3. Supported contents are InputStreams, Strings, byte
-     * arrays and Files. Example: {@code <s3:create-object bucketName="my-bucket"
-     * key="helloWorld.txt" content="#[hello world]" contentType="text/plain" />}
+     * arrays and Files. Example: 
+     * {@code <s3:create-object bucketName="my-bucket" key="helloWorld.txt" 
+     *                              content="#[hello world]" contentType="text/plain" />}
      * 
      * @param bucketName the object's bucket
      * @param key the object's key
@@ -296,8 +296,8 @@ public class S3CloudConnector implements Initialisable
      * Otherwise, once deleted, the object can only be restored if versioning was
      * enabled when the object was deleted. If attempting to delete an object that
      * does not exist, Amazon S3 will return a success message instead of an error
-     * message. Example: {@code <s3:delete-object bucketName="my-bucket"
-     * key="foo.gzip"/> }
+     * message. Example: 
+     * {@code <s3:delete-object bucketName="my-bucket" key="foo.gzip"/> }
      * 
      * @param bucketName the object's bucket
      * @param key the object's key
@@ -341,9 +341,9 @@ public class S3CloudConnector implements Initialisable
      * specified is provided. The AccesControlList is not copied to the new object,
      * and, unless another ACL specified, PRIVATE is assumed. If no destination
      * bucket is specified, the same that the source bucket is used - local copy.
-     * Example: {@code <s3:copy-object sourceBucketName="my-bucket"
-     * sourceKey="foo.gzip" destinationKey="bar.gzip"
-     * destinationStorageClass="Private" /> }
+     * Example: 
+     * {@code <s3:copy-object sourceBucketName="my-bucket" sourceKey="foo.gzip" destinationKey="bar.gzip"
+     *                                  destinationStorageClass="Private" /> }
      * 
      * @param sourceBucketName the source object's bucket
      * @param sourceVersionId the specific version of the source object to copy, if
