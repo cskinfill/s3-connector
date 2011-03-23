@@ -334,6 +334,7 @@ public class S3CloudConnector implements Initialisable
     }
 
     // TODO pass new metadata
+    // TODO pass extra headers?
     /**
      * Copies a source object to a new destination; to copy an object, the caller's
      * account must have read access to the source object and write access to the

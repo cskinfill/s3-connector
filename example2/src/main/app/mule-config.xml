@@ -49,36 +49,34 @@
 		<description>Uploads a file contained in an http server to AmazonS3,
 			creates an URI to it, shortens it, a publish into twitter
 		</description>
-		<poll frequency="30000">
 			<scripting:component>
 				<scripting:script engine="groovy">
-				     import java.text.SimpleDateFormat;
+				    import java.text.SimpleDateFormat;
 					return "axis" + new SimpleDateFormat("yyyy-MM-dd-HH-mm").format(new Date()) + ".jpg";
 	            </scripting:script>
 			</scripting:component>
-		</poll>
-		<enricher target="#[variable:inbound:newImageKey]" >
-			<expression-transformer>
-				<return-argument expression="" evaluator="payload" />
-			</expression-transformer>
-		</enricher>	
+			<message-properties-transformer scope="session">
+				<add-message-property key="newImage" value="#[payload]" />
+			</message-properties-transformer>
+			<logger message="#[header:session:newImage]" /> 	
 		<flow-ref name="copy-object"/>
+		<logger  message="#[header:session:newImage]" />
 		<s3:create-object-uri
 			bucketName="${s3.bucketName}" 
-			key="#[variable:inbound:newImageKey]" 
+			key="#[header:session:newImage]" 
 			useDefaultServer="true"/>
-		<logger level="INFO" category="Retrieving"/>
 		<flow-ref name="shortenLinkFlow"/>
 		<flow-ref name="publishTwitterFlow"/>
 	</flow>
 	
 	<flow name="copy-object">
 			<s3:copy-object
-			 sourceBucketName="camaraenclaromeco" sourceKey="axis.jpg"
+			 sourceBucketName="camaraenclaromeco" 
+			 sourceKey="axis.jpg"
 			 destinationBucketName="${s3.bucketName}" 
-			 destinationKey="#[variable:inbound:newImageKey]" 
-			 destinationStorageClass="STANDARD" />
-	
+			 destinationKey="#[header:session:newImage]" 
+			 destinationStorageClass="STANDARD"
+			 destinationAcl="PUBLIC_READ" />
 	</flow>
 	
 		
@@ -100,6 +98,7 @@
 			<when expression="errorCode = 0" evaluator="json">
 				<splitter expression="results" evaluator="json" />
 				<json:json-to-object-transformer />
+				<logger message="#[payload]"/> 
 				<scripting:component>
 					<scripting:script engine="groovy">
 						longUrl = message.getInvocationProperty('longUrl');
@@ -125,12 +124,14 @@
 		<description>
 			publish payload to twitter
       </description>
+      	<logger message="Publishing in twitter" />
 		<scripting:component>
 			<scripting:script engine="groovy">
 				import org.apache.commons.lang.StringUtils;
 				return StringUtils.abbreviate("Hey, new image: " + message.payload, 140);
                 </scripting:script>
 		</scripting:component>
+		<logger level="ERROR" message="Published in twitter #[payload]" />
 		<twitter:update-status status="#[payload]"
 			config-ref="twitteraccount1" />
 	</flow>
