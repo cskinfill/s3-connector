@@ -494,8 +494,7 @@ public class S3CloudConnector implements Initialisable
      * configuration can be in one of three possible states: Off, Enabled and
      * Suspended. By default, new buckets are in the Off state. Once versioning is
      * enabled for a bucket the status can never be reverted to Off. Example: {@code
-     * <s3:set-bucket-versioning-status bucketName="my-bucket"
-     * versioningStatus="Suspended" />}
+     * <s3:set-bucket-versioning-status bucketName="my-bucket" versioningStatus="Suspended" />}
      * 
      * @param bucketName the target bucket name
      * @param versioningStatus the version status to set
@@ -515,13 +514,12 @@ public class S3CloudConnector implements Initialisable
      * URL to the resource have unnecessary latency penalties for standard regions
      * other than US_STANDARD.
      * 
-     * @return a non secure http URI to the object. Unlike the presigned URI, object
      * @param bucketName
      * @param key
      * @param useDefaultServer if the default US Amazon server subdomain should be
      *            used in the URI regardless of the region.
      * @return a non secure http URI to the object. Unlike the presigned URI, object
-     *         must have PUBLIC_READ or PUBLIC_READ_WRITE persmission
+     *         must have PUBLIC_READ or PUBLIC_READ_WRITE permission
      */
     @Operation
     public URI createObjectUri(@Parameter(optional = false) String bucketName,

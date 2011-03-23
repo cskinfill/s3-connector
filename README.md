@@ -75,8 +75,6 @@ application. Create or delete buckets in a separate initialization or setup.
 Example: 
 
      <s3:create-bucket bucketName="my-bucket" acl="Private"/> 
-Returns non null, new Bucket
-
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -84,6 +82,10 @@ Returns non null, new Bucket
 |bucketName|The bucket to create. It must not exist yet.|no||
 |region|the region where to create the new bucket|yes|US_STANDARD|*US_STANDARD*, *US_WEST*, *EU_IRELAND*, *AP_SINGAPORE*, *s3Equivalent*, *domain*
 |acl|the access control list of the new bucket|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
+
+Returns non null, new Bucket
+
+
 
 Delete Bucket
 -------------
@@ -96,12 +98,13 @@ attribute  force="true". Example:
 
      <s3:delete-bucket bucketName="my-bucket" force="true"/> 
 
-
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName|the bucket to delete|no||
 |force|optional true if the bucket must be deleted even if it is not empty, false if operation should fail in such scenario.|yes|false|
+
+
 
 Delete Bucket Website Configuration
 -----------------------------------
@@ -118,11 +121,12 @@ Example:
 
      <s3:delete-bucket-website-configuration bucketName="my-bucket"/>
 
-
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName|the bucket whose policy to delete|no||
+
+
 
 Get Bucket Policy
 -----------------
@@ -133,13 +137,15 @@ field will be returned. Example:
 
 
      <s3:get-bucket-policy bucketName="my-bucket"/>
-Returns bucket policy, or null, if not set
-
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName|the bucket whose policy to retrieve|no||
+
+Returns bucket policy, or null, if not set
+
+
 
 Set Bucket Policy
 -----------------
@@ -152,12 +158,13 @@ object resources. Only one policy can be specified per-bucket. Example:
 
      <s3:set-bucket-policy bucketName="my-bucket" policyText="your policy" />
 
-
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName|the bucket name|no||
 |policyText|the policy text|no||
+
+
 
 Delete Bucket Policy
 --------------------
@@ -169,11 +176,12 @@ level for both the bucket resource and contained object resources. Example:
 
      <s3:delete-bucket-policy bucketName="my-bucket"/>
 
-
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName|the bucket whose policy to delete|no||
+
+
 
 Set Bucket Website Configuration
 --------------------------------
@@ -188,13 +196,14 @@ S3:PutBucketWebsite permission. Example:
     <s3:set-bucket-website-configuration bucketName="my-bucket" suffix="index.html" 
                                          errorDocument="errorDocument.html" />
 
-
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName|the target bucket's name|no||
 |suffix|The document to serve when a directory is specified, relative to the requested resource|no||
 |errorDocument|the full path to error document the bucket will use as error page for 4XX errors|yes||
+
+
 
 Get Bucket Website Configuration
 --------------------------------
@@ -207,13 +216,15 @@ GetBucketWebsite permission. Example:
 
 
      <s3:get-bucket-website-configuration bucketName="my-bucket" />
-Returns non null com.amazonaws.services.s3.model.BucketWebsiteConfiguration
-
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName||no||
+
+Returns non null com.amazonaws.services.s3.model.BucketWebsiteConfiguration
+
+
 
 List Buckets
 ------------
@@ -224,12 +235,14 @@ registered with Amazon S3. Anonymous requests cannot list buckets, and users
 cannot list buckets that they did not create. Example 
 
      <s3:list-buckets />
-Returns non null list of com.amazonaws.services.s3.model.Bucket
-
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
+
+Returns non null list of com.amazonaws.services.s3.model.Bucket
+
+
 
 List Objects
 ------------
@@ -240,14 +253,16 @@ objects, and may need to perform extra calls to the api while it is iterated.
 Example: 
 
      <s3:list-objects bucketName="my-bucket" prefix="mk" />
-Returns iterable
-
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName|the target bucket's name|no||
 |prefix|the prefix of the objects to be listed. If unspecified, all objects are listed|yes||
+
+Returns iterable
+
+
 
 Create Object
 -------------
@@ -258,8 +273,6 @@ arrays and Files. Example:
 
      <s3:create-object bucketName="my-bucket" key="helloWorld.txt" 
                                  content="#[hello world]" contentType="text/plain" />
-Returns id of the created object, or null, if versioning is not enabled
-
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -273,6 +286,10 @@ Returns id of the created object, or null, if versioning is not enabled
 |acl|the access control list of the new object|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
 |storageClass|the storaga class of the new object|yes|STANDARD|*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
 |userMetadata|a map of arbitrary object properties keys and values|yes||
+
+Returns id of the created object, or null, if versioning is not enabled
+
+
 
 Delete Object
 -------------
@@ -288,13 +305,14 @@ message. Example:
 
      <s3:delete-object bucketName="my-bucket" key="foo.gzip"/> 
 
-
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName|the object's bucket|no||
 |key|the object's key|no||
 |versionId|the specific version of the object to delete, if versioning is enabled. Left unspecified if the latest version is desired, or versioning is not enabled.|yes||
+
+
 
 Set Object Storage Class
 ------------------------
@@ -304,13 +322,14 @@ class of an object in a bucket that has enabled versioning creates a new
 version of the object with the new storage class. The existing version of the
 object preservers the previous storage class.
 
-
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName|the object's bucket name|no||
 |key|the object's key|no||
 |storageClass|the storage class to set|no||*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
+
+
 
 Copy Object
 -----------
@@ -327,8 +346,6 @@ Example:
 
      <s3:copy-object sourceBucketName="my-bucket" sourceKey="foo.gzip" destinationKey="bar.gzip"
                                      destinationStorageClass="Private" /> 
-Returns version id of the new object, or null, if versioning is not enabled
-
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -342,6 +359,10 @@ Returns version id of the new object, or null, if versioning is not enabled
 |destinationStorageClass||yes|STANDARD|*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
 |destinationUserMetadata||yes||
 
+Returns version id of the new object, or null, if versioning is not enabled
+
+
+
 Create Object Presigned Uri
 ---------------------------
 
@@ -351,8 +372,6 @@ providing an account's AWS security credentials. Example:
 
     
     <s3:create-presigned-uri bucketName="my-bucket" key="bar.xml" method="GET" />
-Returns non null pre-signed URI that can be used to access an Amazon S3 resource without requiring the user of the URL to know the account's AWS security credentials.
-
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -363,6 +382,10 @@ Returns non null pre-signed URI that can be used to access an Amazon S3 resource
 |expiration|The time at which the returned pre-signed URL will expire.|yes||
 |method|The HTTP method verb to use for this URL|yes|PUT|
 
+Returns non null pre-signed URI that can be used to access an Amazon S3 resource without requiring the user of the URL to know the account's AWS security credentials.
+
+
+
 Get Object Content
 ------------------
 
@@ -371,8 +394,6 @@ and key. Returns null if the specified constraints weren't met. To get an
 object's content from Amazon S3, the caller must have {@link Permission#Read}
 access to the object. Regarding conditional get constraints, Amazon S3 will
 ignore any dates occurring in the future.
-Returns input stream to the objects contents
-
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -382,6 +403,10 @@ Returns input stream to the objects contents
 |versionId|the specific version of the object to get its contents, if versioning is enabled, left unspecified if the latest version is desired, or versioning is not enabled.|yes||
 |modifiedSince|The modified constraint that restricts this request to executing only if the object has been modified after the specified date.|yes||
 |unmodifiedSince|The unmodified constraint that restricts this request to executing only if the object has not been modified after this date.|yes||
+
+Returns input stream to the objects contents
+
+
 
 Get Object
 ----------
@@ -394,8 +419,6 @@ object contains a direct stream of data from the HTTP connection. The
 underlying HTTP connection cannot be closed until the user finishes reading
 the data and closes the stream. Regarding conditional get constraints, Amazon
 S3 will ignore any dates occurring in the future.
-Returns S3Object, or null, if conditional get constraints did not match
-
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -406,6 +429,10 @@ Returns S3Object, or null, if conditional get constraints did not match
 |modifiedSince|The modified constraint that restricts this request to executing only if the object has been modified after the specified date.|yes||
 |unmodifiedSince|The unmodified constraint that restricts this request to executing only if the object has not been modified after this date.|yes||
 
+Returns S3Object, or null, if conditional get constraints did not match
+
+
+
 Get Object Metadata
 -------------------
 
@@ -415,8 +442,6 @@ avoids wasting bandwidth on fetching the object data. Example:
 
     
     <s3:get-object-metadata bucketName="my-bucket" key="baz.bin" />
-Returns non null object metadata
-
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -424,6 +449,10 @@ Returns non null object metadata
 |bucketName|the object's bucket|no||
 |key|the object's key|no||
 |versionId|the object metadata for the given bucketName and key|yes||
+
+Returns non null object metadata
+
+
 
 Set Bucket Versioning Status
 ----------------------------
@@ -434,15 +463,15 @@ Suspended. By default, new buckets are in the Off state. Once versioning is
 enabled for a bucket the status can never be reverted to Off. Example: 
 
     
-    <s3:set-bucket-versioning-status bucketName="my-bucket"
-    versioningStatus="Suspended" />
-
+    <s3:set-bucket-versioning-status bucketName="my-bucket" versioningStatus="Suspended" />
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName|the target bucket name|no||
 |versioningStatus|the version status to set|no||*OFF*, *ENABLED*, *SUSPENDED*, *versioningStatusString*
+
+
 
 Create Object Uri
 -----------------
@@ -453,8 +482,6 @@ region. The main benefit of such feature is that this operation does not need
 to hit the Amazon servers, but the drawback is that using the given URI as an
 URL to the resource have unnecessary latency penalties for standard regions
 other than US_STANDARD.
-Returns non secure http URI to the object. Unlike the presigned URI, object
-
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -462,6 +489,28 @@ Returns non secure http URI to the object. Unlike the presigned URI, object
 |bucketName||no||
 |key||no||
 |useDefaultServer|if the default US Amazon server subdomain should be used in the URI regardless of the region.|yes|false|
+
+Returns non secure http URI to the object. Unlike the presigned URI, object must have PUBLIC_READ or PUBLIC_READ_WRITE permission
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
