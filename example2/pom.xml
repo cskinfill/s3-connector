@@ -11,7 +11,7 @@
 	<properties>
 		<muleVersion>3.1.0</muleVersion>
 		<ibeansVersion>1.1</ibeansVersion>
-		<mule.s3.version>1.0-SNAPSHOT</mule.s3.version>
+		<mule.s3.version>1.0</mule.s3.version>
 	</properties>
 
 	<description>S3 demo for copying a content, creating an url, and publishing it in twitter</description>
