@@ -46,7 +46,7 @@ Configuration
 
 You can configure the connector as follows:
 
-    <s3:config accessKey="value" secretKey="value"/>
+    <s3:config accessKey="value" secretKey="value" proxyUsername="value" proxyPort="value" proxyPassword="value" proxyHost="value"/>
 
 Here is detailed list of all the configuration attributes:
 
@@ -55,6 +55,10 @@ Here is detailed list of all the configuration attributes:
 |name|Give a name to this configuration so it can be later referenced by config-ref.|yes||
 |accessKey||no|
 |secretKey||no|
+|proxyUsername||yes|
+|proxyPort||yes|
+|proxyPassword||yes|
+|proxyHost||yes|
 
 
 Create Bucket
@@ -264,11 +268,34 @@ Returns iterable
 
 
 
+List Object Versions
+--------------------
+
+Lazily lists all object versions for a given bucket that has versioning enabled.
+As S3 does not limit in any way
+the number of objects, such listing can retrieve an arbitrary amount of
+object versions, and may need to perform extra calls to the api while it is iterated.
+
+Example: 
+
+     <s3:list-object-versions bucketName="my-bucket" />
+
+| attribute | description | optional | default value | possible values |
+|:-----------|:-----------|:---------|:--------------|:----------------|
+|config-ref|Specify which configuration to use for this invocation|yes||
+|bucketName|the target bucket's name|no||
+
+Returns iterable
+
+
+
 Create Object
 -------------
 
 Uploads an object to S3. Supported contents are InputStreams, Strings, byte
-arrays and Files. Example: 
+arrays and Files. 
+
+Example: 
 
 
      <s3:create-object bucketName="my-bucket" key="helloWorld.txt" 
@@ -280,11 +307,11 @@ arrays and Files. Example:
 |bucketName|the object's bucket|no||
 |key|the object's key|no||
 |content||no||
-|contentLength|the content length. If content is a InputStream or byte arrays, this parameter should be specified, as not doing so will introduce a severe performance loss, otherwise, it is ignored. A content length of 0 is interpreted as an unspecified content length|yes||
+|contentLength|the content length. If content is a InputStream, this parameter should be specified, as not doing so will introduce a performance loss as the contents will have to be persisted on disk before being uploaded. Otherwise, it is ignored. An exception to this rule are InputStreams returned by Mule Http Connector: if stream has Content-Length information, it will be used. In any case a content length of 0 is interpreted as an unspecified content length|yes||
 |contentMd5|the content md5, encoded in base 64. If content is a file, it is ignored.|yes||
 |contentType|the content type of the new object.|yes||
 |acl|the access control list of the new object|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
-|storageClass|the storaga class of the new object|yes|STANDARD|*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
+|storageClass|the storage class of the new object|yes|STANDARD|*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
 |userMetadata|a map of arbitrary object properties keys and values|yes||
 
 Returns id of the created object, or null, if versioning is not enabled
@@ -358,8 +385,8 @@ Example:
 |destinationAcl|the acl of the destination object.|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
 |destinationStorageClass||yes|STANDARD|*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
 |destinationUserMetadata|the new metadata of the destination object, that if specified, overrides that copied from the source object|yes||
-|modifiedSince||yes||
-|unmodifiedSince||yes||
+|modifiedSince|The modified constraint that restricts this request to executing only if the object has been modified after the specified date. This constraint is specified but does not match, no copy is performed|yes||
+|unmodifiedSince|The unmodified constraint that restricts this request to executing only if the object has not been modified after this date. This constraint is specified but does not match, no copy is performed|yes||
 
 Returns version id of the new object, or null, if versioning is not enabled
 
@@ -493,6 +520,22 @@ other than US_STANDARD.
 |useDefaultServer|if the default US Amazon server subdomain should be used in the URI regardless of the region.|yes|false|
 
 Returns non secure http URI to the object. Unlike the presigned URI, object must have PUBLIC_READ or PUBLIC_READ_WRITE permission
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
