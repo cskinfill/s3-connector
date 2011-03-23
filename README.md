@@ -79,9 +79,9 @@ Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| The bucket to create. It must not exist yet.|no||
-|region| the region where to create the new bucket|yes|US_STANDARD|*US_STANDARD*, *US_WEST*, *EU_IRELAND*, *AP_SINGAPORE*, *s3Equivalent*, *domain*
-|acl| the acces control list of the new bucket|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
+|bucketName|The bucket to create. It must not exist yet.|no||
+|region|the region where to create the new bucket|yes|US_STANDARD|*US_STANDARD*, *US_WEST*, *EU_IRELAND*, *AP_SINGAPORE*, *s3Equivalent*, *domain*
+|acl|the access control list of the new bucket|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
 
 Delete Bucket
 -------------
@@ -97,8 +97,8 @@ attribute  force="true". Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| the bucket to delete|no||
-|force| optional true if the bucket must be deleted even if it is not empty, false if operation should fail in such scenario.|yes|false|
+|bucketName|the bucket to delete|no||
+|force|optional true if the bucket must be deleted even if it is not empty, false if operation should fail in such scenario.|yes|false|
 
 Delete Bucket Website Configuration
 -----------------------------------
@@ -112,13 +112,13 @@ permission. Calling this operation on a bucket with no website configuration
 does not fail, but calling this operation a bucket that does not exist does.
 Example: 
 
-     <s3:delete-bucket-website-configuration
-    bucketName="my-bucket"/>
+
+     <s3:delete-bucket-website-configuration bucketName="my-bucket"/>
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| the bucket whose policy to delete|no||
+|bucketName|the bucket whose policy to delete|no||
 
 Get Bucket Policy
 -----------------
@@ -127,13 +127,13 @@ Answers the policy for the given bucket. Only the owner of the bucket can
 retrieve it. If no policy has been set for the bucket, then a null policy text
 field will be returned. Example: 
 
-     <s3:get-bucket-policy
-    bucketName="my-bucket"/>
+
+     <s3:get-bucket-policy bucketName="my-bucket"/>
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| the bucket whose policy to retrieve|no||
+|bucketName|the bucket whose policy to retrieve|no||
 
 Set Bucket Policy
 -----------------
@@ -144,14 +144,13 @@ management at the bucket level for both the bucket resource and contained
 object resources. Only one policy can be specified per-bucket. Example:
 
 
-     <s3:set-bucket-policy bucketName="my-bucket" policyText="your policy"
-    />
+     <s3:set-bucket-policy bucketName="my-bucket" policyText="your policy" />
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| the bucket name|no||
-|policyText| the policy text|no||
+|bucketName|the bucket name|no||
+|policyText|the policy text|no||
 
 Delete Bucket Policy
 --------------------
@@ -166,7 +165,7 @@ level for both the bucket resource and contained object resources. Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| the bucket whose policy to delete|no||
+|bucketName|the bucket whose policy to delete|no||
 
 Set Bucket Website Configuration
 --------------------------------
@@ -178,17 +177,15 @@ to set the website configuration by writing a bucket policy granting them the
 S3:PutBucketWebsite permission. Example: 
 
     
-    <s3:set-bucket-website-configuration bucketName="my-bucket"
-    suffix="index.html" errorDocument="errorDocument.html" />
+    <s3:set-bucket-website-configuration bucketName="my-bucket" suffix="index.html" 
+                                         errorDocument="errorDocument.html" />
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| the target bucket's name|no||
-|suffix| The document to serve when a directory is specified, relative to
-           the requested resource|no||
-|errorDocument| the full path to error document the bucket will use as
-           error page for 4XX errors|yes||
+|bucketName|the target bucket's name|no||
+|suffix|The document to serve when a directory is specified, relative to the requested resource|no||
+|errorDocument|the full path to error document the bucket will use as error page for 4XX errors|yes||
 
 Get Bucket Website Configuration
 --------------------------------
@@ -199,8 +196,8 @@ bucket website configuration. However, bucket owners can allow other users to
 read the website configuration by writing a bucket policy granting them the
 GetBucketWebsite permission. Example: 
 
-    
-    <s3:get-bucket-website-configuration bucketName="my-bucket" />
+
+     <s3:get-bucket-website-configuration bucketName="my-bucket" />
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -234,9 +231,8 @@ Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| the target bucket's name|no||
-|prefix| the prefix of the objects to be listed. If unspecified, all
-           objects are listed|yes||
+|bucketName|the target bucket's name|no||
+|prefix|the prefix of the objects to be listed. If unspecified, all objects are listed|yes||
 
 Create Object
 -------------
@@ -244,25 +240,22 @@ Create Object
 Uploads an object to S3. Supported contents are InputStreams, Strings, byte
 arrays and Files. Example: 
 
-     <s3:create-object bucketName="my-bucket"
-    key="helloWorld.txt" content="#[hello world]" contentType="text/plain" />
+
+     <s3:create-object bucketName="my-bucket" key="helloWorld.txt" 
+                                 content="#[hello world]" contentType="text/plain" />
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| the object's bucket|no||
-|key| the object's key|no||
+|bucketName|the object's bucket|no||
+|key|the object's key|no||
 |content||no||
-|contentLength| the content length. If content is a InputStream or byte
-           arrays, this parameter should be specified, as not doing so will
-           introduce a severe performance loss, otherwise, it is ignored. A
-           content length of 0 is interpreted as an unspecified content length|yes||
-|contentMd5| the content md5, encoded in base 64. If content is a file,
-           it is ignored.|yes||
-|contentType| the content type of the new object.|yes||
-|acl| the access control list of the new object|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
-|storageClass| the storaga class of the new object|yes|STANDARD|*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
-|userMetadata| a map of arbitrary object properties keys and values|yes||
+|contentLength|the content length. If content is a InputStream or byte arrays, this parameter should be specified, as not doing so will introduce a severe performance loss, otherwise, it is ignored. A content length of 0 is interpreted as an unspecified content length|yes||
+|contentMd5|the content md5, encoded in base 64. If content is a file, it is ignored.|yes||
+|contentType|the content type of the new object.|yes||
+|acl|the access control list of the new object|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
+|storageClass|the storaga class of the new object|yes|STANDARD|*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
+|userMetadata|a map of arbitrary object properties keys and values|yes||
 
 Delete Object
 -------------
@@ -275,17 +268,15 @@ enabled when the object was deleted. If attempting to delete an object that
 does not exist, Amazon S3 will return a success message instead of an error
 message. Example: 
 
-     <s3:delete-object bucketName="my-bucket"
-    key="foo.gzip"/> 
+
+     <s3:delete-object bucketName="my-bucket" key="foo.gzip"/> 
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| the object's bucket|no||
-|key| the object's key|no||
-|versionId| the specific version of the object to delete, if versioning
-           is enabled. Left unspecified if the latest version is desired, or
-           versioning is not enabled.|yes||
+|bucketName|the object's bucket|no||
+|key|the object's key|no||
+|versionId|the specific version of the object to delete, if versioning is enabled. Left unspecified if the latest version is desired, or versioning is not enabled.|yes||
 
 Set Object Storage Class
 ------------------------
@@ -298,9 +289,9 @@ object preservers the previous storage class.
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| the object's bucket name|no||
-|key| the object's key|no||
-|storageClass| the storage class to set|no||*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
+|bucketName|the object's bucket name|no||
+|key|the object's key|no||
+|storageClass|the storage class to set|no||*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
 
 Copy Object
 -----------
@@ -314,24 +305,21 @@ and, unless another ACL specified, PRIVATE is assumed. If no destination
 bucket is specified, the same that the source bucket is used - local copy.
 Example: 
 
-     <s3:copy-object sourceBucketName="my-bucket"
-    sourceKey="foo.gzip" destinationKey="bar.gzip"
-    destinationStorageClass="Private" /> 
+
+     <s3:copy-object sourceBucketName="my-bucket" sourceKey="foo.gzip" destinationKey="bar.gzip"
+                                     destinationStorageClass="Private" /> 
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|sourceBucketName| the source object's bucket|no||
+|sourceBucketName|the source object's bucket|no||
 |sourceKey||no||
-|sourceVersionId| the specific version of the source object to copy, if
-           versioning is enabled. Left unspecified if the latest version is
-           desired, or versioning is not enabled.|yes||
-|destinationBucketName| the destination object's bucket. If none
-           provided, a local copy is performed, that is, it is copied within
-           the same bucket.|yes||
-|destinationKey| the destination object's key|no||
-|destinationAcl| the acl of the destination object.|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
+|sourceVersionId|the specific version of the source object to copy, if versioning is enabled. Left unspecified if the latest version is desired, or versioning is not enabled.|yes||
+|destinationBucketName|the destination object's bucket. If none provided, a local copy is performed, that is, it is copied within the same bucket.|yes||
+|destinationKey|the destination object's key|no||
+|destinationAcl|the acl of the destination object.|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
 |destinationStorageClass||yes|STANDARD|*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
+|destinationUserMetadata||yes||
 
 Create Object Presigned Uri
 ---------------------------
@@ -346,13 +334,11 @@ providing an account's AWS security credentials. Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| the object's bucket|no||
-|key| the object's key|no||
-|versionId| the specific version of the object to create the URI, if
-           versioning is enabled. Left unspecified if the latest version is
-           desired, or versioning is not enabled.|yes||
-|expiration| The time at which the returned pre-signed URL will expire.|yes||
-|method| The HTTP method verb to use for this URL|yes|PUT|
+|bucketName|the object's bucket|no||
+|key|the object's key|no||
+|versionId|the specific version of the object to create the URI, if versioning is enabled. Left unspecified if the latest version is desired, or versioning is not enabled.|yes||
+|expiration|The time at which the returned pre-signed URL will expire.|yes||
+|method|The HTTP method verb to use for this URL|yes|PUT|
 
 Get Object Content
 ------------------
@@ -366,17 +352,11 @@ ignore any dates occurring in the future.
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| the object's bucket|no||
-|key| the object's key|no||
-|versionId| the specific version of the object to get its contents, if
-           versioning is enabled, left unspecified if the latest version is
-           desired, or versioning is not enabled.|yes||
-|modifiedSince| The modified constraint that restricts this request to
-           executing only if the object has been modified after the specified
-           date.|yes||
-|unmodifiedSince| The unmodified constraint that restricts this request
-           to executing only if the object has not been modified after this
-           date.|yes||
+|bucketName|the object's bucket|no||
+|key|the object's key|no||
+|versionId|the specific version of the object to get its contents, if versioning is enabled, left unspecified if the latest version is desired, or versioning is not enabled.|yes||
+|modifiedSince|The modified constraint that restricts this request to executing only if the object has been modified after the specified date.|yes||
+|unmodifiedSince|The unmodified constraint that restricts this request to executing only if the object has not been modified after this date.|yes||
 
 Get Object
 ----------
@@ -393,17 +373,11 @@ S3 will ignore any dates occurring in the future.
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| the object's bucket|no||
-|key| the object's key|no||
-|versionId| the specific version of the object to get its contents, if
-           versioning is enabled. Left unspecified if the latest version is
-           desired, or versioning is not enabled.|yes||
-|modifiedSince| The modified constraint that restricts this request to
-           executing only if the object has been modified after the specified
-           date.|yes||
-|unmodifiedSince| The unmodified constraint that restricts this request
-           to executing only if the object has not been modified after this
-           date.|yes||
+|bucketName|the object's bucket|no||
+|key|the object's key|no||
+|versionId|the specific version of the object to get its contents, if versioning is enabled. Left unspecified if the latest version is desired, or versioning is not enabled.|yes||
+|modifiedSince|The modified constraint that restricts this request to executing only if the object has been modified after the specified date.|yes||
+|unmodifiedSince|The unmodified constraint that restricts this request to executing only if the object has not been modified after this date.|yes||
 
 Get Object Metadata
 -------------------
@@ -418,9 +392,9 @@ avoids wasting bandwidth on fetching the object data. Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| the object's bucket|no||
-|key| the object's key|no||
-|versionId| the object metadata for the given bucketName and key|yes||
+|bucketName|the object's bucket|no||
+|key|the object's key|no||
+|versionId|the object metadata for the given bucketName and key|yes||
 
 Set Bucket Versioning Status
 ----------------------------
@@ -437,8 +411,8 @@ enabled for a bucket the status can never be reverted to Off. Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName| the target bucket name|no||
-|versioningStatus| the version status to set|no||*OFF*, *ENABLED*, *SUSPENDED*, *versioningStatusString*
+|bucketName|the target bucket name|no||
+|versioningStatus|the version status to set|no||*OFF*, *ENABLED*, *SUSPENDED*, *versioningStatusString*
 
 Create Object Uri
 -----------------
@@ -455,8 +429,7 @@ other than US_STANDARD.
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName||no||
 |key||no||
-|useDefaultServer| if the default US Amazon server subdomain should be
-           used in the URI regardless of the region.|yes|false|
+|useDefaultServer|if the default US Amazon server subdomain should be used in the URI regardless of the region.|yes|false|
 
 
 
