@@ -55,17 +55,35 @@ import org.apache.commons.lang.Validate;
 @Connector(namespacePrefix = "s3", namespaceUri = "http://www.mulesoft.org/schema/mule/s3")
 public class S3CloudConnector implements Initialisable
 {
+    /**
+     * The access key provided by Amazon, needed for non annoynous operations
+     */
     @Property
     private String accessKey;
+    /**
+     * The secrete key provided by Amazon, needed for non annoynous operations
+     */
     @Property
     private String secretKey;
 
+    /**
+     * The optional proxy username
+     */
     @Property(optional = true)
     private String proxyUsername;
+    /**
+     * The optional  proxy port
+     */
     @Property(optional = true)
     private Integer proxyPort;
+    /**
+     * The optional  proxy password
+     */
     @Property(optional = true)
     private String proxyPassword;
+    /**
+     * The optional  proxy port
+     */
     @Property(optional = true)
     private String proxyHost;
     

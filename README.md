@@ -53,12 +53,12 @@ Here is detailed list of all the configuration attributes:
 | attribute | description | optional | default value |
 |:-----------|:-----------|:---------|:--------------|
 |name|Give a name to this configuration so it can be later referenced by config-ref.|yes||
-|accessKey||no|
-|secretKey||no|
-|proxyUsername||yes|
-|proxyPort||yes|
-|proxyPassword||yes|
-|proxyHost||yes|
+|accessKey|The access key provided by Amazon, needed for non annoynous operations|no|
+|secretKey|The secrete key provided by Amazon, needed for non annoynous operations|no|
+|proxyUsername|The optional proxy username|yes|
+|proxyPort|The optional  proxy port|yes|
+|proxyPassword|The optional  proxy password|yes|
+|proxyHost|The optional  proxy port|yes|
 
 
 Create Bucket
