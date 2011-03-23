@@ -331,7 +331,7 @@ public class S3CloudConnector implements Initialisable
         client.setObjectStorageClass(new S3ObjectId(bucketName, key), storageClass.toS3Equivalent());
     }
 
-    // TODO pass new metadata
+    // TODO pass conditional headers to copy 
     /**
      * Copies a source object to a new destination; to copy an object, the caller's
      * account must have read access to the source object and write access to the
@@ -365,11 +365,12 @@ public class S3CloudConnector implements Initialisable
                              @Parameter(optional = true) String destinationBucketName,
                              @Parameter(optional = false) String destinationKey,
                              @Parameter(optional = true, defaultValue = "PRIVATE") AccessControlList destinationAcl,
-                             @Parameter(optional = true, defaultValue = "STANDARD") StorageClass destinationStorageClass)
+                             @Parameter(optional = true, defaultValue = "STANDARD") StorageClass destinationStorageClass,
+                             @Parameter(optional = true) Map<String, String> destinationUserMetadata)
     {
         return client.copyObject(new S3ObjectId(sourceBucketName, sourceKey, sourceVersionId),
             new S3ObjectId(coalesce(destinationBucketName, sourceBucketName), destinationKey),
-            destinationAcl.toS3Equivalent(), destinationStorageClass.toS3Equivalent());
+            destinationAcl.toS3Equivalent(), destinationStorageClass.toS3Equivalent(), destinationUserMetadata);
     }
 
     /**

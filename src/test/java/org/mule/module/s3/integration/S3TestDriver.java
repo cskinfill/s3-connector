@@ -132,7 +132,7 @@ public class S3TestDriver
     {
         connector.createBucket(bucketName, Region.US_STANDARD, PRIVATE);
         connector.copyObject("camaraenclaromeco", "axis.jpg", null, bucketName, "axis.jpg",
-            AccessControlList.PRIVATE, StorageClass.STANDARD);
+            AccessControlList.PRIVATE, StorageClass.STANDARD, null);
         connector.setBucketWebsiteConfiguration(bucketName, "axis.jpg", "axis.jpg");
     }
 

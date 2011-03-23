@@ -38,8 +38,7 @@ public class S3TestDriver extends FunctionalTestCase
     {
         final MuleEvent event = getTestEvent("test");
         final SimpleFlowConstruct flow = lookupFlowConstruct("PublishFlow");
-        final MuleEvent responseEvent = flow.process(event);
-        assertTrue(responseEvent.getMessage().getPayload() instanceof NullPayload);
+        flow.process(event);
     }
 
     private SimpleFlowConstruct lookupFlowConstruct(final String name)
