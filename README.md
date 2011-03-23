@@ -60,7 +60,7 @@ Here is detailed list of all the configuration attributes:
 Create Bucket
 -------------
 
-Creates a new bucket; connector must not be configured as annonyomus for this
+Creates a new bucket; connector must not be configured as anonymous for this
 operation to succeed. Bucket names must be unique across all of Amazon S3,
 that is, among all their users. Bucket ownership is similar to the ownership
 of Internet domain names. Within Amazon S3, only a single user owns each
@@ -71,7 +71,7 @@ requirements, buckets names must: not contain underscores, be between 3 and 63
 characters long, not end with a dash, not contain adjacent periods, not
 contain dashes next to periods and not contain uppercase characters. Do not
 make bucket create or delete calls in the high availability code path of an
-application. Create or delete buckets in a separate initialization or setup
+application. Create or delete buckets in a separate initialization or setup.
 Example: 
 
      <s3:create-bucket bucketName="my-bucket" acl="Private"/> 
@@ -88,18 +88,17 @@ Delete Bucket
 
 Deletes the specified bucket. All objects (and all object versions, if
 versioning was ever enabled) in the bucket must be deleted before the bucket
-itself can be deleted; this restriction can be relaxed by specifying.
-force="true". Example: 
+itself can be deleted; this restriction can be relaxed by specifying the 
+attribute  force="true". Example: 
 
-     <s3:delete-bucket bucketName="my-bucket"
-    force="true"/> 
+
+     <s3:delete-bucket bucketName="my-bucket" force="true"/> 
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName| the bucket to delete|no||
-|force| optional true if the bucket must be deleted even if it is not
-           empty, false if operation should fail in such scenario.|yes|false|
+|force| optional true if the bucket must be deleted even if it is not empty, false if operation should fail in such scenario.|yes|false|
 
 Delete Bucket Website Configuration
 -----------------------------------
@@ -216,8 +215,7 @@ request owns. Users must authenticate with a valid AWS Access Key ID that is
 registered with Amazon S3. Anonymous requests cannot list buckets, and users
 cannot list buckets that they did not create. Example 
 
-     <s3:list-buckets
-    />
+     <s3:list-buckets />
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|

@@ -60,7 +60,7 @@ public class S3CloudConnector implements Initialisable
     private SimpleAmazonS3 client;
 
     /**
-     * Creates a new bucket; connector must not be configured as annonyomus for this
+     * Creates a new bucket; connector must not be configured as anonymous for this
      * operation to succeed. Bucket names must be unique across all of Amazon S3,
      * that is, among all their users. Bucket ownership is similar to the ownership
      * of Internet domain names. Within Amazon S3, only a single user owns each
@@ -71,7 +71,7 @@ public class S3CloudConnector implements Initialisable
      * characters long, not end with a dash, not contain adjacent periods, not
      * contain dashes next to periods and not contain uppercase characters. Do not
      * make bucket create or delete calls in the high availability code path of an
-     * application. Create or delete buckets in a separate initialization or setup
+     * application. Create or delete buckets in a separate initialization or setup.
      * Example: {@code <s3:create-bucket bucketName="my-bucket" acl="Private"/> }
      * 
      * @param bucketName The bucket to create. It must not exist yet.
@@ -90,13 +90,12 @@ public class S3CloudConnector implements Initialisable
     /**
      * Deletes the specified bucket. All objects (and all object versions, if
      * versioning was ever enabled) in the bucket must be deleted before the bucket
-     * itself can be deleted; this restriction can be relaxed by specifying.
-     * force="true". Example: {@code <s3:delete-bucket bucketName="my-bucket"
-     * force="true"/> }
+     * itself can be deleted; this restriction can be relaxed by specifying the 
+     * attribute  force="true". Example: 
+     * {@code <s3:delete-bucket bucketName="my-bucket" force="true"/> }
      * 
      * @param bucketName the bucket to delete
-     * @param force optional true if the bucket must be deleted even if it is not
-     *            empty, false if operation should fail in such scenario.
+     * @param force optional true if the bucket must be deleted even if it is not empty, false if operation should fail in such scenario.
      */
     @Operation
     public void deleteBucket(@Parameter(optional = false) String bucketName,
@@ -225,8 +224,7 @@ public class S3CloudConnector implements Initialisable
      * Answers a list of all Amazon S3 buckets that the authenticated sender of the
      * request owns. Users must authenticate with a valid AWS Access Key ID that is
      * registered with Amazon S3. Anonymous requests cannot list buckets, and users
-     * cannot list buckets that they did not create. Example {@code <s3:list-buckets
-     * />}
+     * cannot list buckets that they did not create. Example {@code <s3:list-buckets />}
      * 
      * @return a non null list of com.amazonaws.services.s3.model.Bucket
      */
