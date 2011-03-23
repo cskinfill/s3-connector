@@ -199,12 +199,14 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     // 4.4
     public String copyObject(@NotNull S3ObjectId source,
                              @NotNull S3ObjectId destination,
+                             @NotNull ConditionalConstraints conditionalConstraints,
                              CannedAccessControlList acl,
-                             StorageClass storageClass,
+                             StorageClass storageClass, 
                              Map<String, String> userMetadata)
     {
         Validate.notNull(source);
         Validate.notNull(destination);
+        Validate.notNull(conditionalConstraints);
         CopyObjectRequest request = new CopyObjectRequest(source.getBucketName(), source.getKey(),
             source.getVersionId(), destination.getBucketName(), destination.getKey());
         request.setCannedAccessControlList(acl);
@@ -217,6 +219,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
             request.setNewObjectMetadata(new ObjectMetadata());
             request.getNewObjectMetadata().setUserMetadata(userMetadata);
         }
+        conditionalConstraints.populate(request);
         return s3.copyObject(request).getVersionId();
     }
 

@@ -151,6 +151,8 @@ public interface SimpleAmazonS3
      * @param source
      * @param destination the destination object. If this id is versioned, its
      *            version is ignored
+     * @param conditionalConstraints the constraints to be matched in order to proceed with copy. 
+     *          If not matched, no copy is performed
      * @param acl
      * @param destinationUserMetadata 
      * @return the version id of the destination object, if versioning is enabled
@@ -158,7 +160,8 @@ public interface SimpleAmazonS3
      */
     String copyObject(@NotNull S3ObjectId source,
                       @NotNull S3ObjectId destination,
-                      CannedAccessControlList acl,
+                      @NotNull ConditionalConstraints conditionalConstraints,
+                      CannedAccessControlList acl, 
                       StorageClass storageClass, 
                       Map<String, String> destinationUserMetadata);
 

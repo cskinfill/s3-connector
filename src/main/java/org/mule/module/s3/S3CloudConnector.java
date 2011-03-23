@@ -348,7 +348,6 @@ public class S3CloudConnector implements Initialisable
      * destinationStorageClass="Private" /> }
      * 
      * @param sourceBucketName the source object's bucket
-     * @param sourcekey the source object's key
      * @param sourceVersionId the specific version of the source object to copy, if
      *            versioning is enabled. Left unspecified if the latest version is
      *            desired, or versioning is not enabled.
@@ -360,6 +359,9 @@ public class S3CloudConnector implements Initialisable
      * @param destinationStorageClass
      * @param destinationUserMetadata the new metadata of the destination object,
      *            that if specified, overrides that copied from the source object
+     * @param newParam TODO
+     * @param newParam2 TODO
+     * @param sourcekey the source object's key
      * @return the version id of the new object, or null, if versioning is not
      *         enabled
      */
@@ -371,11 +373,16 @@ public class S3CloudConnector implements Initialisable
                              @Parameter(optional = false) String destinationKey,
                              @Parameter(optional = true, defaultValue = "PRIVATE") AccessControlList destinationAcl,
                              @Parameter(optional = true, defaultValue = "STANDARD") StorageClass destinationStorageClass,
-                             @Parameter(optional = true) Map<String, String> destinationUserMetadata)
+                             @Parameter(optional = true) Map<String, String> destinationUserMetadata,  
+                             @Parameter(optional = true) Date modifiedSince, 
+                             @Parameter(optional = true) Date unmodifiedSince)
     {
-        return client.copyObject(new S3ObjectId(sourceBucketName, sourceKey, sourceVersionId),
+        return client.copyObject(
+            new S3ObjectId(sourceBucketName, sourceKey, sourceVersionId),
             new S3ObjectId(coalesce(destinationBucketName, sourceBucketName), destinationKey),
-            destinationAcl.toS3Equivalent(), destinationStorageClass.toS3Equivalent(),
+            ConditionalConstraints.from(modifiedSince, unmodifiedSince), 
+            destinationAcl.toS3Equivalent(),
+            destinationStorageClass.toS3Equivalent(), 
             destinationUserMetadata);
     }
 

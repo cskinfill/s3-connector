@@ -105,7 +105,7 @@ public class S3TestCase
         when(client.copyObject(refEq(request))).thenReturn(result);
 
         assertEquals("12", connector.copyObject(MY_BUCKET, MY_OBJECT, null, null, "myObject2", PUBLIC_READ,
-            org.mule.module.s3.StorageClass.STANDARD, null));
+            org.mule.module.s3.StorageClass.STANDARD, null, null, null));
     }
 
     @Test
@@ -120,7 +120,7 @@ public class S3TestCase
         when(client.copyObject(refEq(request))).thenReturn(result);
 
         assertEquals("12", connector.copyObject(MY_BUCKET, MY_OBJECT, "12", null, "myObject2", PRIVATE,
-            org.mule.module.s3.StorageClass.STANDARD, null));
+            org.mule.module.s3.StorageClass.STANDARD, null, null, null));
     }
 
     @Test
@@ -132,7 +132,7 @@ public class S3TestCase
         when(client.copyObject(refEq(request))).thenReturn(new CopyObjectResult());
 
         assertNull(connector.copyObject(MY_BUCKET, MY_OBJECT, null, "myBucket2", "myObject2", PRIVATE,
-            org.mule.module.s3.StorageClass.STANDARD, null));
+            org.mule.module.s3.StorageClass.STANDARD, null, null, null));
     }
 
     @Test
