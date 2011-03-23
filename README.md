@@ -52,7 +52,7 @@ Here is detailed list of all the configuration attributes:
 
 | attribute | description | optional | default value |
 |:-----------|:-----------|:---------|:--------------|
-|name|Give a name to this configuration so it can be later referenced by config-ref.|yes||
+|name|Give a name to this configuration so it can be later referenced by config-ref.|yes| |
 |accessKey||no|
 |secretKey||no|
 
