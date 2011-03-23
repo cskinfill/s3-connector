@@ -1,0 +1,25 @@
+S3 PUBLISH DEMO
+=============
+
+INTRODUCTION
+  This is a demo about copying objects between buckets and publishing the resulting URL in twitter. This demo covers copying objects and URL generation.  
+
+HOW TO DEMO:
+  1. Set the following system properties:
+  	a. s3.accessKey. This is the access key of your Amazon Account
+    b. s3.secetKey. This is the secret key of your Amazon Account (Do not share it!)
+    c. s3.bucketName. This is a test bucket where the objects will be created. Remember that you need to choose a non existing bucket name
+  2. Create the bucket where you will copy the objects. You can create it with the "SetupFlow" of the Upload Demo Example.         
+  3. Run the "PublishFlow". This will copy an image from a public available S3 bucket to the previously select, using the current local date time
+  as part of its name, generate its URL, shorten it with bitly and then publish it into Twitter. 
+
+HOW IT WORKS:
+   - A new filename is created based on the current local time using the scripting module. 
+   - An object from bucket camaraenclaromeco is copied into the select bucket, using the S3 connector.
+   - A URL to the new object is generated using the S3 connector
+   - The generated URL is shorten using the bityl connector
+   - The resultant URL is posted as a twitter status.
+
+WHAT HAS NOT BEEN DEMO:
+    Deletion operations over buckets and objects, object and bucket creation and bucket and versioning listing.  
+    
