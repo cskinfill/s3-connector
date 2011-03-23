@@ -25,8 +25,12 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.UnhandledException;
 
-public class S3ContentUtils
+public final class S3ContentUtils
 {
+    private S3ContentUtils()
+    {
+    }
+    
     /**
      * Creates the {@link S3ObjectContent}. If content is a String or file, the
      * content length parameter is ignored. Also contentMD5 is ignored if content is

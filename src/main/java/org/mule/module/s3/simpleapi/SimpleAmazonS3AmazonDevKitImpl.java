@@ -199,12 +199,14 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     // 4.4
     public String copyObject(@NotNull S3ObjectId source,
                              @NotNull S3ObjectId destination,
+                             @NotNull ConditionalConstraints conditionalConstraints,
                              CannedAccessControlList acl,
                              StorageClass storageClass, 
                              Map<String, String> userMetadata)
     {
         Validate.notNull(source);
         Validate.notNull(destination);
+        Validate.notNull(conditionalConstraints);
         CopyObjectRequest request = new CopyObjectRequest(source.getBucketName(), source.getKey(),
             source.getVersionId(), destination.getBucketName(), destination.getKey());
         request.setCannedAccessControlList(acl);
@@ -217,6 +219,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
             request.setNewObjectMetadata(new ObjectMetadata());
             request.getNewObjectMetadata().setUserMetadata(userMetadata);
         }
+        conditionalConstraints.populate(request);
         return s3.copyObject(request).getVersionId();
     }
 
@@ -242,10 +245,10 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     }
 
     // 4.3
-    public InputStream getObjectContent(@NotNull S3ObjectId objectId, Date modifiedSince, Date unmodifiedSince)
+    public InputStream getObjectContent(@NotNull S3ObjectId objectId, @NotNull ConditionalConstraints conditionalConstraints)
     {
         Validate.notNull(objectId);
-        S3Object object = getObject(objectId, modifiedSince, unmodifiedSince);
+        S3Object object = getObject(objectId, conditionalConstraints);
         if (object == null)
         {
             return null;
@@ -261,13 +264,13 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
             objectId.getVersionId()));
     }
 
-    public S3Object getObject(@NotNull S3ObjectId objectId, Date modifiedSince, Date unmodifiedSince)
+    public S3Object getObject(@NotNull S3ObjectId objectId,
+                              @NotNull ConditionalConstraints conditionalConstraints)
     {
         Validate.notNull(objectId);
         GetObjectRequest request = new GetObjectRequest(objectId.getBucketName(), objectId.getKey(),
             objectId.getVersionId());
-        request.setModifiedSinceConstraint(modifiedSince);
-        request.setUnmodifiedSinceConstraint(unmodifiedSince);
+        conditionalConstraints.populate(request);
         return s3.getObject(request);
     }
 
@@ -278,13 +281,13 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
         s3.setBucketVersioningConfiguration(new SetBucketVersioningConfigurationRequest(bucketName,
             new BucketVersioningConfiguration(versioningStatus.toString())));
     }
-    
+
     public URI createObjectUriUsingDefaultServer(S3ObjectId objectId)
     {
         Validate.notNull(objectId);
         return Region.getDefaultRegion().getObjectUri(objectId);
     }
-    
+
     public URI createObjectUri(S3ObjectId objectId)
     {
         Validate.notNull(objectId);

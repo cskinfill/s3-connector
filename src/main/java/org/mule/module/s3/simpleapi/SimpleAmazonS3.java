@@ -10,8 +10,6 @@
 
 package org.mule.module.s3.simpleapi;
 
-import org.mule.util.scan.annotations.NonMeta;
-
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.Bucket;
@@ -153,6 +151,8 @@ public interface SimpleAmazonS3
      * @param source
      * @param destination the destination object. If this id is versioned, its
      *            version is ignored
+     * @param conditionalConstraints the constraints to be matched in order to proceed with copy. 
+     *          If not matched, no copy is performed
      * @param acl
      * @param destinationUserMetadata 
      * @return the version id of the destination object, if versioning is enabled
@@ -160,7 +160,8 @@ public interface SimpleAmazonS3
      */
     String copyObject(@NotNull S3ObjectId source,
                       @NotNull S3ObjectId destination,
-                      CannedAccessControlList acl,
+                      @NotNull ConditionalConstraints conditionalConstraints,
+                      CannedAccessControlList acl, 
                       StorageClass storageClass, 
                       Map<String, String> destinationUserMetadata);
 
@@ -188,7 +189,7 @@ public interface SimpleAmazonS3
      *         conditional request contraints were not met
      * @see AmazonS3#getObject(com.amazonaws.services.s3.model.GetObjectMetadataRequest)
      */
-    InputStream getObjectContent(@NotNull S3ObjectId objectId, Date modifiedSince, Date unmodifiedSince);
+    InputStream getObjectContent(@NotNull S3ObjectId objectId, @NotNull ConditionalConstraints conditionalConstraints);
 
     /**
      * Retrieves an object from S3 given its id. <strong>Warning: use this method
@@ -201,7 +202,7 @@ public interface SimpleAmazonS3
      * @return the object, or null, if conditional request constraints were not met
      * @see AmazonS3#getObject(com.amazonaws.services.s3.model.GetObjectRequest)
      */
-    S3Object getObject(@NotNull S3ObjectId objectId, Date modifiedSince, Date unmodifiedSince);
+    S3Object getObject(@NotNull S3ObjectId objectId, @NotNull ConditionalConstraints conditionalConstraints);
 
     /**
      * Answers the ObjectMetadata for a given {@link S3ObjectId}

@@ -27,8 +27,6 @@ import org.mule.module.s3.simpleapi.VersioningStatus;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.Bucket;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.net.URI;
 
 import org.junit.After;
@@ -132,7 +130,7 @@ public class S3TestDriver
     {
         connector.createBucket(bucketName, Region.US_STANDARD, PRIVATE);
         connector.copyObject("camaraenclaromeco", "axis.jpg", null, bucketName, "axis.jpg",
-            AccessControlList.PRIVATE, StorageClass.STANDARD, null);
+            AccessControlList.PRIVATE, StorageClass.STANDARD, null, null, null);
         connector.setBucketWebsiteConfiguration(bucketName, "axis.jpg", "axis.jpg");
     }
 

@@ -50,6 +50,7 @@ import com.amazonaws.services.s3.model.StorageClass;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.Date;
 import java.util.Iterator;
 
 import org.apache.commons.io.input.NullInputStream;
@@ -104,7 +105,7 @@ public class S3TestCase
         when(client.copyObject(refEq(request))).thenReturn(result);
 
         assertEquals("12", connector.copyObject(MY_BUCKET, MY_OBJECT, null, null, "myObject2", PUBLIC_READ,
-            org.mule.module.s3.StorageClass.STANDARD, null));
+            org.mule.module.s3.StorageClass.STANDARD, null, null, null));
     }
 
     @Test
@@ -119,7 +120,7 @@ public class S3TestCase
         when(client.copyObject(refEq(request))).thenReturn(result);
 
         assertEquals("12", connector.copyObject(MY_BUCKET, MY_OBJECT, "12", null, "myObject2", PRIVATE,
-            org.mule.module.s3.StorageClass.STANDARD, null));
+            org.mule.module.s3.StorageClass.STANDARD, null, null, null));
     }
 
     @Test
@@ -131,7 +132,7 @@ public class S3TestCase
         when(client.copyObject(refEq(request))).thenReturn(new CopyObjectResult());
 
         assertNull(connector.copyObject(MY_BUCKET, MY_OBJECT, null, "myBucket2", "myObject2", PRIVATE,
-            org.mule.module.s3.StorageClass.STANDARD, null));
+            org.mule.module.s3.StorageClass.STANDARD, null, null, null));
     }
 
     @Test
@@ -162,8 +163,7 @@ public class S3TestCase
     public void createObjectByteArrayParameter()
     {
         byte[] content = "hello".getBytes();
-        when(
-            client.putObject(argThat(new ContentMetadataMatcher(content.length, "A5B69...", null)))).thenReturn(
+        when(client.putObject(argThat(new ContentMetadataMatcher(content.length, "A5B69...", null)))).thenReturn(
             new PutObjectResult());
         assertNull(connector.createObject(MY_BUCKET, MY_OBJECT, content, null, "A5B69...", null,
             PUBLIC_READ_WRITE, org.mule.module.s3.StorageClass.STANDARD, null));
@@ -247,6 +247,23 @@ public class S3TestCase
 
         when(client.getObject(refEq(new GetObjectRequest(MY_BUCKET, MY_OBJECT)))).thenReturn(s3Object);
         assertSame(s3Object, connector.getObject(MY_BUCKET, MY_OBJECT, null, null, null));
+    }
+
+    @Test
+    public void getObjectWithConstraints() throws Exception
+    {
+        S3Object s3Object = new S3Object();
+        Date date = new Date();
+        when(
+            client.getObject(refEq(new GetObjectRequest(MY_BUCKET, MY_OBJECT).withUnmodifiedSinceConstraint(date)))).thenReturn(
+            s3Object);
+        assertSame(s3Object, connector.getObject(MY_BUCKET, MY_OBJECT, null, null, date));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getObjectWithInconsistentConstraints() throws Exception
+    {
+        connector.getObject(MY_BUCKET, MY_OBJECT, null, new Date(), new Date());
     }
 
     @Test
