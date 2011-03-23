@@ -52,7 +52,7 @@ Here is detailed list of all the configuration attributes:
 
 | attribute | description | optional | default value |
 |:-----------|:-----------|:---------|:--------------|
-|name|Give a name to this configuration so it can be later referenced by config-ref.|yes| |
+|name|Give a name to this configuration so it can be later referenced by config-ref.|yes||
 |accessKey||no|
 |secretKey||no|
 
@@ -75,6 +75,8 @@ application. Create or delete buckets in a separate initialization or setup.
 Example: 
 
      <s3:create-bucket bucketName="my-bucket" acl="Private"/> 
+Returns non null, new Bucket
+
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -93,6 +95,7 @@ attribute  force="true". Example:
 
 
      <s3:delete-bucket bucketName="my-bucket" force="true"/> 
+
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -115,6 +118,7 @@ Example:
 
      <s3:delete-bucket-website-configuration bucketName="my-bucket"/>
 
+
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
@@ -129,6 +133,8 @@ field will be returned. Example:
 
 
      <s3:get-bucket-policy bucketName="my-bucket"/>
+Returns bucket policy, or null, if not set
+
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -146,6 +152,7 @@ object resources. Only one policy can be specified per-bucket. Example:
 
      <s3:set-bucket-policy bucketName="my-bucket" policyText="your policy" />
 
+
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
@@ -161,6 +168,7 @@ level for both the bucket resource and contained object resources. Example:
 
 
      <s3:delete-bucket-policy bucketName="my-bucket"/>
+
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -180,6 +188,7 @@ S3:PutBucketWebsite permission. Example:
     <s3:set-bucket-website-configuration bucketName="my-bucket" suffix="index.html" 
                                          errorDocument="errorDocument.html" />
 
+
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
@@ -198,6 +207,8 @@ GetBucketWebsite permission. Example:
 
 
      <s3:get-bucket-website-configuration bucketName="my-bucket" />
+Returns non null com.amazonaws.services.s3.model.BucketWebsiteConfiguration
+
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -213,6 +224,8 @@ registered with Amazon S3. Anonymous requests cannot list buckets, and users
 cannot list buckets that they did not create. Example 
 
      <s3:list-buckets />
+Returns non null list of com.amazonaws.services.s3.model.Bucket
+
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -227,6 +240,8 @@ objects, and may need to perform extra calls to the api while it is iterated.
 Example: 
 
      <s3:list-objects bucketName="my-bucket" prefix="mk" />
+Returns iterable
+
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -243,6 +258,8 @@ arrays and Files. Example:
 
      <s3:create-object bucketName="my-bucket" key="helloWorld.txt" 
                                  content="#[hello world]" contentType="text/plain" />
+Returns id of the created object, or null, if versioning is not enabled
+
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -271,6 +288,7 @@ message. Example:
 
      <s3:delete-object bucketName="my-bucket" key="foo.gzip"/> 
 
+
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
@@ -285,6 +303,7 @@ Sets the Amazon S3 storage class for the given object. Changing the storage
 class of an object in a bucket that has enabled versioning creates a new
 version of the object with the new storage class. The existing version of the
 object preservers the previous storage class.
+
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -308,6 +327,8 @@ Example:
 
      <s3:copy-object sourceBucketName="my-bucket" sourceKey="foo.gzip" destinationKey="bar.gzip"
                                      destinationStorageClass="Private" /> 
+Returns version id of the new object, or null, if versioning is not enabled
+
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -330,6 +351,8 @@ providing an account's AWS security credentials. Example:
 
     
     <s3:create-presigned-uri bucketName="my-bucket" key="bar.xml" method="GET" />
+Returns non null pre-signed URI that can be used to access an Amazon S3 resource without requiring the user of the URL to know the account's AWS security credentials.
+
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -348,6 +371,8 @@ and key. Returns null if the specified constraints weren't met. To get an
 object's content from Amazon S3, the caller must have {@link Permission#Read}
 access to the object. Regarding conditional get constraints, Amazon S3 will
 ignore any dates occurring in the future.
+Returns input stream to the objects contents
+
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -369,6 +394,8 @@ object contains a direct stream of data from the HTTP connection. The
 underlying HTTP connection cannot be closed until the user finishes reading
 the data and closes the stream. Regarding conditional get constraints, Amazon
 S3 will ignore any dates occurring in the future.
+Returns S3Object, or null, if conditional get constraints did not match
+
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -388,6 +415,8 @@ avoids wasting bandwidth on fetching the object data. Example:
 
     
     <s3:get-object-metadata bucketName="my-bucket" key="baz.bin" />
+Returns non null object metadata
+
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
@@ -408,6 +437,7 @@ enabled for a bucket the status can never be reverted to Off. Example:
     <s3:set-bucket-versioning-status bucketName="my-bucket"
     versioningStatus="Suspended" />
 
+
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
@@ -423,6 +453,8 @@ region. The main benefit of such feature is that this operation does not need
 to hit the Amazon servers, but the drawback is that using the given URI as an
 URL to the resource have unnecessary latency penalties for standard regions
 other than US_STANDARD.
+Returns non secure http URI to the object. Unlike the presigned URI, object
+
 
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
