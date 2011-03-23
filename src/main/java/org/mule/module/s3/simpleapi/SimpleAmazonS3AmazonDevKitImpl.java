@@ -200,7 +200,8 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
     public String copyObject(@NotNull S3ObjectId source,
                              @NotNull S3ObjectId destination,
                              CannedAccessControlList acl,
-                             StorageClass storageClass)
+                             StorageClass storageClass, 
+                             Map<String, String> userMetadata)
     {
         Validate.notNull(source);
         Validate.notNull(destination);
@@ -210,6 +211,11 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
         if (storageClass != null)
         {
             request.setStorageClass(storageClass);
+        }
+        if (userMetadata != null)
+        {
+            request.setNewObjectMetadata(new ObjectMetadata());
+            request.getNewObjectMetadata().setUserMetadata(userMetadata);
         }
         return s3.copyObject(request).getVersionId();
     }

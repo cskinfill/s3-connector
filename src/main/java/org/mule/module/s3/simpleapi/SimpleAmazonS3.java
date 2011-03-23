@@ -154,13 +154,15 @@ public interface SimpleAmazonS3
      * @param destination the destination object. If this id is versioned, its
      *            version is ignored
      * @param acl
+     * @param destinationUserMetadata 
      * @return the version id of the destination object, if versioning is enabled
      * @see AmazonS3#copyObject(com.amazonaws.services.s3.model.CopyObjectRequest)
      */
     String copyObject(@NotNull S3ObjectId source,
                       @NotNull S3ObjectId destination,
                       CannedAccessControlList acl,
-                      StorageClass storageClass);
+                      StorageClass storageClass, 
+                      Map<String, String> destinationUserMetadata);
 
     /**
      * Creates a presigned URL for accessing the object of the given id, with an
