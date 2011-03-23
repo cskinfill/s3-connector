@@ -25,7 +25,9 @@ import org.mule.tools.cloudconnect.annotations.Operation;
 import org.mule.tools.cloudconnect.annotations.Parameter;
 import org.mule.tools.cloudconnect.annotations.Property;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.HttpMethod;
+import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -47,17 +49,25 @@ import org.apache.commons.lang.Validate;
 
 /**
  * A cloud connector wrapper on {@link SimpleAmazonS3} api. Same exception handling
- * policies applies. Documentation is based in that of {@link AmazonS3}
+ * policies applies. Documentation is based in that of {@link com.amazonaws.services.s3.AmazonS3}
  */
 @Connector(namespacePrefix = "s3", namespaceUri = "http://www.mulesoft.org/schema/mule/s3")
 public class S3CloudConnector implements Initialisable
 {
-
     @Property
     private String accessKey;
     @Property
     private String secretKey;
 
+    @Property(optional = true)
+    private String proxyUsername;
+    @Property(optional = true)
+    private Integer proxyPort;
+    @Property(optional = true)
+    private String proxyPassword;
+    @Property(optional = true)
+    private String proxyHost;
+    
     private SimpleAmazonS3 client;
 
     /**
@@ -570,13 +580,36 @@ public class S3CloudConnector implements Initialisable
      * 
      * @return a new {@link AmazonS3}
      */
-    private AmazonS3Client createAmazonS3()
+    private AmazonS3  createAmazonS3()
+    {
+        ClientConfiguration clientConfig = new ClientConfiguration();
+        if (proxyUsername != null)
+        {
+            clientConfig.setProxyUsername(proxyUsername);
+        }
+        if (proxyPort != null)
+        {
+            clientConfig.setProxyPort(proxyPort);
+        }
+        if (proxyPassword != null)
+        {
+            clientConfig.setProxyPassword(proxyPassword);
+        }
+        if (proxyHost != null)
+        {
+            clientConfig.setProxyHost(proxyHost);
+        }
+        return new AmazonS3Client(createCredentials(), 
+            clientConfig);
+    }
+
+    private AWSCredentials createCredentials()
     {
         if (StringUtils.isEmpty(accessKey) && StringUtils.isEmpty(secretKey))
         {
-            return new AmazonS3Client();
+            return null;
         }
-        return new AmazonS3Client(new BasicAWSCredentials(accessKey, secretKey));
+        return new BasicAWSCredentials(accessKey, secretKey);
     }
 
     public String getAccessKey()
@@ -602,6 +635,46 @@ public class S3CloudConnector implements Initialisable
     public void setClient(SimpleAmazonS3 client)
     {
         this.client = client;
+    }
+
+    public String getProxyUsername()
+    {
+        return proxyUsername;
+    }
+
+    public void setProxyUsername(String proxyUsername)
+    {
+        this.proxyUsername = proxyUsername;
+    }
+
+    public int getProxyPort()
+    {
+        return proxyPort;
+    }
+
+    public void setProxyPort(int proxyPort)
+    {
+        this.proxyPort = proxyPort;
+    }
+
+    public String getProxyPassword()
+    {
+        return proxyPassword;
+    }
+
+    public void setProxyPassword(String proxyPassword)
+    {
+        this.proxyPassword = proxyPassword;
+    }
+
+    public String getProxyHost()
+    {
+        return proxyHost;
+    }
+
+    public void setProxyHost(String proxyHost)
+    {
+        this.proxyHost = proxyHost;
     }
 
 }
