@@ -83,7 +83,7 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
         if (!s3.getBucketVersioningConfiguration(bucketName).getStatus().equals(
             BucketVersioningConfiguration.OFF))
         {
-            for (S3VersionSummary summary : new S3VersionSummaryIterable(bucketName))
+            for (S3VersionSummary summary : listObjectVersions(bucketName))
             {
                 s3.deleteVersion(bucketName, summary.getKey(), summary.getVersionId());
             }
@@ -96,6 +96,12 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
             }
         }
         deleteBucket(bucketName);
+    }
+
+    public S3VersionSummaryIterable listObjectVersions(@NotNull String bucketName)
+    {
+        Validate.notEmpty(bucketName);
+        return new S3VersionSummaryIterable(bucketName);
     }
 
     // 2.3

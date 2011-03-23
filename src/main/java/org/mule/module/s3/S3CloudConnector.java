@@ -37,6 +37,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.Permission;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.S3VersionSummary;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -261,7 +262,24 @@ public class S3CloudConnector implements Initialisable
     {
         return client.listObjects(bucketName, prefix);
     }
-
+    
+    /**
+     * Lazily lists all object versions for a given bucket that has versioning enabled.
+     * As S3 does not limit in any way
+     * the number of objects, such listing can retrieve an arbitrary amount of
+     * object versions, and may need to perform extra calls to the api while it is iterated.
+     * 
+     * Example: {@code <s3:list-object-versions bucketName="my-bucket" />}
+     * 
+     * @param bucketName the target bucket's name
+     * @return An iterable
+     */
+    @Operation
+    public Iterable<S3VersionSummary> listObjectVersions(@Parameter(optional = false) String bucketName)
+    {
+        return client.listObjectVersions(bucketName);
+    }
+    
     /**
      * Uploads an object to S3. Supported contents are InputStreams, Strings, byte
      * arrays and Files. 

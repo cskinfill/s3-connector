@@ -19,6 +19,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.S3VersionSummary;
 import com.amazonaws.services.s3.model.StorageClass;
 
 import java.io.InputStream;
@@ -86,7 +87,10 @@ public interface SimpleAmazonS3
 
     @NotNull
     Iterable<S3ObjectSummary> listObjects(@NotNull String bucketName, String prefix);
-
+    
+    @NotNull
+    Iterable<S3VersionSummary> listObjectVersions(@NotNull String bucketName);
+    
     void deleteBucketPolicy(@NotNull String bucketName);
 
     /**
