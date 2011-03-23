@@ -1,34 +1,26 @@
-CMIS DEMO
-=========
+S3 UPLOAD DEMO
+=============
+
+INTRODUCTION
+  This is minimalistic a demo about uploading contents to an S3 bucket. This demo covers the creation an versioning enabling of buckets, and 
+  the object uploading.  
 
 HOW TO DEMO:
-  1.run one time the "cmisDemo" flow. Probably won't detect any change but it will save the changelog token.
-    a.  you can verify this on the mongodb: 
-         > db.cmisdemo.find();
-         { "_id" : ObjectId("4d61a69eecd91674c2d5718f"), "repository" : "371554cd-ac06-40ba-98b8-e6b60275cca7", "changelogToken" : "42802" }
-  2. Lunch the OpenCMIS Workbench http://cmis.alfresco.com/opencmis/workbench.jnlp and log in.
-  3. Create a folder, a .txt document, and other type of file
-  4. Run "cmisDemo" flow
-  5. you will see see some debug information in the console, and two tweets in the account. The one of the txt file will contain an abstract of the content.
-
-DISCLAMER:
-   - OpenCMIS client changelog function (or alfresco server) aren't always returning the last changelog token (to be investigated). 
-     That's why we use a idempotent-filter to filter change events already seen. Sadly the filter is not working.
+  1. Set the following system properties:
+  	a. s3.accessKey. This is the access key of your Amazon Account
+    b. s3.secetKey. This is the secret key of your Amazon Account (Do not share it!)
+    c. s3.bucketName. This is a test bucket where the objects will be created. Remember that you need to choose a non existing bucket name
+  2. Run the "SetupFlow" only once, in order to create a bucket and enable its versioning. 
+    a.  You can verify its creation simply by hitting with an http client like Mozilla Firefox or curl http://XXX.s3.amazonaws.com where XXX is your new bucket name. 
+        No credentials are required since the bucket was created with public read permissions. You can also check that the bucket is empty        
+  3. Run the "UploadFlow". This will upload an image from the Mule homepage into the selected bucket. Each time you run it, a new version of the object will be created.
+  	a. You can verify the content upload by simply hitting http://XXX.s3.amazonaws.com/mulelogo.jpg. Again, no credentials are needed. 
 
 HOW IT WORKS:
-   - CMIS connector provides a changelog operation that can be called with a "last change token" to indicate the last change seen.
-   - Use MongoDB to store the "last change token" for the next call
-   - For each Change Event, we keep only Documents that are currently accesible
-       - Fetch metadata of each document
-       - Create a message to publish in twitter using the metadata
-           - if the document is text/plain we add to the message an abstract
-             (it would be great to do the same with plain/html using jtidy + xslt)
-           - Hydratate a URI to the document content and shorten it with bitly
-       - publish the message link twitter
-
-All this is implemented in several flows. Those that are network independent
-are tested in junit test.
+   - The UploadFlow downloads the file to upload to s3 using an http endpoint 
+   - The S3 Connector uploads the returned input stream. It recognizes that such input stream has http metadata, so not passing the content length 
+   has no performance penalties
 
 WHAT HAS NOT BEEN DEMO:
-    - The ability of creating documents and folders on a CMIS repository.
+    Deletion operations over buckets and objects, object copying and bucket and versioning listing.  
     

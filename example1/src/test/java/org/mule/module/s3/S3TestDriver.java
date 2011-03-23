@@ -28,6 +28,11 @@ public class S3TestDriver extends FunctionalTestCase
         return "mule-config.xml";
     }
 
+    /**
+     * Run this test to upload new versions of 
+     * http://www.mulesoft.com:80/images/index/front-esb.jpg 
+     * to the bucket. 
+     */
     public void testUpload() throws Exception
     {
         final MuleEvent event = getTestEvent("");
@@ -35,6 +40,18 @@ public class S3TestDriver extends FunctionalTestCase
         final MuleEvent responseEvent = flow.process(event);
         assertTrue(responseEvent.getMessage().getPayload() instanceof NullPayload);
     }
+
+    /**
+     * Run this test only once in order to create a bucket with versioning 
+     * enabled
+     */
+    public void ignoreTestSetup() throws Exception
+    {
+        final MuleEvent event = getTestEvent("");
+        final SimpleFlowConstruct flow = lookupFlowConstruct("SetupFlow");
+        flow.process(event);
+    }
+
 
     private SimpleFlowConstruct lookupFlowConstruct(final String name)
     {

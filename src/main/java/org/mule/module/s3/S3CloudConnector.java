@@ -254,22 +254,27 @@ public class S3CloudConnector implements Initialisable
 
     /**
      * Uploads an object to S3. Supported contents are InputStreams, Strings, byte
-     * arrays and Files. Example: 
+     * arrays and Files. 
+     * 
+     * Example: 
      * {@code <s3:create-object bucketName="my-bucket" key="helloWorld.txt" 
      *                              content="#[hello world]" contentType="text/plain" />}
      * 
      * @param bucketName the object's bucket
      * @param key the object's key
      * @param content
-     * @param contentLength the content length. If content is a InputStream or byte
-     *            arrays, this parameter should be specified, as not doing so will
-     *            introduce a severe performance loss, otherwise, it is ignored. A
-     *            content length of 0 is interpreted as an unspecified content length
+     * @param contentLength the content length. If content is a InputStream,
+     *            this parameter should be specified, as not doing so will
+     *            introduce a performance loss as the contents will have to be persisted on disk before being uploaded. 
+     *            Otherwise, it is ignored. An exception to this 
+     *            rule are InputStreams returned by Mule Http Connector: if stream has Content-Length 
+     *            information, it will be used. 
+     *            In any case a content length of 0 is interpreted as an unspecified content length
      * @param contentMd5 the content md5, encoded in base 64. If content is a file,
      *            it is ignored.
      * @param contentType the content type of the new object.
      * @param acl the access control list of the new object
-     * @param storageClass the storaga class of the new object
+     * @param storageClass the storage class of the new object
      * @param userMetadata a map of arbitrary object properties keys and values
      * @return the id of the created object, or null, if versioning is not enabled
      */
@@ -332,7 +337,6 @@ public class S3CloudConnector implements Initialisable
         client.setObjectStorageClass(new S3ObjectId(bucketName, key), storageClass.toS3Equivalent());
     }
 
-    // TODO pass conditional headers to copy
     /**
      * Copies a source object to a new destination; to copy an object, the caller's
      * account must have read access to the source object and write access to the
@@ -346,6 +350,7 @@ public class S3CloudConnector implements Initialisable
      *                                  destinationStorageClass="Private" /> }
      * 
      * @param sourceBucketName the source object's bucket
+     * @param sourcekey the source object's key
      * @param sourceVersionId the specific version of the source object to copy, if
      *            versioning is enabled. Left unspecified if the latest version is
      *            desired, or versioning is not enabled.
@@ -357,9 +362,12 @@ public class S3CloudConnector implements Initialisable
      * @param destinationStorageClass
      * @param destinationUserMetadata the new metadata of the destination object,
      *            that if specified, overrides that copied from the source object
-     * @param newParam TODO
-     * @param newParam2 TODO
-     * @param sourcekey the source object's key
+     * @param modifiedSince The modified constraint that restricts this request to
+     *            executing only if the object has been modified after the specified
+     *            date. This constraint is specified but does not match, no copy is performed
+     * @param unmodifiedSince The unmodified constraint that restricts this request
+     *            to executing only if the object has not been modified after this
+     *            date. This constraint is specified but does not match, no copy is performed
      * @return the version id of the new object, or null, if versioning is not
      *         enabled
      */

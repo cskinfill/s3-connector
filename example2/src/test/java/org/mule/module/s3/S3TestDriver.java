@@ -13,13 +13,6 @@ package org.mule.module.s3;
 import org.mule.api.MuleEvent;
 import org.mule.construct.SimpleFlowConstruct;
 import org.mule.tck.FunctionalTestCase;
-import org.mule.transport.NullPayload;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import org.springframework.format.annotation.DateTimeFormat.ISO;
 
 public class S3TestDriver extends FunctionalTestCase
 {

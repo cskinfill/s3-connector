@@ -32,8 +32,7 @@
 	<s3:config accessKey="${s3.accessKey}" secretKey="${s3.secretKey}" />
 	
 	<flow name="UploadFlow" >
-		<description>Uploads a file contained in an http server to AmazonS3,
-			creates a presignes URI to it, shortens it, a publish into twitter
+		<description>Uploads a file contained in an http server to AmazonS3
 		</description>
 		<logger level="INFO" category="Retrieving"/>
 		<outbound-endpoint address="http://www.mulesoft.com:80/images/index/front-esb.jpg" />
@@ -43,9 +42,8 @@
 	</flow>
 	
 	<flow name="SetupFlow" >
-		<description>Creates the Bucket and sets it configuration. 
-		</description>
-		<s3:create-bucket bucketName="${s3.bucketName}" />  
+		<description>Creates the Bucket and sets it configuration</description>
+		<s3:create-bucket bucketName="${s3.bucketName}" acl="PUBLIC_READ"/>  
 		<s3:set-bucket-versioning-status
 			bucketName="${s3.bucketName}" versioningStatus="ENABLED" />
 	</flow>
