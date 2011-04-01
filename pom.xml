@@ -6,7 +6,7 @@
 	<artifactId>mule-module-s3</artifactId>
 	<packaging>cloud-connector</packaging>
 	<name>Mule S3 Cloud Connector</name>
-	<version>1.0</version>
+	<version>1.0-SNAPSHOT</version>
 	<description>Mule Cloud connector to S3</description>
 	<url>http://www.muleforge.org/projects/mule-module-s3</url>
 
@@ -238,6 +238,14 @@
 			<layout>default</layout>
 		</repository>
 	</repositories>
+
+        <scm>
+            <connection>scm:git:git://github.com:mulesoft/s3-connector.git</connection>
+            <developerConnection>
+                scm:git:git@github.com:mulesoft/s3-connector.git
+            </developerConnection>
+            <url>http://github.com/mulesoft/s3-connector</url>
+        </scm>
         <distributionManagement>
             <repository>
                 <id>muleforge-releases</id>
