@@ -269,6 +269,12 @@
 
 	<pluginRepositories>
 		<pluginRepository>
+			<id>maven-central</id>
+			<name>MuleForge Repository</name>
+			<url>http://repo1.maven.org/maven2</url>
+			<layout>default</layout>
+		</pluginRepository>
+		<pluginRepository>
 			<id>muleforge-repo</id>
 			<name>MuleForge Repository</name>
 			<url>http://repository.muleforge.org/release</url>
