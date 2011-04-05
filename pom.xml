@@ -67,7 +67,7 @@
 				<version>${cloudconnect.version}</version>
 				<extensions>true</extensions>
 				<configuration>
-					<schemaVersion>1.0</schemaVersion>
+					<schemaVersion>LATEST</schemaVersion>
 				</configuration>
 			</plugin>
 
@@ -235,6 +235,12 @@
 			<id>codehaus-repo</id>
 			<name>Codehaus Repository</name>
 			<url>http://dist.codehaus.org/mule/dependencies/maven2</url>
+			<layout>default</layout>
+		</repository>
+		<repository>
+			<id>central</id>
+			<name>Central</name>
+			<url>http://repo1.maven.org/maven2</url>
 			<layout>default</layout>
 		</repository>
 	</repositories>
