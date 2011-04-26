@@ -228,7 +228,7 @@
 		<repository>
 			<id>muleforge-repo</id>
 			<name>MuleForge Repository</name>
-			<url>http://repository.muleforge.org/release</url>
+			<url>http://repository.mulesoft.org/releases</url>
 			<layout>default</layout>
 		</repository>
 		<repository>
@@ -250,12 +250,12 @@
             <repository>
                 <id>muleforge-releases</id>
                 <name>MuleForge Snapshot Repository</name>
-                <url>dav:https://repository.muleforge.org/release/</url>
+                <url>https://repository.mulesoft.org/releases/</url>
             </repository>
             <snapshotRepository>
                 <id>muleforge-snapshots</id>
                 <name>MuleForge Repository</name>
-                <url>dav:https://repository.muleforge.org/snapshot/</url>
+                <url>https://repository.mulesoft.org/snapshots/</url>
                 <uniqueVersion>false</uniqueVersion>
             </snapshotRepository>
         </distributionManagement>
@@ -263,21 +263,28 @@
 
 	<pluginRepositories>
 		<pluginRepository>
-			<id>muleforge-repo</id>
+			<id>muleforge-plugin-release</id>
 			<name>MuleForge Repository</name>
-			<url>http://repository.muleforge.org/release</url>
+			<url>http://repository.mulesoft.org/releases</url>
 			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>			
 		</pluginRepository>
 		<pluginRepository>
-			<id>codehaus-plugin-snapshots</id>
-			<name>Codehaus Plugin Snapshot Repository</name>
-			<url>http://snapshots.repository.codehaus.org</url>
+			<id>muleforge-plugin-snapshot</id>
+			<name>MuleForge Repository</name>
+			<url>http://repository.mulesoft.org/snapshots</url>
+			<layout>default</layout>
 			<releases>
 				<enabled>false</enabled>
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
-			</snapshots>
+			</snapshots>			
 		</pluginRepository>
 	</pluginRepositories>
 </project>
