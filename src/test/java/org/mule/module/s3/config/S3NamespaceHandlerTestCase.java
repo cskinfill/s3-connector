@@ -52,16 +52,6 @@ public class S3NamespaceHandlerTestCase extends FunctionalTestCase
         }
     }
 
-    public void testGetBucketMetadata() throws Exception
-    {
-        SimpleFlowConstruct flow = lookupFlowConstruct("GetObjectMetadata");
-        HashMap<String, String> properties = new HashMap<String, String>();
-        properties.put("bucketName", "codinghorrorimg");
-        properties.put("key", "codinghorror-bandwidth-usage.png");
-        MuleMessage message = flow.process(getTestEvent(properties)).getMessage();
-        assertTrue(message.getPayload() instanceof ObjectMetadata);
-    }
-
     @Test
     public void testCreateUri() throws Exception
     {
