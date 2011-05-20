@@ -26,7 +26,7 @@ Add the connector's maven repo to your pom.xml:
         <repository>
             <id>muleforge-releases</id>
             <name>MuleForge Snapshot Repository</name>
-            <url>https://repository.muleforge.org/release/</url>
+            <url>https://repository.mulesoft.org/releases/</url>
             <layout>default</layout>
         </repsitory>
     </repositories>
@@ -38,7 +38,7 @@ application:
     <dependency>
         <groupId>org.mule.modules</groupId>
         <artifactId>mule-module-s3</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.1-SNAPSHOT</version>
     </dependency>
 
 Configuration
@@ -83,13 +83,9 @@ Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|The bucket to create. It must not exist yet.|no||
-|region|the region where to create the new bucket|yes|US_STANDARD|*US_STANDARD*, *US_WEST*, *EU_IRELAND*, *AP_SINGAPORE*, *s3Equivalent*, *domain*
-|acl|the access control list of the new bucket|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
-
-Returns non null, new Bucket
-
-
+|bucketName| The bucket to create. It must not exist yet.|no||
+|region| the region where to create the new bucket|yes|US_STANDARD|*US_STANDARD*, *US_WEST*, *EU_IRELAND*, *AP_SINGAPORE*, *s3Equivalent*, *domain*
+|acl| the access control list of the new bucket|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
 
 Delete Bucket
 -------------
@@ -105,10 +101,8 @@ attribute  force="true". Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|the bucket to delete|no||
-|force|optional true if the bucket must be deleted even if it is not empty, false if operation should fail in such scenario.|yes|false|
-
-
+|bucketName| the bucket to delete|no||
+|force| optional true if the bucket must be deleted even if it is not empty, false if operation should fail in such scenario.|yes|false|
 
 Delete Bucket Website Configuration
 -----------------------------------
@@ -128,9 +122,7 @@ Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|the bucket whose policy to delete|no||
-
-
+|bucketName| the bucket whose policy to delete|no||
 
 Get Bucket Policy
 -----------------
@@ -145,11 +137,7 @@ field will be returned. Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|the bucket whose policy to retrieve|no||
-
-Returns bucket policy, or null, if not set
-
-
+|bucketName| the bucket whose policy to retrieve|no||
 
 Set Bucket Policy
 -----------------
@@ -165,10 +153,8 @@ object resources. Only one policy can be specified per-bucket. Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|the bucket name|no||
-|policyText|the policy text|no||
-
-
+|bucketName| the bucket name|no||
+|policyText| the policy text|no||
 
 Delete Bucket Policy
 --------------------
@@ -183,9 +169,7 @@ level for both the bucket resource and contained object resources. Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|the bucket whose policy to delete|no||
-
-
+|bucketName| the bucket whose policy to delete|no||
 
 Set Bucket Website Configuration
 --------------------------------
@@ -203,11 +187,11 @@ S3:PutBucketWebsite permission. Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|the target bucket's name|no||
-|suffix|The document to serve when a directory is specified, relative to the requested resource|no||
-|errorDocument|the full path to error document the bucket will use as error page for 4XX errors|yes||
-
-
+|bucketName| the target bucket's name|no||
+|suffix| The document to serve when a directory is specified, relative to
+           the requested resource|no||
+|errorDocument| the full path to error document the bucket will use as
+           error page for 4XX errors|yes||
 
 Get Bucket Website Configuration
 --------------------------------
@@ -226,10 +210,6 @@ GetBucketWebsite permission. Example:
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName||no||
 
-Returns non null com.amazonaws.services.s3.model.BucketWebsiteConfiguration
-
-
-
 List Buckets
 ------------
 
@@ -244,10 +224,6 @@ cannot list buckets that they did not create. Example
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
 
-Returns non null list of com.amazonaws.services.s3.model.Bucket
-
-
-
 List Objects
 ------------
 
@@ -261,12 +237,9 @@ Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|the target bucket's name|no||
-|prefix|the prefix of the objects to be listed. If unspecified, all objects are listed|yes||
-
-Returns iterable
-
-
+|bucketName| the target bucket's name|no||
+|prefix| the prefix of the objects to be listed. If unspecified, all
+           objects are listed|yes||
 
 List Object Versions
 --------------------
@@ -283,11 +256,7 @@ Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|the target bucket's name|no||
-
-Returns iterable
-
-
+|bucketName| the target bucket's name|no||
 
 Create Object
 -------------
@@ -304,19 +273,22 @@ Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|the object's bucket|no||
-|key|the object's key|no||
+|bucketName| the object's bucket|no||
+|key| the object's key|no||
 |content||no||
-|contentLength|the content length. If content is a InputStream, this parameter should be specified, as not doing so will introduce a performance loss as the contents will have to be persisted on disk before being uploaded. Otherwise, it is ignored. An exception to this rule are InputStreams returned by Mule Http Connector: if stream has Content-Length information, it will be used. In any case a content length of 0 is interpreted as an unspecified content length|yes||
-|contentMd5|the content md5, encoded in base 64. If content is a file, it is ignored.|yes||
-|contentType|the content type of the new object.|yes||
-|acl|the access control list of the new object|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
-|storageClass|the storage class of the new object|yes|STANDARD|*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
-|userMetadata|a map of arbitrary object properties keys and values|yes||
-
-Returns id of the created object, or null, if versioning is not enabled
-
-
+|contentLength| the content length. If content is a InputStream,
+           this parameter should be specified, as not doing so will
+           introduce a performance loss as the contents will have to be persisted on disk before being uploaded. 
+           Otherwise, it is ignored. An exception to this 
+           rule are InputStreams returned by Mule Http Connector: if stream has Content-Length 
+           information, it will be used. 
+           In any case a content length of 0 is interpreted as an unspecified content length|yes||
+|contentMd5| the content md5, encoded in base 64. If content is a file,
+           it is ignored.|yes||
+|contentType| the content type of the new object.|yes||
+|acl| the access control list of the new object|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
+|storageClass| the storage class of the new object|yes|STANDARD|*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
+|userMetadata| a map of arbitrary object properties keys and values|yes||
 
 Delete Object
 -------------
@@ -335,11 +307,11 @@ message. Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|the object's bucket|no||
-|key|the object's key|no||
-|versionId|the specific version of the object to delete, if versioning is enabled. Left unspecified if the latest version is desired, or versioning is not enabled.|yes||
-
-
+|bucketName| the object's bucket|no||
+|key| the object's key|no||
+|versionId| the specific version of the object to delete, if versioning
+           is enabled. Left unspecified if the latest version is desired, or
+           versioning is not enabled.|yes||
 
 Set Object Storage Class
 ------------------------
@@ -352,11 +324,9 @@ object preservers the previous storage class.
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|the object's bucket name|no||
-|key|the object's key|no||
-|storageClass|the storage class to set|no||*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
-
-
+|bucketName| the object's bucket name|no||
+|key| the object's key|no||
+|storageClass| the storage class to set|no||*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
 
 Copy Object
 -----------
@@ -377,20 +347,25 @@ Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|sourceBucketName|the source object's bucket|no||
+|sourceBucketName| the source object's bucket|no||
 |sourceKey||no||
-|sourceVersionId|the specific version of the source object to copy, if versioning is enabled. Left unspecified if the latest version is desired, or versioning is not enabled.|yes||
-|destinationBucketName|the destination object's bucket. If none provided, a local copy is performed, that is, it is copied within the same bucket.|yes||
-|destinationKey|the destination object's key|no||
-|destinationAcl|the acl of the destination object.|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
+|sourceVersionId| the specific version of the source object to copy, if
+           versioning is enabled. Left unspecified if the latest version is
+           desired, or versioning is not enabled.|yes||
+|destinationBucketName| the destination object's bucket. If none
+           provided, a local copy is performed, that is, it is copied within
+           the same bucket.|yes||
+|destinationKey| the destination object's key|no||
+|destinationAcl| the acl of the destination object.|yes|PRIVATE|*PRIVATE*, *PUBLIC_READ*, *PUBLIC_READ_WRITE*, *AUTHENTICATED_READ*, *LOG_DELIVERY_WRITE*, *BUCKET_OWNER_READ*, *BUCKET_OWNER_FULL_CONTROL*, *s3Equivalent*
 |destinationStorageClass||yes|STANDARD|*STANDARD*, *REDUCED_REDUNDANCY*, *s3Equivalent*
-|destinationUserMetadata|the new metadata of the destination object, that if specified, overrides that copied from the source object|yes||
-|modifiedSince|The modified constraint that restricts this request to executing only if the object has been modified after the specified date. This constraint is specified but does not match, no copy is performed|yes||
-|unmodifiedSince|The unmodified constraint that restricts this request to executing only if the object has not been modified after this date. This constraint is specified but does not match, no copy is performed|yes||
-
-Returns version id of the new object, or null, if versioning is not enabled
-
-
+|destinationUserMetadata| the new metadata of the destination object,
+           that if specified, overrides that copied from the source object|yes||
+|modifiedSince| The modified constraint that restricts this request to
+           executing only if the object has been modified after the specified
+           date. This constraint is specified but does not match, no copy is performed|yes||
+|unmodifiedSince| The unmodified constraint that restricts this request
+           to executing only if the object has not been modified after this
+           date. This constraint is specified but does not match, no copy is performed|yes||
 
 Create Object Presigned Uri
 ---------------------------
@@ -405,15 +380,13 @@ providing an account's AWS security credentials. Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|the object's bucket|no||
-|key|the object's key|no||
-|versionId|the specific version of the object to create the URI, if versioning is enabled. Left unspecified if the latest version is desired, or versioning is not enabled.|yes||
-|expiration|The time at which the returned pre-signed URL will expire.|yes||
-|method|The HTTP method verb to use for this URL|yes|PUT|
-
-Returns non null pre-signed URI that can be used to access an Amazon S3 resource without requiring the user of the URL to know the account's AWS security credentials.
-
-
+|bucketName| the object's bucket|no||
+|key| the object's key|no||
+|versionId| the specific version of the object to create the URI, if
+           versioning is enabled. Left unspecified if the latest version is
+           desired, or versioning is not enabled.|yes||
+|expiration| The time at which the returned pre-signed URL will expire.|yes||
+|method| The HTTP method verb to use for this URL|yes|PUT|
 
 Get Object Content
 ------------------
@@ -427,15 +400,17 @@ ignore any dates occurring in the future.
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|the object's bucket|no||
-|key|the object's key|no||
-|versionId|the specific version of the object to get its contents, if versioning is enabled, left unspecified if the latest version is desired, or versioning is not enabled.|yes||
-|modifiedSince|The modified constraint that restricts this request to executing only if the object has been modified after the specified date.|yes||
-|unmodifiedSince|The unmodified constraint that restricts this request to executing only if the object has not been modified after this date.|yes||
-
-Returns input stream to the objects contents
-
-
+|bucketName| the object's bucket|no||
+|key| the object's key|no||
+|versionId| the specific version of the object to get its contents, if
+           versioning is enabled, left unspecified if the latest version is
+           desired, or versioning is not enabled.|yes||
+|modifiedSince| The modified constraint that restricts this request to
+           executing only if the object has been modified after the specified
+           date.|yes||
+|unmodifiedSince| The unmodified constraint that restricts this request
+           to executing only if the object has not been modified after this
+           date.|yes||
 
 Get Object
 ----------
@@ -452,15 +427,17 @@ S3 will ignore any dates occurring in the future.
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|the object's bucket|no||
-|key|the object's key|no||
-|versionId|the specific version of the object to get its contents, if versioning is enabled. Left unspecified if the latest version is desired, or versioning is not enabled.|yes||
-|modifiedSince|The modified constraint that restricts this request to executing only if the object has been modified after the specified date.|yes||
-|unmodifiedSince|The unmodified constraint that restricts this request to executing only if the object has not been modified after this date.|yes||
-
-Returns S3Object, or null, if conditional get constraints did not match
-
-
+|bucketName| the object's bucket|no||
+|key| the object's key|no||
+|versionId| the specific version of the object to get its contents, if
+           versioning is enabled. Left unspecified if the latest version is
+           desired, or versioning is not enabled.|yes||
+|modifiedSince| The modified constraint that restricts this request to
+           executing only if the object has been modified after the specified
+           date.|yes||
+|unmodifiedSince| The unmodified constraint that restricts this request
+           to executing only if the object has not been modified after this
+           date.|yes||
 
 Get Object Metadata
 -------------------
@@ -475,13 +452,9 @@ avoids wasting bandwidth on fetching the object data. Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|the object's bucket|no||
-|key|the object's key|no||
-|versionId|the object metadata for the given bucketName and key|yes||
-
-Returns non null object metadata
-
-
+|bucketName| the object's bucket|no||
+|key| the object's key|no||
+|versionId| the object metadata for the given bucketName and key|yes||
 
 Set Bucket Versioning Status
 ----------------------------
@@ -497,10 +470,8 @@ enabled for a bucket the status can never be reverted to Off. Example:
 | attribute | description | optional | default value | possible values |
 |:-----------|:-----------|:---------|:--------------|:----------------|
 |config-ref|Specify which configuration to use for this invocation|yes||
-|bucketName|the target bucket name|no||
-|versioningStatus|the version status to set|no||*OFF*, *ENABLED*, *SUSPENDED*, *versioningStatusString*
-
-
+|bucketName| the target bucket name|no||
+|versioningStatus| the version status to set|no||*OFF*, *ENABLED*, *SUSPENDED*, *versioningStatusString*
 
 Create Object Uri
 -----------------
@@ -517,37 +488,8 @@ other than US_STANDARD.
 |config-ref|Specify which configuration to use for this invocation|yes||
 |bucketName||no||
 |key||no||
-|useDefaultServer|if the default US Amazon server subdomain should be used in the URI regardless of the region.|yes|false|
-
-Returns non secure http URI to the object. Unlike the presigned URI, object must have PUBLIC_READ or PUBLIC_READ_WRITE permission
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+|useDefaultServer| if the default US Amazon server subdomain should be
+           used in the URI regardless of the region.|yes|false|
 
 
 
