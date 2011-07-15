@@ -221,10 +221,10 @@ public interface SimpleAmazonS3
     void setBucketVersioningStatus(@NotNull String bucketName, @NotNull VersioningStatus versioningStatus);
 
     @NotNull
-    URI createObjectUriUsingDefaultServer(@NotNull S3ObjectId objectId);
+    URI createObjectUriUsingDefaultServer(@NotNull S3ObjectId objectId, boolean secure);
 
     @NotNull
-    URI createObjectUri(@NotNull S3ObjectId objectId);
+    URI createObjectUri(@NotNull S3ObjectId objectId, boolean secure);
 
     /**
      * The content to be uploaded to S3, capable of creating a
