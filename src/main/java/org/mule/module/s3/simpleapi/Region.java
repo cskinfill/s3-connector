@@ -46,11 +46,12 @@ public enum Region
         return s3Equivalent;
     }
 
-    public URI getObjectUri(S3ObjectId objectId)
+    public URI getObjectUri(S3ObjectId objectId, boolean secure)
     {
+    	String scheme = secure?"https":"http";
         try
         {
-            return new URI(String.format("http://%s.%s/%s", objectId.getBucketName(), domain,
+            return new URI(String.format("%s://%s.%s/%s", scheme, objectId.getBucketName(), domain,
                 objectId.getKey()));
         }
         catch (URISyntaxException e)

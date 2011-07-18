@@ -290,17 +290,17 @@ public class SimpleAmazonS3AmazonDevKitImpl implements SimpleAmazonS3
             new BucketVersioningConfiguration(versioningStatus.toString())));
     }
 
-    public URI createObjectUriUsingDefaultServer(S3ObjectId objectId)
+    public URI createObjectUriUsingDefaultServer(S3ObjectId objectId, boolean secure)
     {
         Validate.notNull(objectId);
-        return Region.getDefaultRegion().getObjectUri(objectId);
+        return Region.getDefaultRegion().getObjectUri(objectId, secure);
     }
 
-    public URI createObjectUri(S3ObjectId objectId)
+    public URI createObjectUri(S3ObjectId objectId, boolean secure)
     {
         Validate.notNull(objectId);
         String location = s3.getBucketLocation(objectId.getBucketName());
-        return Region.from(location).getObjectUri(objectId);
+        return Region.from(location).getObjectUri(objectId, secure);
     }
 
     private class S3ObjectSummaryIterable extends S3SummaryIterable<S3ObjectSummary, ObjectListing>

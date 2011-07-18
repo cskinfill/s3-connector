@@ -590,15 +590,16 @@ public class S3CloudConnector implements Initialisable
     @Operation
     public URI createObjectUri(@Parameter(optional = false) String bucketName,
                                @Parameter(optional = false) String key,
-                               @Parameter(optional = true, defaultValue = "false") boolean useDefaultServer)
+                               @Parameter(optional = true, defaultValue = "false") boolean useDefaultServer,
+                               @Parameter(optional = true, defaultValue = "false") boolean secure)
     {
         if (useDefaultServer)
         {
-            return client.createObjectUriUsingDefaultServer(new S3ObjectId(bucketName, key));
+            return client.createObjectUriUsingDefaultServer(new S3ObjectId(bucketName, key), secure);
         }
         else
         {
-            return client.createObjectUri(new S3ObjectId(bucketName, key));
+            return client.createObjectUri(new S3ObjectId(bucketName, key), secure);
         }
     }
 

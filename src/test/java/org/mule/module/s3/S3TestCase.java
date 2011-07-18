@@ -422,7 +422,7 @@ public class S3TestCase
     public void createUriUseDefaultServer() throws Exception
     {
         assertEquals("http://my-bucket.s3.amazonaws.com/myObject", connector.createObjectUri(MY_BUCKET,
-            MY_OBJECT, true).toString());
+            MY_OBJECT, true,false).toString());
     }
 
     @Test
@@ -430,7 +430,15 @@ public class S3TestCase
     {
         when(client.getBucketLocation(MY_BUCKET)).thenReturn(Region.EU_IRELAND.toS3Equivalent().toString());
         assertEquals("http://my-bucket.s3-external-1.amazonaws.com/myObject", connector.createObjectUri(
-            MY_BUCKET, MY_OBJECT, false).toString());
+            MY_BUCKET, MY_OBJECT, false, false).toString());
+    }
+    
+    @Test
+    public void createSecureUri() throws Exception
+    {
+        when(client.getBucketLocation(MY_BUCKET)).thenReturn(Region.EU_IRELAND.toS3Equivalent().toString());
+        assertEquals("https://my-bucket.s3-external-1.amazonaws.com/myObject", connector.createObjectUri(
+            MY_BUCKET, MY_OBJECT, false, true).toString());
     }
     
     @Test
