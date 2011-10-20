@@ -17,9 +17,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mule.module.s3.AccessControlList.PRIVATE;
 
-import org.mule.api.lifecycle.InitialisationException;
 import org.mule.module.s3.AccessControlList;
-import org.mule.module.s3.S3CloudConnector;
+import org.mule.module.s3.S3Connector;
 import org.mule.module.s3.StorageClass;
 import org.mule.module.s3.simpleapi.Region;
 import org.mule.module.s3.simpleapi.VersioningStatus;
@@ -36,17 +35,15 @@ import org.junit.Test;
 
 public class S3TestDriver
 {
-    private S3CloudConnector connector;
+    private S3Connector connector;
     private String bucketName;
 
     @Before
-    public void setup() throws InitialisationException
+    public void setup() throws Exception
     {
-        connector = new S3CloudConnector();
-        connector.setAccessKey(System.getenv("user.key.access"));
-        connector.setSecretKey(System.getenv("user.key.secret"));
+        connector = new S3Connector();
+        connector.connect(System.getenv("user.key.access"), System.getenv("user.key.secret"));
         bucketName = System.getenv("bucket.name");
-        connector.initialise();
     }
 
     @After

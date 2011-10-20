@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
 
 import org.mule.api.MuleException;
 import org.mule.api.MuleMessage;
-import org.mule.construct.SimpleFlowConstruct;
+import org.mule.construct.Flow;
 import org.mule.tck.FunctionalTestCase;
 
 import com.amazonaws.AmazonServiceException;
@@ -55,14 +55,14 @@ public class S3NamespaceHandlerTestCase extends FunctionalTestCase
     @Test
     public void testCreateUri() throws Exception
     {
-        SimpleFlowConstruct flow = lookupFlowConstruct("CreateUriFlow");
+        Flow flow = lookupFlowConstruct("CreateUriFlow");
         MuleMessage message = flow.process(getTestEvent("")).getMessage();
         assertEquals("http://my-bucket.s3.amazonaws.com/anObject", message.getPayloadAsString());
     }
 
-    private SimpleFlowConstruct lookupFlowConstruct(String name)
+    private Flow lookupFlowConstruct(String name)
     {
-        return (SimpleFlowConstruct) muleContext.getRegistry().lookupFlowConstruct(name);
+        return (Flow) muleContext.getRegistry().lookupFlowConstruct(name);
     }
 
 }

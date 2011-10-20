@@ -11,9 +11,9 @@
       xmlns:s3="http://www.mulesoft.org/schema/mule/s3"
       xsi:schemaLocation="
         http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.1/mule.xsd
-        http://www.mulesoft.org/schema/mule/s3 http://www.mulesoft.org/schema/mule/s3/1.0/mule-s3.xsd">
+        http://www.mulesoft.org/schema/mule/s3 http://www.mulesoft.org/schema/mule/s3/2.0/mule-s3.xsd">
 
-    <s3:config accessKey="" secretKey=""/>
+    <s3:config accessKey="xxx" secretKey="yyy"/>
 
     <flow name="ListBucketsFlow">
         <s3:list-buckets/>
@@ -40,8 +40,7 @@
             within the same bucket. Answers the list of objects
             in the bucket
         </description>
-        <s3:create-object bucketName="my-bucket" key="anObject"
-                          content="hello world!"/>
+        <s3:create-object bucketName="my-bucket" key="anObject"/>
         <s3:copy-object sourceBucketName="my-bucket" sourceKey="anObject"
                         destinationKey="anotherObject" destinationStorageClass="STANDARD"/>
         <s3:list-objects bucketName="my-bucket" prefix=""/>
@@ -75,8 +74,7 @@
     </flow>
 
     <flow name="ObjectCrudFlow">
-        <s3:create-object bucketName="my-bucket" key="anObject"
-                          content="hello world!" contentType="text/plain"
+        <s3:create-object bucketName="my-bucket" key="anObject" contentType="text/plain"
                           contentMd5="c897d1410af8f2c74fba11b1db511e9e"/>
         <s3:delete-object bucketName="my-bucket" key="anObject"
                           versionId="15"/>

@@ -55,7 +55,6 @@ import com.amazonaws.services.s3.model.StorageClass;
 import com.amazonaws.services.s3.model.VersionListing;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
@@ -76,14 +75,14 @@ public class S3TestCase
     private static final String POLICY_TEXT = "policy1";
     private static final String MY_OBJECT = "myObject";
     private static final String MY_BUCKET = "my-bucket";
-    private S3CloudConnector connector;
+    private S3Connector connector;
     private AmazonS3 client;
 
     @Before
     public void setup()
     {
         client = mock(AmazonS3.class);
-        connector = new S3CloudConnector();
+        connector = new S3Connector();
         connector.setClient(new SimpleAmazonS3AmazonDevKitImpl(client));
     }
 
