@@ -21,7 +21,7 @@
 	xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
        http://www.mulesoft.org/schema/mule/bitly   http://www.mulesoft.org/schema/mule/bitly/3.1/mule-bitly.xsd
-       http://www.mulesoft.org/schema/mule/s3      http://www.mulesoft.org/schema/mule/s3/1.0/mule-s3.xsd
+       http://www.mulesoft.org/schema/mule/s3      http://www.mulesoft.org/schema/mule/s3/2.0/mule-s3.xsd
        http://www.mulesoft.org/schema/mule/core    http://www.mulesoft.org/schema/mule/core/3.1/mule.xsd
        http://www.mulesoft.org/schema/mule/json    http://www.mulesoft.org/schema/mule/json/3.1/mule-json.xsd
        http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/3.1/mule-scripting.xsd 
