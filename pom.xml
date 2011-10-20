@@ -243,12 +243,12 @@
     </pluginRepositories>
 
     <scm>
-        <connection>scm:git:git://github.com:mulesoft/salesforce-connector.git
+        <connection>scm:git:git://github.com:mulesoft/s3-connector.git
         </connection>
         <developerConnection>
-            scm:git:git@github.com:mulesoft/salesforce-connector.git
+            scm:git:git@github.com:mulesoft/s3-connector.git
         </developerConnection>
-        <url>http://github.com/mulesoft/salesforce-connector</url>
+        <url>http://github.com/mulesoft/s3-connector</url>
     </scm>
 
     <distributionManagement>
