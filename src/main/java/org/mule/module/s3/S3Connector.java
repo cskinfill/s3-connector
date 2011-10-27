@@ -13,11 +13,7 @@ package org.mule.module.s3;
 import static org.mule.module.s3.util.InternalUtils.coalesce;
 
 import org.mule.api.ConnectionException;
-import org.mule.api.annotations.Configurable;
-import org.mule.api.annotations.Connect;
-import org.mule.api.annotations.Connector;
-import org.mule.api.annotations.Disconnect;
-import org.mule.api.annotations.Processor;
+import org.mule.api.annotations.*;
 import org.mule.api.annotations.param.ConnectionKey;
 import org.mule.api.annotations.param.Default;
 import org.mule.api.annotations.param.Optional;
@@ -643,6 +639,16 @@ public class S3Connector
         if( client != null ) {
             client = null;
         }
+    }
+
+    @ValidateConnection
+    public boolean isConnected() {
+        return client != null;
+    }
+
+    @ConnectionIdentifier
+    public String connectionId() {
+        return "unknown";
     }
 
     /**

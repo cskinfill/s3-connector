@@ -1,4 +1,7 @@
 target
+*.iws
+*.ipr
+*.iml
 .settings
 .classpath
 .project
