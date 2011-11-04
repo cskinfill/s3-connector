@@ -11,7 +11,7 @@
 package org.mule.module.s3;
 
 import org.mule.api.MuleEvent;
-import org.mule.construct.SimpleFlowConstruct;
+import org.mule.construct.Flow;
 import org.mule.tck.FunctionalTestCase;
 
 public class S3TestDriver extends FunctionalTestCase
@@ -30,13 +30,13 @@ public class S3TestDriver extends FunctionalTestCase
     public void testUpload() throws Exception
     {
         final MuleEvent event = getTestEvent("test");
-        final SimpleFlowConstruct flow = lookupFlowConstruct("PublishFlow");
+        final Flow flow = lookupFlowConstruct("PublishFlow");
         flow.process(event);
     }
 
-    private SimpleFlowConstruct lookupFlowConstruct(final String name)
+    private Flow lookupFlowConstruct(final String name)
     {
-        return (SimpleFlowConstruct) muleContext.getRegistry().lookupFlowConstruct(name);
+        return (Flow) muleContext.getRegistry().lookupFlowConstruct(name);
     }
 
 }

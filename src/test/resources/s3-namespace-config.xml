@@ -10,7 +10,7 @@
 <mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xmlns:s3="http://www.mulesoft.org/schema/mule/s3"
       xsi:schemaLocation="
-        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.1/mule.xsd
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/3.2/mule.xsd
         http://www.mulesoft.org/schema/mule/s3 http://www.mulesoft.org/schema/mule/s3/2.0/mule-s3.xsd">
 
     <s3:config accessKey="xxx" secretKey="yyy"/>

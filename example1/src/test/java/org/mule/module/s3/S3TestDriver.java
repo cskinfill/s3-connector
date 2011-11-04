@@ -10,16 +10,13 @@
 
 package org.mule.module.s3;
 
-import org.mule.api.MuleEvent;
-import org.mule.construct.SimpleFlowConstruct;
-import org.mule.tck.FunctionalTestCase;
-import org.mule.transport.NullPayload;
-
 import com.amazonaws.services.s3.model.S3VersionSummary;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.mule.api.MuleEvent;
+import org.mule.construct.Flow;
+import org.mule.tck.FunctionalTestCase;
 
 import java.util.Collection;
-
-import org.apache.commons.lang.builder.ToStringBuilder;
 
 public class S3TestDriver extends FunctionalTestCase
 {
@@ -43,7 +40,7 @@ public class S3TestDriver extends FunctionalTestCase
     public void testUpload() throws Exception
     {
         final MuleEvent event = getTestEvent("");
-        final SimpleFlowConstruct flow = lookupFlowConstruct("UploadFlow");
+        final Flow flow = lookupFlowConstruct("UploadFlow");
         final MuleEvent responseEvent = flow.process(event);
         assertTrue(responseEvent.getMessage().getPayload() instanceof Collection<?>);
         for(S3VersionSummary summary : (Collection<S3VersionSummary>)responseEvent.getMessage().getPayload())
@@ -59,14 +56,14 @@ public class S3TestDriver extends FunctionalTestCase
     public void ignoreTestSetup() throws Exception
     {
         final MuleEvent event = getTestEvent("");
-        final SimpleFlowConstruct flow = lookupFlowConstruct("SetupFlow");
+        final Flow flow = lookupFlowConstruct("SetupFlow");
         flow.process(event);
     }
 
 
-    private SimpleFlowConstruct lookupFlowConstruct(final String name)
+    private Flow lookupFlowConstruct(final String name)
     {
-        return (SimpleFlowConstruct) muleContext.getRegistry().lookupFlowConstruct(name);
+        return (Flow) muleContext.getRegistry().lookupFlowConstruct(name);
     }
 
 }

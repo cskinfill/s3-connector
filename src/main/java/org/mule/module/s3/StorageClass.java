@@ -26,7 +26,7 @@ public enum StorageClass
 
     private final com.amazonaws.services.s3.model.StorageClass s3Equivalent;
 
-    private StorageClass(com.amazonaws.services.s3.model.StorageClass s3Equivalent)
+    StorageClass(com.amazonaws.services.s3.model.StorageClass s3Equivalent)
     {
         this.s3Equivalent = s3Equivalent;
     }

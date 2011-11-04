@@ -49,9 +49,9 @@
 <s3:copy-object sourceBucketName="my-bucket" sourceKey="foo.gzip" destinationKey="bar.gzip"
                 destinationStorageClass="Private" />
 <!-- END_INCLUDE(s3:copy-object) -->
-<!-- BEGIN_INCLUDE(s3:create-presigned-uri) -->
-<s3:create-presigned-uri bucketName="my-bucket" key="bar.xml" method="GET" />
-<!-- END_INCLUDE(s3:create-presigned-uri) -->
+<!-- BEGIN_INCLUDE(s3:create-object-presigned-uri) -->
+<s3:create-object-presigned-uri bucketName="my-bucket" key="bar.xml" method="GET" />
+<!-- END_INCLUDE(s3:create-object-presigned-uri) -->
 <!-- BEGIN_INCLUDE(s3:get-object-content) -->
 <s3:get-object-content bucketName="my-bucket" key="bar.xml"/>
 <!-- END_INCLUDE(s3:get-object-content) -->

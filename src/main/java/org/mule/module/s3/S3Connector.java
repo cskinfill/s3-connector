@@ -10,23 +10,6 @@
 
 package org.mule.module.s3;
 
-import static org.mule.module.s3.util.InternalUtils.coalesce;
-
-import org.mule.api.ConnectionException;
-import org.mule.api.annotations.*;
-import org.mule.api.annotations.param.ConnectionKey;
-import org.mule.api.annotations.param.Default;
-import org.mule.api.annotations.param.Optional;
-import org.mule.api.annotations.param.Payload;
-import org.mule.api.lifecycle.Initialisable;
-import org.mule.api.lifecycle.InitialisationException;
-import org.mule.module.s3.simpleapi.ConditionalConstraints;
-import org.mule.module.s3.simpleapi.Region;
-import org.mule.module.s3.simpleapi.S3ObjectId;
-import org.mule.module.s3.simpleapi.SimpleAmazonS3;
-import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
-import org.mule.module.s3.simpleapi.VersioningStatus;
-
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.auth.AWSCredentials;
@@ -37,9 +20,30 @@ import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.BucketWebsiteConfiguration;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.Permission;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.S3VersionSummary;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.Validate;
+import org.mule.api.ConnectionException;
+import org.mule.api.annotations.Configurable;
+import org.mule.api.annotations.Connect;
+import org.mule.api.annotations.ConnectionIdentifier;
+import org.mule.api.annotations.Connector;
+import org.mule.api.annotations.Disconnect;
+import org.mule.api.annotations.Processor;
+import org.mule.api.annotations.ValidateConnection;
+import org.mule.api.annotations.param.ConnectionKey;
+import org.mule.api.annotations.param.Default;
+import org.mule.api.annotations.param.Optional;
+import org.mule.api.annotations.param.Payload;
+import org.mule.module.s3.simpleapi.ConditionalConstraints;
+import org.mule.module.s3.simpleapi.Region;
+import org.mule.module.s3.simpleapi.S3ObjectId;
+import org.mule.module.s3.simpleapi.SimpleAmazonS3;
+import org.mule.module.s3.simpleapi.SimpleAmazonS3AmazonDevKitImpl;
+import org.mule.module.s3.simpleapi.VersioningStatus;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -47,8 +51,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
+import static org.mule.module.s3.util.InternalUtils.coalesce;
 
 /**
  * Amazon S3 (Simple Storage Service) is an online storage web service offered by Amazon Web Services. Amazon S3 
@@ -243,7 +246,7 @@ public class S3Connector
      *
      * {@sample.xml ../../../doc/mule-module-s3.xml.sample s3:get-bucket-website-configuration}
      * 
-     * @param bucketName
+     * @param bucketName the target bucket's name
      * @return a non null com.amazonaws.services.s3.model.BucketWebsiteConfiguration
      */
     @Processor
@@ -312,7 +315,7 @@ public class S3Connector
      *
      * @param bucketName the object's bucket
      * @param key the object's key
-     * @param content
+     * @param content the content to be uploaded to S3, capable of creating a {@link PutObjectRequest}.
      * @param contentLength the content length. If content is a InputStream,
      *            this parameter should be specified, as not doing so will
      *            introduce a performance loss as the contents will have to be persisted on disk before being uploaded. 
@@ -411,7 +414,7 @@ public class S3Connector
      *            the same bucket.
      * @param destinationKey the destination object's key
      * @param destinationAcl the acl of the destination object.
-     * @param destinationStorageClass
+     * @param destinationStorageClass one of {@link StorageClass} enumerated values, defaults to {@link StorageClass#STANDARD}
      * @param destinationUserMetadata the new metadata of the destination object,
      *            that if specified, overrides that copied from the source object
      * @param modifiedSince The modified constraint that restricts this request to
@@ -573,7 +576,7 @@ public class S3Connector
      * Suspended. By default, new buckets are in the Off state. Once versioning is
      * enabled for a bucket the status can never be reverted to Off.
      *
-     * {@sample.xml ../../../doc/mule-module-s3.xml.sample s3:set-bucket-versioning}
+     * {@sample.xml ../../../doc/mule-module-s3.xml.sample s3:set-bucket-versioning-status}
      * 
      * @param bucketName the target bucket name
      * @param versioningStatus the version status to set
@@ -595,10 +598,11 @@ public class S3Connector
      *
      * {@sample.xml ../../../doc/mule-module-s3.xml.sample s3:create-object-uri}
      * 
-     * @param bucketName
-     * @param key
+     * @param bucketName the object's bucket
+     * @param key the object's key
      * @param useDefaultServer if the default US Amazon server subdomain should be
      *            used in the URI regardless of the region.
+     * @param secure whether to use http or https
      * @return a non secure http URI to the object. Unlike the presigned URI, object
      *         must have PUBLIC_READ or PUBLIC_READ_WRITE permission
      */
@@ -626,7 +630,7 @@ public class S3Connector
      * @throws ConnectionException
      */
     @Connect
-    public void connect(@ConnectionKey String accessKey, String secretKey) throws ConnectionException
+    public synchronized void connect(@ConnectionKey String accessKey, String secretKey) throws ConnectionException
     {
         if (client == null)
         {
@@ -635,7 +639,7 @@ public class S3Connector
     }
 
     @Disconnect
-    public void disconnect() {
+    public synchronized void disconnect() {
         if( client != null ) {
             client = null;
         }
