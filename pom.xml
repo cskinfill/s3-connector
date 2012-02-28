@@ -56,5 +56,16 @@
         </developerConnection>
         <url>http://github.com/mulesoft/s3-connector</url>
     </scm>
+    
+    <distributionManagement>
+      <repository>
+        <id>opensky.repo.releases</id>
+        <url>http://nexus.shopopensky.com/content/repositories/releases</url>
+      </repository>
+      <snapshotRepository>
+        <id>opensky.repo.snapshots</id>
+        <url>http://nexus.shopopensky.com/content/repositories/snapshots</url>
+      </snapshotRepository>
+    </distributionManagement>
 
 </project>
