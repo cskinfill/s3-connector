@@ -87,6 +87,11 @@ public class S3Connector
     @Optional
     private String proxyHost;   
     
+    /**
+     * Inject the SimpleAmazonS3 client
+     */
+    @Configurable
+    @Optional
     private SimpleAmazonS3 client;
 
     /**
@@ -737,5 +742,7 @@ public class S3Connector
     {
         this.proxyHost = proxyHost;
     }
+    
+    
 
 }
